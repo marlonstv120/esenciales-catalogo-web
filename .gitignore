@@ -23,3 +23,7 @@ Thumbs.db
 # Temporary AI working files
 .ai/scratch/*
 !.ai/scratch/.gitkeep
+
+# Local AI tool integrations and generated knowledge graphs
+.opencode/
+graphify-out/

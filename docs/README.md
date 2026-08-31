@@ -6,7 +6,7 @@ Esta carpeta es la fuente permanente de contexto del proyecto. Las fuentes origi
 
 - [Proyecto](project/overview.md): estado, alcance, requisitos, reglas y flujos.
 - [Arquitectura](architecture/overview.md): decisiones técnicas confirmadas.
-- [Desarrollo](development/setup.md): preparación, convenciones y flujo de trabajo.
+- [Desarrollo](development/workflow.md): convenciones y flujo de trabajo.
 - [Académico](academic/README.md): contexto del curso e informe en construcción.
 - [Historial](history/project-log.md): trazabilidad e hitos relevantes.
 

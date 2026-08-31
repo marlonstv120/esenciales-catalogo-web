@@ -2,6 +2,27 @@
 
 Este es un borrador de trabajo basado en la estructura actual de la plantilla. No es el documento oficial ni contiene contenido no validado.
 
+## Portada
+
+**SISTEMA WEB PARA LA GESTIÓN Y PUBLICACIÓN DEL CATÁLOGO DE PRODUCTOS DE ESENCIALES**
+
+**Titulillo para el encabezado:** GESTIÓN DEL CATÁLOGO WEB DE ESENCIALES
+
+**Integrantes:**
+
+Janderson Santos Vega  
+Daniel Steven Contreras Lopez  
+Marlon Steev Velasco Paz
+
+**Programa:** Ingeniería de Sistemas  
+**Institución:** Fundación Tecnológica Autónoma del Pacífico  
+**Docente / Asesor:** William Samuel Henao Gutierrez  
+**Curso:** I.A. Aplicada al Desarrollo Full Stack  
+**Lugar y fecha:** Santiago de Cali, fecha de entrega pendiente de confirmar
+
+**Correspondencia:** Marlon Steev Velasco Paz  
+**Dirección electrónica:** marlon.velasco.0ds@utap.edu.co
+
 ## Resumen
 
 Pendiente de completar cuando existan objetivo validado, método, resultados y conclusiones suficientes. La plantilla indica entre 150 y 250 palabras.
@@ -24,15 +45,17 @@ Pendiente de desarrollar con contexto y problema validados.
 
 ## Objetivos
 
-Pendientes de validación; no establecerlos como definitivos todavía.
+Los siguientes objetivos corresponden a la versión preliminar actualmente definida y podrán ajustarse durante la validación del proyecto.
 
 ### Objetivo general
 
-Pendiente de validar.
+Desarrollar una aplicación web full stack para la gestión y presentación centralizada del catálogo de productos, precios y disponibilidad del emprendimiento Esenciales.
 
 ### Objetivos específicos
 
-Pendientes de validar. La plantilla actual establece exactamente tres objetivos específicos.
+1. Diseñar la estructura funcional, de datos y de interfaz necesaria para la gestión y consulta del catálogo de productos de Esenciales.
+2. Construir una aplicación web full stack con funcionalidades de administración y consulta de productos, precios y disponibilidad del catálogo de Esenciales.
+3. Validar la aplicación web mediante pruebas funcionales y su despliegue en un entorno de producción para comprobar el cumplimiento de los requisitos definidos.
 
 ## Marco conceptual
 

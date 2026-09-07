@@ -4,9 +4,14 @@ Esta carpeta es la fuente permanente de contexto del proyecto. Las fuentes origi
 
 ## Navegación
 
-- [Proyecto](project/overview.md): estado, alcance, requisitos, reglas y flujos.
+- [Proyecto](project/overview.md): estado y objetivos vigentes.
+- [Alcance funcional MVP V1](project/functional-scope.md): macrofuncionalidades, prioridades, límites, aceptación y pendientes.
+- [Requisitos](project/requirements.md): requisitos funcionales y no funcionales identificados.
+- [Reglas de negocio](project/business-rules.md): comportamiento obligatorio del dominio.
+- [Actores y flujos](project/actors-and-flows.md): participantes, permisos y recorridos principales.
 - [Arquitectura](architecture/overview.md): decisiones técnicas confirmadas.
-- [Desarrollo](development/workflow.md): convenciones y flujo de trabajo.
+- [Modelo lógico de datos](architecture/data-model.md): entidades, restricciones y transacciones propuestas para PostgreSQL.
+- [Desarrollo](development/workflow.md): flujo de trabajo, [convenciones](development/conventions.md) y [herramientas recomendadas](development/tooling.md).
 - [Académico](academic/README.md): contexto del curso e informe en construcción.
 - [Historial](history/project-log.md): trazabilidad e hitos relevantes.
 

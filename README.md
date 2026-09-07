@@ -2,7 +2,7 @@
 
 Aplicación web Full Stack para la **gestión y publicación del catálogo de productos de Esenciales**, desarrollada como proyecto integrador del Curso de Opción de Grado en Desarrollo Web Full Stack.
 
-> **Estado actual:** proyecto en etapa inicial de definición y preparación. El alcance, los requisitos y las decisiones técnicas evolucionarán conforme avance el curso y se validen con el equipo y el profesor.
+> **Estado actual:** base técnica inicial implementada: servidor Node.js con Express, página estática y endpoint de salud. PostgreSQL y autenticación aún no están implementados.
 
 ## Sobre el proyecto
 
@@ -62,9 +62,34 @@ La IA actúa como asistente de desarrollo. Las decisiones importantes del proyec
 
 ## Estado de implementación
 
-La implementación de la aplicación aún no ha comenzado.
+ La base técnica inicial está implementada. Incluye Node.js, Express, una página estática en `public/` y `GET /api/health`. La conexión a PostgreSQL, las migraciones, la autenticación y las funcionalidades del catálogo están pendientes.
 
-La arquitectura, estructura del código y decisiones técnicas se incorporarán progresivamente cuando sean definidas y validadas. Este README se actualizará cuando exista información confirmada sobre instalación, ejecución, tecnologías utilizadas, despliegue y demás aspectos necesarios para trabajar con la aplicación.
+ La arquitectura, estructura del código y decisiones técnicas se incorporarán progresivamente a partir del [alcance funcional MVP V1](docs/project/functional-scope.md).
+
+## Ejecución local
+
+Instale las dependencias:
+
+```bash
+npm install
+```
+
+Para desarrollo, con reinicio automático al guardar cambios:
+
+```bash
+npm run dev
+```
+
+Para ejecutar sin Nodemon, como se hará en producción:
+
+```bash
+npm start
+```
+
+El servidor usa el puerto indicado por la variable de entorno `PORT` o, si no está definida, el puerto `3000`.
+
+- Página inicial: `http://localhost:3000`
+- Comprobación de salud: `http://localhost:3000/api/health`
 
 ---
 

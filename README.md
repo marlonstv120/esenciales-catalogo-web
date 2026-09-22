@@ -2,7 +2,7 @@
 
 Aplicación web Full Stack para la **gestión y publicación del catálogo de productos de Esenciales**, desarrollada como proyecto integrador del Curso de Opción de Grado en Desarrollo Web Full Stack.
 
-> **Estado actual:** base técnica inicial implementada: servidor Node.js con Express, página estática y endpoint de salud. PostgreSQL y autenticación aún no están implementados.
+> **Estado actual:** el MVP adoptará Supabase para los servicios de backend. El prototipo inicial con Node.js y Express permanece en el repositorio como antecedente técnico, pero ya no corresponde a la arquitectura vigente. La configuración de Supabase y las funcionalidades del catálogo están pendientes.
 
 ## Sobre el proyecto
 
@@ -42,6 +42,17 @@ La documentación principal se encuentra en [`docs/`](docs/README.md).
 
 Las fuentes originales se conservan separadas de la documentación derivada para evitar duplicaciones y mantener trazabilidad.
 
+## Estructura del repositorio
+
+- [`docs/`](docs/README.md): documentacion permanente del proyecto.
+- [`api/`](api/README.md): contrato entre el frontend y los servicios de Supabase.
+- [`db/`](db/README.md): orientacion del esquema, reglas y datos de prueba.
+- [`supabase/`](supabase/): configuracion local y SQL versionado de Supabase.
+- [`ia/`](ia/README.md): registro academico del uso de inteligencia artificial.
+- [`informe/`](informe/README.md): entregables y evidencias organizados por hito.
+
+El proyecto usa `supabase/` como ruta de backend; no mantiene simultaneamente una carpeta `backend/`. La carpeta [`.ai/`](.ai/README.md) contiene contexto operativo para agentes y no reemplaza el registro academico de `ia/`.
+
 ## Desarrollo asistido por IA
 
 El proyecto puede utilizar herramientas de IA como apoyo para análisis, aprendizaje, implementación, revisión y documentación.
@@ -62,7 +73,7 @@ La IA actúa como asistente de desarrollo. Las decisiones importantes del proyec
 
 ## Estado de implementación
 
- La base técnica inicial está implementada. Incluye Node.js, Express, una página estática en `public/` y `GET /api/health`. La conexión a PostgreSQL, las migraciones, la autenticación y las funcionalidades del catálogo están pendientes.
+El prototipo inicial con Node.js y Express fue sustituido por una base de frontend con Vite, HTML5, CSS3 y JavaScript sin framework. Esta base se conectará a Supabase. Están pendientes la creación y configuración del proyecto Supabase, las migraciones, la autenticación, las políticas de seguridad y las funcionalidades del catálogo.
 
  La arquitectura, estructura del código y decisiones técnicas se incorporarán progresivamente a partir del [alcance funcional MVP V1](docs/project/functional-scope.md).
 
@@ -74,22 +85,34 @@ Instale las dependencias:
 npm install
 ```
 
-Para desarrollo, con reinicio automático al guardar cambios:
+Para ejecutar el cliente en desarrollo:
 
 ```bash
+npm run supabase:start
 npm run dev
 ```
 
-Para ejecutar sin Nodemon, como se hará en producción:
+Supabase Studio estará disponible en `http://127.0.0.1:54323`. Vite mostrará la URL del cliente en la terminal, normalmente `http://localhost:5173`.
+
+Para detener los servicios locales de Supabase:
 
 ```bash
-npm start
+npm run supabase:stop
 ```
 
-El servidor usa el puerto indicado por la variable de entorno `PORT` o, si no está definida, el puerto `3000`.
+Para comprobar la compilación de producción:
 
-- Página inicial: `http://localhost:3000`
-- Comprobación de salud: `http://localhost:3000/api/health`
+```bash
+npm run build
+```
+
+Para previsualizar la compilación:
+
+```bash
+npm run preview
+```
+
+Copie `.env.example` como `.env.local` y complete las variables públicas de Supabase cuando configure un entorno nuevo. `.env.local` no se versiona. Las claves secretas o de servicio nunca deben utilizar el prefijo `VITE_` ni incluirse en el frontend.
 
 ---
 

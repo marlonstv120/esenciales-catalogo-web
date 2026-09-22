@@ -1,0 +1,75 @@
+GUION BREVE PARA LA PRESENTACIÓN DEL PROYECTO
+
+Proyecto: Catálogo Web de Esenciales
+Duración aproximada: 6 a 8 minutos
+Expositores: Janderson Santos Vega, Daniel Steven Contreras Lopez y Marlon Steev Velasco Paz
+
+Este guion puede utilizarse con las diapositivas o como guía para presentar el informe técnico. No es necesario memorizarlo palabra por palabra; lo importante es conservar las ideas principales.
+
+======================================================================
+Diapositivas 1 a 3: presentación, contexto, justificación y pregunta problema
+======================================================================
+
+Buenos días. Somos Janderson Santos Vega, Daniel Steven Contreras Lopez y Marlon Steev Velasco Paz, estudiantes de Ingeniería de Sistemas de la Fundación Tecnológica Autónoma del Pacífico.
+
+Nuestro proyecto se titula “Sistema web para la gestión y publicación del catálogo de productos de Esenciales”. Es un proyecto de desarrollo web full stack aplicado a una necesidad real del emprendimiento Esenciales, que comercializa lociones, splash, cremas, humidificadores y otros productos.
+
+Actualmente, el negocio administra parte de la información de su catálogo en Excel y presenta los productos principalmente por WhatsApp. Cuando un cliente solicita información, puede ser necesario enviarle muchas fotografías de manera individual, llegando en algunos casos a cerca de cincuenta imágenes. Además, los productos, precios y disponibilidad no se encuentran reunidos en un solo medio organizado.
+
+Esto dificulta la administración del catálogo y hace que el cliente dependa de la atención por WhatsApp para conocer la oferta disponible. Por eso, la justificación aplicada del proyecto consiste en ofrecer a Esenciales un medio centralizado para administrar y publicar su información. Desde el punto de vista académico, nos permite integrar los conocimientos del curso en un caso real, incluyendo frontend, servicios de backend, base de datos, seguridad, pruebas y despliegue.
+
+A partir de esta situación formulamos la siguiente pregunta problema:
+
+¿Cómo desarrollar una aplicación web full stack que permita centralizar la gestión, publicación y consulta del catálogo de productos, precios y disponibilidad del emprendimiento Esenciales?
+
+A continuación, ... explicará la respuesta propuesta y los objetivos del proyecto.
+
+======================================================================
+Diapositivas 4 y 5: respuesta, objetivos y alcance
+======================================================================
+
+Como respuesta a la pregunta problema, proponemos desarrollar una aplicación web que reúna en un solo lugar la administración y la consulta del catálogo. El administrador podrá gestionar productos, presentaciones, precios, imágenes, inventario y disponibilidad. Los visitantes podrán consultar el catálogo, buscar y filtrar productos, preparar un carrito y registrar una solicitud de compra. Después podrán continuar voluntariamente la conversación comercial por WhatsApp.
+
+Es importante aclarar que esta es la solución propuesta y se encuentra en desarrollo. El sistema no procesará pagos y una solicitud de compra no será considerada automáticamente como una venta concluida.
+
+Nuestro objetivo general es desarrollar una aplicación web full stack para centralizar la gestión, publicación y consulta del catálogo de productos, precios y disponibilidad del emprendimiento Esenciales.
+
+Para lograrlo definimos tres objetivos específicos. El primero es diagnosticar el proceso actual de gestión y presentación del catálogo e identificar sus dificultades. El segundo es desarrollar la solución con acceso administrativo, gestión del catálogo, publicación pública, búsqueda, filtros y solicitudes de compra. El tercero es validar la aplicación mediante pruebas funcionales y su despliegue en un entorno de producción.
+
+El alcance corresponde a un producto mínimo viable exclusivo para Esenciales. Incluye ocho macrofuncionalidades que agrupan el acceso administrativo, la gestión del catálogo y del inventario, la consulta pública, la búsqueda, el carrito y la gestión de solicitudes. No incluye pagos, facturación, autenticación de clientes ni soporte para varios emprendimientos.
+
+Ahora … explicará los fundamentos conceptuales, la metodología y el estado actual del proyecto.
+
+======================================================================
+Diapositivas 6 a 10: marco conceptual, metodología, tecnología, avance y cierre
+======================================================================
+
+El marco conceptual se organizó en cinco ejes técnicos, como exige la plantilla del informe.
+
+El primero es la gestión de información de producto y catálogo digital, que explica cómo organizar datos como nombre, categoría, presentación, precio, imagen y disponibilidad.
+
+El segundo es la aplicación web full stack y el modelo cliente-servidor, que fundamenta la comunicación entre la interfaz utilizada por el usuario y los servicios que consultan o modifican la información.
+
+El tercero es la base de datos relacional y la integridad de los datos. Este eje sustenta el uso de tablas relacionadas, restricciones y transacciones para conservar la consistencia de productos, presentaciones, inventario y solicitudes.
+
+El cuarto es la publicación de contenido multimedia, enfocada en las imágenes de los productos, su almacenamiento y su presentación accesible en diferentes dispositivos.
+
+El quinto es la gestión de inventario y disponibilidad comercial. En nuestro proyecto, el stock, el precio y la disponibilidad se controlarán por cada presentación del producto.
+
+En cuanto a la metodología, el proyecto corresponde a una investigación aplicada con alcance descriptivo y propositivo, porque primero estudia una necesidad concreta y luego plantea una solución. Se trabaja bajo la estrategia de Aprendizaje Basado en Proyectos y mediante un proceso iterativo e incremental, sin afirmar que estamos aplicando formalmente Scrum.
+
+El proceso se divide en tres fases. La primera es el diagnóstico del proceso actual y la definición de requisitos y reglas de negocio. La segunda es el desarrollo e integración del frontend, Supabase, PostgreSQL, autenticación, imágenes y operaciones del catálogo. La tercera es la validación y el despliegue mediante pruebas funcionales, correcciones, validación con Esenciales y publicación del sistema.
+
+La propuesta técnica utiliza HTML5, CSS3 y JavaScript en el cliente. Supabase proporcionará PostgreSQL, autenticación administrativa, almacenamiento de imágenes y mecanismos de seguridad y operaciones críticas.
+
+Como avance verificable, ya definimos el problema, la pregunta, los objetivos, el alcance, los requisitos, las reglas de negocio, el modelo lógico y las decisiones técnicas. También contamos con una base de frontend creada con Vite. Todavía están pendientes la configuración de Supabase, las funcionalidades del catálogo, las pruebas, la validación y el despliegue.
+
+Con esta presentación buscamos conocer si el problema, los objetivos, la metodología y el alcance son adecuados para el proyecto de grado, y qué evidencias debemos reunir durante la implementación y la validación. Agradecemos sus observaciones para corregir oportunamente el trabajo antes de continuar.
+
+Muchas gracias.
+
+======================================================================
+ACLARACIÓN SOBRE EL MARCO CONCEPTUAL
+======================================================================
+
+El informe contiene cinco ejes conceptuales. Algunos títulos reúnen dos términos relacionados mediante la palabra “y”, pero se desarrollan como una sola unidad temática aplicada al proyecto. Por tanto, no es necesario dividirlos ni crear apartados adicionales únicamente para aumentar la cantidad. La presentación debe conservar estos cinco títulos para coincidir con el informe.

@@ -90,6 +90,7 @@ Aclaración del profesor sobre la estructura de la introducción y la secuencia 
 ### Referencias
 
 - [Borrador del informe académico](../academic/report/REPORT_DRAFT.md).
+
 - [Instrucciones del profesor](../academic/professor-instructions.md).
 
 ## 2026-09-05
@@ -138,4 +139,215 @@ Diseño inicial del modelo lógico de datos antes de crear la infraestructura de
 ### Referencias
 
 - [Modelo lógico de datos](../architecture/data-model.md).
+
+## 2026-09-21
+
+### Contexto
+
+El docente especifica la estructura de carpetas que debe ser visible en GitHub y la ubicacion de los entregables academicos existentes.
+
+### Decisiones / cambios
+
+- Se incorporan `api/`, `db/`, `ia/` e `informe/` y se conserva `supabase/` como unica ruta de backend, de acuerdo con la autorizacion vigente para sustituir Express.
+- `informe/` organiza briefing, requisitos, diseno, arquitectura y evidencias sin reemplazar las fuentes de verdad mantenidas en `docs/`.
+- El acta publica identifica a la persona entrevistada por su cargo y no por su nombre.
+- Los wireframes y mockups de entrega se exportaran como PNG por pantalla; las previsualizaciones HTML locales quedan excluidas de Git.
+- Los temporales y datos de vinculacion local de Supabase permanecen excluidos mediante `supabase/.gitignore`.
+
+### Pendientes
+
+- Incorporar los PNG reales de wireframes y mockups cuando sean revisados.
+- Registrar el enlace compartido del prototipo de Figma.
+- Crear el diagrama editable `arquitectura.drawio` y su exportacion `arquitectura.png`.
+- Incorporar evidencias de pruebas, validacion y despliegue solo cuando existan.
+
+### Referencias
+
+- [Estructura de entregables](../../informe/README.md).
+- [Registro de uso de IA](../../ia/README.md).
+- [Contrato de servicios](../../api/README.md).
+- [Base de datos](../../db/README.md).
 - [Reglas de negocio](../project/business-rules.md).
+
+## 2026-09-07
+
+### Contexto
+
+El profesor autorizó al equipo usar Supabase en sustitución de Express para agilizar la implementación del MVP.
+
+### Decisiones / cambios
+
+- Se adopta Supabase como plataforma de servicios de backend: PostgreSQL, Auth, Storage, RLS y funciones RPC.
+- Se reemplazan las decisiones de monolito con Express, acceso mediante `pg` y sesiones propias; los ADR-003 a ADR-005 se conservan como registros reemplazados.
+- Se conserva PostgreSQL, el frontend sin framework, el alcance funcional, el título, la pregunta problema y los objetivos.
+- Se actualizan el modelo lógico para integrar `auth.users`, los requisitos técnicos, el contexto y las menciones arquitectónicas mínimas del informe académico.
+- Se elimina el prototipo Express y se crea una base de frontend con Vite, HTML5, CSS3 y JavaScript sin framework.
+- Se retiran las dependencias `express` y `nodemon`; Vite queda como dependencia de desarrollo y su compilación de producción se valida correctamente.
+- Se instalan `@supabase/supabase-js` y la CLI de Supabase; el repositorio queda vinculado al proyecto remoto y se valida la API de autenticación.
+- Se inicializa el entorno local de Supabase con Docker para probar migraciones y políticas antes de aplicarlas al proyecto remoto.
+
+### Pendientes
+
+- Definir y probar migraciones, políticas RLS, permisos de Storage y funciones RPC transaccionales.
+- Definir el despliegue del cliente web.
+
+### Referencias
+
+- [Instrucción del profesor](../academic/professor-instructions.md).
+- [ADR-007: Servicios de backend con Supabase](../architecture/decisions/ADR-007-servicios-backend-con-supabase.md).
+- [Modelo lógico de datos](../architecture/data-model.md).
+
+## 2026-09-09
+
+### Contexto
+
+Sincronización del borrador académico con la versión de informe técnico compartida por el equipo el 7 de septiembre de 2026.
+
+### Decisiones / cambios
+
+- Se incorporan al borrador un resumen, abstract y palabras clave coherentes con el estado verificable del proyecto.
+- Se propone una metodología de investigación aplicada, alcance descriptivo y propositivo, Aprendizaje Basado en Proyectos y desarrollo iterativo e incremental, sin declarar la adopción de Scrum.
+- Se reemplazan las afirmaciones no verificadas de implementación completa, pruebas, despliegue y resultados por el avance real y los planes pendientes.
+- Se conserva el archivo Word en `docs/sources/` como fuente de contraste, sin modificarlo.
+
+### Pendientes
+
+- Ejecutar y registrar el diagnóstico, la implementación, las pruebas funcionales, la validación con Esenciales y el despliegue antes de redactar resultados y conclusiones definitivos.
+- Incorporar únicamente técnicas metodológicas que se realicen y cuenten con evidencia.
+
+### Referencias
+
+- [Borrador del informe académico](../academic/report/REPORT_DRAFT.md).
+- [Informe técnico entregado](../sources/README.md#informe-técnico-entregado).
+
+## 2026-09-09
+
+### Contexto
+
+Precisión de las denominaciones del emprendimiento, proyecto e informe, y aplicación de una observación del profesor sobre la presentación de la pregunta problema.
+
+### Decisiones / cambios
+
+- Se mantiene como título formal: `Sistema web para la gestión y publicación del catálogo de productos de Esenciales`.
+- Se define `Catálogo Web de Esenciales` como nombre corto del proyecto para sustentaciones, presentaciones y diagramas.
+- Se conserva `esenciales-catalogo-web` como nombre técnico del repositorio y `Gestión del catálogo web de Esenciales` como titulillo del informe.
+- Se aclara que `Esenciales` identifica al emprendimiento y no reemplaza el nombre del proyecto.
+- Se añade el encabezado `Pregunta problema` al borrador académico para diferenciar visualmente la interrogante dentro de la introducción.
+
+### Referencias
+
+- [Visión general](../project/overview.md).
+- [Borrador del informe académico](../academic/report/REPORT_DRAFT.md).
+- [Instrucciones del profesor](../academic/professor-instructions.md).
+
+## 2026-09-10
+
+### Contexto
+
+Revisión del informe técnico con los ajustes comunicados por la coordinadora de proyectos de grado.
+
+### Decisiones / cambios
+
+- Se reemplaza el título formal por `Sistema web para la gestión y publicación del catálogo de productos para la empresa ESENCIALES`.
+- El informe utiliza `ESENCIALES` en mayúsculas y presenta la organización como empresa.
+- Se reescriben el resumen y el abstract en tiempo presente, dentro del límite de 150 a 250 palabras, con objetivo, metodología, resultados verificables y una conclusión general.
+- Se eliminan del resumen los detalles técnicos innecesarios y las expresiones sobre trabajo pendiente.
+- Se revisa la coherencia de la introducción y se explicitan las tres etapas del proyecto: diagnóstico, desarrollo e integración, y validación y despliegue.
+- El objetivo general se ajusta a la formulación `Desarrollar una aplicación web full stack que permita la gestión, publicación y consulta del catálogo de productos, precios y disponibilidad de la empresa ESENCIALES`.
+- El primer objetivo específico comienza con `Identificar` y coordina en una sola proposición el proceso actual y sus dificultades, sin repetir `identificando`.
+- `Estudio de caso` y `Pregunta problema` se establecen como encabezados de nivel 2, alineados a la izquierda según la plantilla institucional.
+- Se retiran del borrador académico la cita y la referencia `Tecnológica Autónoma del Pacífico (2026)`.
+- El archivo Word de `docs/sources/` se conserva sin modificaciones; el equipo traslada manualmente los cambios desde el borrador.
+
+### Pendientes
+
+- Revisar el contenido de la metodología y el marco conceptual cuando el equipo comparta las observaciones restantes de la coordinadora.
+- Actualizar las conclusiones del resumen cuando existan resultados finales adicionales respaldados por evidencia.
+
+### Referencias
+
+- [Observaciones de la coordinadora](../academic/coordinator-instructions.md).
+- [Borrador del informe académico](../academic/report/REPORT_DRAFT.md).
+
+## 2026-09-11
+
+### Contexto
+
+Revisión del marco conceptual, la metodología y las evidencias solicitadas para el diagnóstico, el informe y la sustentación.
+
+### Decisiones / cambios
+
+- `Aplicación Web Full Stack y Modelo Cliente-Servidor` pasa a ser el primer concepto después del párrafo inicial del marco conceptual.
+- Se conservan las fuentes técnicas primarias actuales y no se atribuye un cuartil Q1/Q2 a un artículo únicamente por tener DOI o por la clasificación de otro año o categoría.
+- Se añaden como respaldo complementario dos artículos en español con DOI sobre adopción de TIC en mipymes y gestión de inventarios. Se descarta el artículo sobre datos abiertos porque su relación con el catálogo empresarial es insuficiente; el borrador queda con nueve referencias pertinentes y no presenta como Q1/Q2 aquellas cuya clasificación aplicable no está demostrada.
+- La metodología se organiza en tipo de investigación, metodología de desarrollo, fases, participantes y unidad de análisis, técnicas e instrumentos, y herramientas tecnológicas.
+- Se elimina la expresión `Aplica:` y se conserva la caracterización del estudio como investigación aplicada con alcance descriptivo y propositivo.
+- La entrevista con el propietario de ESENCIALES se incorpora como técnica del diagnóstico, apoyada por un cuestionario; el briefing queda como síntesis para validar y priorizar el alcance.
+- Los hallazgos de la entrevista, la correspondencia entre el briefing validado y las funcionalidades, el comparativo del proceso, la evolución del diseño, las pruebas y el despliegue se reservan para resultados y análisis cuando existe evidencia.
+- Se crea un plan para distribuir las evidencias entre el informe y la sustentación.
+- El QR de la diapositiva final se plantea como acceso a la URL pública y el equipo decide limitarlo a materiales de presentación y difusión, sin incorporarlo como funcionalidad del MVP.
+
+### Pendientes
+
+- Completar los datos de la entrevista, validar el briefing derivado y extraer únicamente hallazgos respaldados.
+- Confirmar con el profesor cuántos artículos Q1/Q2 se exigen y bajo qué base, categoría y año se evalúan.
+- Incorporar una décima referencia directamente relacionada para cumplir el mínimo del curso sin añadir fuentes solo por cantidad.
+
+### Referencias
+
+- [Observaciones de la coordinadora](../academic/coordinator-instructions.md).
+- [Instrucciones del profesor](../academic/professor-instructions.md).
+- [Plan de evidencias](../academic/report/EVIDENCE_PLAN.md).
+- [Borrador del informe académico](../academic/report/REPORT_DRAFT.md).
+
+## 2026-09-11
+
+### Contexto
+
+Incorporación de la entrevista de levantamiento de requerimientos realizada al propietario de ESENCIALES y suministrada por el equipo.
+
+### Decisiones / cambios
+
+- Se conserva la entrevista como fuente primaria del diagnóstico y se identifica que el material no es por sí solo un briefing.
+- Se crea un briefing derivado, redactado en primera persona a partir de las respuestas, para validación expresa del propietario.
+- La metodología diferencia la entrevista como técnica, el cuestionario de 37 preguntas como instrumento y el briefing como síntesis para validar el problema y priorizar el alcance.
+- Se actualiza el caso de estudio con los canales Instagram, Facebook Marketplace, WhatsApp y ventas directas, y con la gestión manual del catálogo y el inventario.
+- Se documenta que las necesidades sobre pagos, clientes, ventas, costos, direcciones, reportes y estados comerciales no modifican automáticamente el MVP.
+- El briefing compara cada necesidad con el alcance vigente y señala coberturas completas, parciales, conflictos y elementos externos al MVP.
+- Daniel Steven Contreras Lopez valida el briefing, sus criterios de éxito y sus delimitaciones el 10 de septiembre de 2026.
+- Se confirma el descuento de inventario al pasar una solicitud a `Confirmada`; dirección y barrio se recopilan por WhatsApp; y costos internos, pagos, módulo de clientes y reportes de ventas permanecen fuera del MVP.
+
+### Pendientes
+
+- Seleccionar las evidencias del proceso inicial que pueden utilizarse sin exponer datos personales o comerciales sensibles.
+
+### Referencias
+
+- [Entrevista de levantamiento de requerimientos](../sources/ENTREVISTA_LEVANTAMIENTO_REQUERIMIENTOS_ESENCIALES.md).
+- [Briefing de necesidades](../project/briefing-esenciales.md).
+- [Borrador del informe académico](../academic/report/REPORT_DRAFT.md).
+
+## 2026-09-17
+
+### Contexto
+
+El equipo confirma que el cliente continuará sin cuenta, solicita incorporar la indicación comunicada del profesor sobre aceptación de términos y define la recuperación de contraseña para el administrador.
+
+### Decisiones / cambios
+
+- La aceptación obligatoria se ubica al registrar cada solicitud, sin crear cuentas de clientes.
+- `solicitudes` conservará las versiones aceptadas de los Términos y condiciones y de la Política de tratamiento de datos, además de la fecha y hora de aceptación.
+- No se crea una tabla de consentimientos porque existe una sola aceptación vinculada a cada solicitud y no hay una entidad cliente en el MVP.
+- La autorización para novedades o comunicaciones promocionales queda fuera del MVP.
+- El administrador podrá recuperar su contraseña por correo mediante Supabase Auth; continúa sin existir registro público de administradores.
+
+### Pendientes
+
+- Elaborar y validar con Esenciales los textos y las versiones iniciales de los documentos antes del despliegue.
+- Materializar y probar estas reglas en las migraciones, la función RPC y las pantallas correspondientes.
+
+### Referencias
+
+- [Instrucciones del profesor](../academic/professor-instructions.md).
+- [Requisitos](../project/requirements.md).
+- [Modelo lógico de datos](../architecture/data-model.md).

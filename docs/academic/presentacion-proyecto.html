@@ -1,0 +1,1277 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Presentación breve del avance del proyecto Catálogo Web de Esenciales."
+    />
+    <title>Catálogo Web de Esenciales | Presentación del proyecto</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --blue-950: #082f58;
+        --blue-800: #07518c;
+        --blue-650: #0875bb;
+        --blue-100: #eaf4fb;
+        --blue-050: #f5f9fc;
+        --ink: #183044;
+        --muted: #5d7182;
+        --line: #cbdce9;
+        --gold: #c5a24a;
+        --white: #ffffff;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        overflow: hidden;
+        color: var(--ink);
+        background: #dfeaf2;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .deck {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        height: 100svh;
+        overflow: hidden;
+        background: var(--white);
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: clamp(1rem, 2.2vh, 1.75rem);
+        padding: clamp(1.35rem, 4.5vw, 4.75rem) clamp(1.25rem, 6vw, 7rem)
+          clamp(4.5rem, 9vh, 6rem);
+        overflow-y: auto;
+        background:
+          linear-gradient(90deg, var(--blue-650) 0 8px, transparent 8px),
+          var(--white);
+      }
+
+      .slide::after {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: clamp(7rem, 18vw, 16rem);
+        height: clamp(3rem, 9vh, 6rem);
+        border-radius: 0 0 0 100%;
+        background: var(--blue-100);
+        content: "";
+        pointer-events: none;
+      }
+
+      .slide[hidden] {
+        display: none;
+      }
+
+      .slide-header,
+      .slide-content,
+      .slide-footer {
+        position: relative;
+        z-index: 1;
+      }
+
+      .slide-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .section-label,
+      .utap-mark {
+        margin: 0;
+        color: var(--blue-650);
+        font-size: clamp(0.7rem, 1.1vw, 0.95rem);
+        font-weight: 700;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .utap-mark {
+        position: relative;
+        z-index: 2;
+        color: var(--blue-950);
+        letter-spacing: 0.08em;
+      }
+
+      .slide-content {
+        align-self: center;
+        width: min(100%, 1120px);
+        min-width: 0;
+        margin: 0 auto;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: var(--blue-950);
+      }
+
+      h1 {
+        max-width: 950px;
+        margin-bottom: clamp(1rem, 2.5vh, 1.75rem);
+        font-size: clamp(2.15rem, 5.2vw, 5rem);
+        line-height: 1.02;
+        letter-spacing: -0.045em;
+      }
+
+      h2 {
+        margin-bottom: clamp(1.25rem, 3vh, 2.25rem);
+        font-size: clamp(1.9rem, 4vw, 3.7rem);
+        line-height: 1.08;
+        letter-spacing: -0.035em;
+      }
+
+      h3 {
+        margin-bottom: 0.55rem;
+        font-size: clamp(1rem, 1.6vw, 1.35rem);
+        line-height: 1.2;
+      }
+
+      p,
+      li {
+        font-size: clamp(0.95rem, 1.5vw, 1.3rem);
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+
+      strong {
+        color: var(--blue-950);
+      }
+
+      ul,
+      ol {
+        margin: 0;
+        padding-left: 1.25em;
+      }
+
+      li + li {
+        margin-top: 0.55rem;
+      }
+
+      .lead {
+        max-width: 900px;
+        color: var(--muted);
+        font-size: clamp(1.05rem, 1.8vw, 1.55rem);
+      }
+
+      .eyebrow {
+        display: inline-block;
+        margin-bottom: 0.8rem;
+        padding: 0.42rem 0.72rem;
+        border-radius: 999px;
+        color: var(--blue-800);
+        background: var(--blue-100);
+        font-size: clamp(0.7rem, 1vw, 0.88rem);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .cover-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(150px, 0.28fr);
+        align-items: center;
+        gap: clamp(2rem, 6vw, 6rem);
+      }
+
+      .project-logo {
+        width: min(100%, 230px);
+        aspect-ratio: 1;
+        justify-self: end;
+        border: 6px solid var(--blue-100);
+        border-radius: 1.25rem;
+        object-fit: cover;
+        box-shadow: 0 18px 45px rgb(8 47 88 / 14%);
+      }
+
+      .team {
+        margin: 1.5rem 0 0;
+        color: var(--muted);
+        font-size: clamp(0.85rem, 1.25vw, 1.1rem);
+        line-height: 1.65;
+      }
+
+      .accent-line {
+        width: 5rem;
+        height: 4px;
+        margin: 0 0 1.35rem;
+        border: 0;
+        background: var(--gold);
+      }
+
+      .problem-flow,
+      .card-grid,
+      .scope-grid,
+      .status-grid {
+        display: grid;
+        gap: clamp(0.75rem, 1.6vw, 1.25rem);
+      }
+
+      .problem-flow {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .card-grid,
+      .status-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .scope-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .card,
+      .step,
+      .status-card {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 0.85rem;
+        background: var(--white);
+      }
+
+      .card {
+        padding: clamp(1rem, 2vw, 1.6rem);
+        box-shadow: 0 10px 25px rgb(8 47 88 / 6%);
+      }
+
+      .card p,
+      .step p,
+      .status-card p {
+        margin-bottom: 0;
+        color: var(--muted);
+      }
+
+      .flow-number,
+      .objective-number {
+        display: grid;
+        width: 2.2rem;
+        height: 2.2rem;
+        margin-bottom: 0.8rem;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--white);
+        background: var(--blue-650);
+        font-weight: 700;
+      }
+
+      .question-box {
+        position: relative;
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: clamp(1.5rem, 4vw, 3.5rem);
+        border-left: 8px solid var(--blue-650);
+        background: var(--blue-050);
+      }
+
+      .question-box p {
+        margin: 0;
+        color: var(--blue-950);
+        font-size: clamp(1.55rem, 3.25vw, 3.2rem);
+        font-weight: 700;
+        line-height: 1.25;
+        letter-spacing: -0.025em;
+      }
+
+      .objective-general {
+        margin-bottom: 1.25rem;
+        padding: 1.1rem 1.35rem;
+        border-radius: 0.85rem;
+        color: var(--white);
+        background: var(--blue-950);
+      }
+
+      .objective-general h3,
+      .objective-general p {
+        color: var(--white);
+      }
+
+      .objective-general p {
+        margin-bottom: 0;
+      }
+
+      .objective-list {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        padding: 0;
+        list-style: none;
+      }
+
+      .objective-list li {
+        margin: 0;
+        padding: 1rem;
+        border-top: 3px solid var(--blue-650);
+        background: var(--blue-050);
+      }
+
+      .objective-number {
+        width: 1.8rem;
+        height: 1.8rem;
+        margin-bottom: 0.55rem;
+        font-size: 0.85rem;
+      }
+
+      .scope-item {
+        min-height: 7rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        background: var(--blue-050);
+      }
+
+      .scope-item span {
+        display: block;
+        margin-bottom: 0.45rem;
+        color: var(--blue-650);
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      .scope-item p {
+        margin: 0;
+        font-size: clamp(0.84rem, 1.2vw, 1.05rem);
+        line-height: 1.35;
+      }
+
+      .boundary {
+        margin: 1.2rem 0 0;
+        padding: 0.8rem 1rem;
+        border: 1px dashed var(--blue-650);
+        border-radius: 0.7rem;
+        color: var(--muted);
+        background: var(--white);
+        font-size: clamp(0.85rem, 1.15vw, 1rem);
+      }
+
+      .concept-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .concept-list span {
+        padding: 0.7rem 0.9rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--blue-950);
+        background: var(--blue-050);
+        font-size: clamp(0.83rem, 1.25vw, 1.08rem);
+        font-weight: 700;
+      }
+
+      .concept-summary {
+        max-width: 950px;
+        margin-bottom: 0;
+        padding: 1.1rem 1.3rem;
+        border-left: 4px solid var(--gold);
+        color: var(--muted);
+        background: #fffdf7;
+      }
+
+      .method-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .method-tags span {
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.4rem;
+        color: var(--blue-800);
+        background: var(--blue-100);
+        font-size: clamp(0.78rem, 1.1vw, 0.98rem);
+        font-weight: 700;
+      }
+
+      .method-steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+      }
+
+      .step {
+        position: relative;
+        padding: 1.2rem;
+        border-top: 5px solid var(--blue-650);
+      }
+
+      .step small {
+        display: block;
+        margin-bottom: 0.4rem;
+        color: var(--blue-650);
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .architecture {
+        display: grid;
+        grid-template-columns: 1fr auto 1.3fr;
+        align-items: stretch;
+        gap: 1rem;
+      }
+
+      .architecture-box {
+        display: grid;
+        min-height: 12rem;
+        align-content: center;
+        padding: 1.4rem;
+        border: 1px solid var(--line);
+        border-radius: 1rem;
+        background: var(--blue-050);
+      }
+
+      .architecture-box.backend {
+        color: var(--white);
+        border-color: var(--blue-950);
+        background: var(--blue-950);
+      }
+
+      .architecture-box.backend h3,
+      .architecture-box.backend p,
+      .architecture-box.backend strong {
+        color: var(--white);
+      }
+
+      .architecture-box p {
+        margin-bottom: 0;
+      }
+
+      .arrow {
+        align-self: center;
+        color: var(--blue-650);
+        font-size: clamp(2rem, 4vw, 4rem);
+        font-weight: 700;
+      }
+
+      .status-card {
+        padding: clamp(1.1rem, 2vw, 1.6rem);
+      }
+
+      .status-card.confirmed {
+        border-top: 5px solid #23855b;
+      }
+
+      .status-card.pending {
+        border-top: 5px solid var(--gold);
+      }
+
+      .status-card ul {
+        color: var(--muted);
+      }
+
+      .review-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        padding: 0;
+        list-style: none;
+      }
+
+      .review-list li {
+        position: relative;
+        margin: 0;
+        padding: 1.15rem 1.15rem 1.15rem 3.5rem;
+        border: 1px solid var(--line);
+        border-radius: 0.8rem;
+        background: var(--white);
+      }
+
+      .review-list li::before {
+        position: absolute;
+        top: 1.05rem;
+        left: 1rem;
+        display: grid;
+        width: 1.8rem;
+        height: 1.8rem;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--white);
+        background: var(--blue-650);
+        content: "?";
+        font-weight: 700;
+      }
+
+      .closing {
+        margin-top: 1.5rem;
+        color: var(--blue-950);
+        font-size: clamp(1rem, 1.6vw, 1.3rem);
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .slide-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        color: var(--muted);
+        font-size: clamp(0.68rem, 0.9vw, 0.8rem);
+      }
+
+      .slide-footer p {
+        margin: 0;
+        font-size: inherit;
+      }
+
+      .controls {
+        position: fixed;
+        right: max(1rem, env(safe-area-inset-right));
+        bottom: max(1rem, env(safe-area-inset-bottom));
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.42rem;
+        border: 1px solid rgb(255 255 255 / 50%);
+        border-radius: 999px;
+        background: rgb(8 47 88 / 92%);
+        box-shadow: 0 8px 25px rgb(8 47 88 / 24%);
+      }
+
+      .control-button {
+        display: grid;
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        color: var(--white);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .control-button:hover,
+      .control-button:focus-visible {
+        background: var(--blue-650);
+        outline: 2px solid var(--white);
+        outline-offset: 1px;
+      }
+
+      .control-button:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .counter {
+        min-width: 3.2rem;
+        color: var(--white);
+        font-size: 0.82rem;
+        font-variant-numeric: tabular-nums;
+        text-align: center;
+      }
+
+      .progress {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 19;
+        height: 5px;
+        background: var(--blue-100);
+      }
+
+      .progress-bar {
+        display: block;
+        width: 10%;
+        height: 100%;
+        background: var(--blue-650);
+        transition: width 180ms ease;
+      }
+
+      @media (max-width: 850px) {
+        .slide {
+          display: block;
+          padding: 1.25rem 1.2rem 5.5rem 1.8rem;
+        }
+
+        .slide-header {
+          margin-bottom: 2rem;
+        }
+
+        .slide-content {
+          align-self: auto;
+        }
+
+        .slide-footer {
+          margin-top: 2rem;
+        }
+
+        .cover-layout,
+        .card-grid,
+        .status-grid,
+        .architecture {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .project-logo {
+          display: none;
+        }
+
+        .problem-flow,
+        .objective-list,
+        .method-steps {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .scope-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .arrow {
+          display: none;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .scope-grid,
+        .review-list {
+          grid-template-columns: 1fr;
+        }
+
+        .scope-item {
+          min-height: auto;
+        }
+
+        .controls {
+          right: 50%;
+          transform: translateX(50%);
+        }
+
+        #fullscreen-button {
+          display: none;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .progress-bar {
+          transition: none;
+        }
+      }
+
+      @media print {
+        @page {
+          size: 13.333in 7.5in;
+          margin: 0;
+        }
+
+        body {
+          overflow: visible;
+          background: var(--white);
+        }
+
+        .deck {
+          width: auto;
+          height: auto;
+          overflow: visible;
+        }
+
+        .slide,
+        .slide[hidden] {
+          position: relative;
+          display: grid;
+          width: 13.333in;
+          height: 7.5in;
+          padding: 0.45in 0.65in 0.6in;
+          break-after: page;
+          overflow: hidden;
+        }
+
+        .cover-layout {
+          grid-template-columns: minmax(0, 1fr) minmax(150px, 0.28fr);
+        }
+
+        .problem-flow,
+        .objective-list,
+        .method-steps {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .card-grid,
+        .status-grid,
+        .review-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .scope-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .architecture {
+          grid-template-columns: 1fr auto 1.3fr;
+        }
+
+        .project-logo,
+        .arrow {
+          display: block;
+        }
+
+        .controls,
+        .progress {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck" aria-live="polite">
+      <section
+        class="slide"
+        data-title="Portada"
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label="1 de 10: Portada"
+      >
+        <header class="slide-header">
+          <p class="section-label">Seguimiento de proyecto de grado</p>
+          <p class="utap-mark">UTAP</p>
+        </header>
+        <div class="slide-content cover-layout">
+          <div>
+            <span class="eyebrow">Catálogo Web de Esenciales</span>
+            <h1>Sistema web para la gestión y publicación del catálogo</h1>
+            <hr class="accent-line" />
+            <p class="lead">
+              Presentación del planteamiento, alcance y estado actual para recibir
+              orientación académica.
+            </p>
+            <p class="team">
+              Janderson Santos Vega · Daniel Steven Contreras Lopez · Marlon Steev
+              Velasco Paz<br />
+              Ingeniería de Sistemas · Fundación Tecnológica Autónoma del Pacífico<br />
+              Septiembre de 2026
+            </p>
+          </div>
+          <img
+            class="project-logo"
+            src="../sources/logo_esenciales.jpg"
+            alt="Logotipo del emprendimiento Esenciales"
+          />
+        </div>
+        <footer class="slide-footer">
+          <p>I.A. Aplicada al Desarrollo Full Stack</p>
+          <p>1</p>
+        </footer>
+      </section>
+
+      <section
+        class="slide"
+        data-title="Situación actual"
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label="2 de 10: Situación actual"
+        hidden
+      >
+        <header class="slide-header">
+          <p class="section-label">Introducción</p>
+          <p class="utap-mark">UTAP</p>
+        </header>
+        <div class="slide-content">
+          <h2>¿Qué ocurre actualmente?</h2>
+          <div class="problem-flow">
+            <article class="card">
+              <span class="flow-number">1</span>
+              <h3>Información dispersa</h3>
+              <p>El catálogo se administra en Excel, fotografías y conversaciones.</p>
+            </article>
+            <article class="card">
+              <span class="flow-number">2</span>
+              <h3>Atención manual</h3>
+              <p>
+                Los productos se presentan por WhatsApp y pueden enviarse cerca de
+                cincuenta imágenes por consulta.
+              </p>
+            </article>
+            <article class="card">
+              <span class="flow-number">3</span>
+              <h3>Consulta limitada</h3>
+              <p>
+                Productos, precios y disponibilidad no están reunidos en un medio
+                claro y organizado.
+              </p>
+            </article>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <p>Necesidad identificada en el emprendimiento Esenciales</p>
+          <p>2</p>
+        </footer>
+      </section>
+
+      <section
+        class="slide"
+        data-title="Pregunta problema"
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label="3 de 10: Pregunta problema"
+        hidden
+      >
+        <header class="slide-header">
+          <p class="section-label">Planteamiento</p>
+          <p class="utap-mark">UTAP</p>
+        </header>
+        <div class="slide-content">
+          <h2>Pregunta problema</h2>
+          <blockquote class="question-box">
+            <p>
+              ¿Cómo desarrollar una aplicación web full stack que permita
+              centralizar la gestión, publicación y consulta del catálogo de
+              productos, precios y disponibilidad del emprendimiento Esenciales?
+            </p>
+          </blockquote>
+        </div>
+        <footer class="slide-footer">
+          <p>La pregunta orienta el diagnóstico, el desarrollo y la validación</p>
+          <p>3</p>
+        </footer>
+      </section>
+
+      <section
+        class="slide"
+        data-title="Objetivos"
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label="4 de 10: Objetivos"
+        hidden
+      >
+        <header class="slide-header">
+          <p class="section-label">Dirección del proyecto</p>
+          <p class="utap-mark">UTAP</p>
+        </header>
+        <div class="slide-content">
+          <h2>Objetivos</h2>
+          <article class="objective-general">
+            <h3>Objetivo general</h3>
+            <p>
+              Desarrollar una aplicación web full stack para centralizar la gestión,
+              publicación y consulta del catálogo de productos, precios y
+              disponibilidad de Esenciales.
+            </p>
+          </article>
+          <ol class="objective-list">
+            <li>
+              <span class="objective-number">1</span>
+              <strong>Diagnosticar</strong> el proceso actual y sus dificultades de
+              organización y consulta.
+            </li>
+            <li>
+              <span class="objective-number">2</span>
+              <strong>Desarrollar</strong> la solución con gestión administrativa,
+              catálogo público y solicitudes de compra.
+            </li>
+            <li>
+              <span class="objective-number">3</span>
+              <strong>Validar</strong> mediante pruebas funcionales y despliegue el
+              cumplimiento de los requisitos.
+            </li>
+          </ol>
+        </div>
+        <footer class="slide-footer">
+          <p>Tres etapas: diagnóstico, desarrollo y validación</p>
+          <p>4</p>
+        </footer>
+      </section>
+
+      <section
+        class="slide"
+        data-title="Alcance del MVP"
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label="5 de 10: Alcance del MVP"
+        hidden
+      >
+        <header class="slide-header">
+          <p class="section-label">Solución propuesta</p>
+          <p class="utap-mark">UTAP</p>
+        </header>
+        <div class="slide-content">
+          <h2>Alcance del producto mínimo viable</h2>
+          <div class="scope-grid">
+            <article class="scope-item">
+              <span>01–02</span>
+              <p>Acceso administrativo y estructura del catálogo.</p>
+            </article>
+            <article class="scope-item">
+              <span>03–04</span>
+              <p>Productos, presentaciones, precios, imágenes e inventario.</p>
+            </article>
+            <article class="scope-item">
+              <span>05–06</span>
+              <p>Catálogo público, búsqueda, filtros y navegación.</p>
+            </article>
+            <article class="scope-item">
+              <span>07–08</span>
+              <p>Carrito, solicitudes de compra y gestión de sus estados.</p>
+            </article>
+          </div>
+          <p class="boundary">
+            <strong>Límite:</strong> el cliente no necesita una cuenta, no se procesan
+            pagos y una solicitud no equivale a una venta. La conversación comercial
+            puede continuar voluntariamente por WhatsApp.
+          </p>
+        </div>
+        <footer class="slide-footer">
+          <p>MVP exclusivo para el emprendimiento Esenciales</p>
+          <p>5</p>
+        </footer>
+      </section>
+
+      <section
+        class="slide"
+        data-title="Marco conceptual"
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label="6 de 10: Marco conceptual"
+        hidden
+      >
+        <header class="slide-header">
+          <p class="section-label">Fundamentos</p>
+          <p class="utap-mark">UTAP</p>
+        </header>
+        <div class="slide-content">
+          <h2>Marco conceptual</h2>
+          <div class="concept-list" aria-label="Conceptos principales">
+            <span>Gestión de información de producto y catálogo digital</span>
+            <span>Aplicación web full stack y modelo cliente-servidor</span>
+            <span>Base de datos relacional e integridad de los datos</span>
+            <span>Publicación de contenido multimedia</span>
+            <span>Gestión de inventario y disponibilidad comercial</span>
+          </div>
+          <p class="concept-summary">
+            Estos conceptos sustentan una solución en la que la información del
+            producto se organiza, se publica con imágenes y se mantiene consistente,
+            especialmente al administrar precios, existencias y solicitudes.
+          </p>
+        </div>
+        <footer class="slide-footer">
+          <p>Síntesis de los cinco apartados desarrollados en el informe</p>
+          <p>6</p>
+        </footer>
+      </section>
+
+      <section
+        class="slide"
+        data-title="Metodología"
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label="7 de 10: Metodología"
+        hidden
+      >
+        <header class="slide-header">
+          <p class="section-label">Plan de trabajo</p>
+          <p class="utap-mark">UTAP</p>
+        </header>
+        <div class="slide-content">
+          <h2>Metodología propuesta</h2>
+          <div class="method-tags">
+            <span>Investigación aplicada</span>
+            <span>Alcance descriptivo y propositivo</span>
+            <span>Aprendizaje Basado en Proyectos</span>
+            <span>Proceso iterativo e incremental</span>
+          </div>
+          <div class="method-steps">
+            <article class="step">
+              <small>Fase 1</small>
+              <h3>Diagnóstico</h3>
+              <p>Proceso actual, dificultades, requisitos y reglas de negocio.</p>
+            </article>
+            <article class="step">
+              <small>Fase 2</small>
+              <h3>Desarrollo e integración</h3>
+              <p>Frontend, base de datos, autenticación, imágenes y operaciones.</p>
+            </article>
+            <article class="step">
+              <small>Fase 3</small>
+              <h3>Validación y despliegue</h3>
+              <p>Pruebas funcionales, correcciones, validación y publicación.</p>
+            </article>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <p>Las actividades pendientes se presentan como plan, no como resultados</p>
+          <p>7</p>
+        </footer>
+      </section>
+
+      <section
+        class="slide"
+        data-title="Propuesta técnica"
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label="8 de 10: Propuesta técnica"
+        hidden
+      >
+        <header class="slide-header">
+          <p class="section-label">Arquitectura prevista</p>
+          <p class="utap-mark">UTAP</p>
+        </header>
+        <div class="slide-content">
+          <h2>Propuesta técnica</h2>
+          <div class="architecture">
+            <article class="architecture-box">
+              <span class="eyebrow">Cliente web</span>
+              <h3>HTML5 · CSS3 · JavaScript</h3>
+              <p>Interfaz pública y administrativa construida con Vite.</p>
+            </article>
+            <div class="arrow" aria-hidden="true">→</div>
+            <article class="architecture-box backend">
+              <span class="eyebrow">Servicios de backend</span>
+              <h3>Supabase + PostgreSQL</h3>
+              <p>
+                <strong>Auth</strong> para acceso administrativo ·
+                <strong>Storage</strong> para imágenes · <strong>RLS y RPC</strong>
+                para seguridad y operaciones críticas.
+              </p>
+            </article>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <p>Supabase fue autorizado por el profesor en sustitución de Express</p>
+          <p>8</p>
+        </footer>
+      </section>
+
+      <section
+        class="slide"
+        data-title="Avance actual"
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label="9 de 10: Avance actual"
+        hidden
+      >
+        <header class="slide-header">
+          <p class="section-label">Estado verificable</p>
+          <p class="utap-mark">UTAP</p>
+        </header>
+        <div class="slide-content">
+          <h2>¿Cómo vamos?</h2>
+          <div class="status-grid">
+            <article class="status-card confirmed">
+              <h3>Avances consolidados</h3>
+              <ul>
+                <li>Problema, pregunta y objetivos definidos.</li>
+                <li>Alcance del MVP, requisitos y reglas de negocio.</li>
+                <li>Modelo lógico y decisiones técnicas documentadas.</li>
+                <li>Base del frontend creada con Vite.</li>
+              </ul>
+            </article>
+            <article class="status-card pending">
+              <h3>Trabajo pendiente</h3>
+              <ul>
+                <li>Crear y configurar el proyecto Supabase.</li>
+                <li>Implementar las funcionalidades del catálogo.</li>
+                <li>Integrar autenticación, imágenes e inventario.</li>
+                <li>Ejecutar pruebas, validación y despliegue.</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <p>No se presentan todavía resultados ni conclusiones definitivas</p>
+          <p>9</p>
+        </footer>
+      </section>
+
+      <section
+        class="slide"
+        data-title="Orientación solicitada"
+        role="group"
+        aria-roledescription="diapositiva"
+        aria-label="10 de 10: Orientación solicitada"
+        hidden
+      >
+        <header class="slide-header">
+          <p class="section-label">Cierre</p>
+          <p class="utap-mark">UTAP</p>
+        </header>
+        <div class="slide-content">
+          <h2>Orientación que buscamos</h2>
+          <ul class="review-list">
+            <li>¿El problema y los objetivos tienen la precisión esperada?</li>
+            <li>¿La metodología y sus instrumentos son adecuados y suficientes?</li>
+            <li>¿El alcance del MVP es viable para un proyecto de grado?</li>
+            <li>¿Qué evidencias se esperan para validar el producto y el informe?</li>
+          </ul>
+          <p class="closing">
+            Queremos corregir oportunamente el enfoque antes de avanzar con la
+            implementación y la validación.
+          </p>
+        </div>
+        <footer class="slide-footer">
+          <p>Gracias</p>
+          <p>10</p>
+        </footer>
+      </section>
+    </main>
+
+    <nav class="controls" aria-label="Controles de la presentación">
+      <button
+        class="control-button"
+        id="previous-button"
+        type="button"
+        aria-label="Diapositiva anterior"
+        title="Anterior (flecha izquierda)"
+      >
+        ←
+      </button>
+      <span class="counter" id="slide-counter" aria-live="off">1 / 10</span>
+      <button
+        class="control-button"
+        id="next-button"
+        type="button"
+        aria-label="Diapositiva siguiente"
+        title="Siguiente (flecha derecha)"
+      >
+        →
+      </button>
+      <button
+        class="control-button"
+        id="fullscreen-button"
+        type="button"
+        aria-label="Activar pantalla completa"
+        title="Pantalla completa"
+      >
+        ⛶
+      </button>
+    </nav>
+
+    <div class="progress" aria-hidden="true">
+      <span class="progress-bar" id="progress-bar"></span>
+    </div>
+
+    <script>
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const previousButton = document.querySelector("#previous-button");
+      const nextButton = document.querySelector("#next-button");
+      const fullscreenButton = document.querySelector("#fullscreen-button");
+      const slideCounter = document.querySelector("#slide-counter");
+      const progressBar = document.querySelector("#progress-bar");
+      let currentSlide = 0;
+      let touchStartX = 0;
+
+      const getSlideFromHash = () => {
+        const number = Number.parseInt(window.location.hash.replace("#", ""), 10);
+        return Number.isInteger(number) && number >= 1 && number <= slides.length
+          ? number - 1
+          : 0;
+      };
+
+      const showSlide = (index, updateHash = true) => {
+        currentSlide = Math.max(0, Math.min(index, slides.length - 1));
+
+        slides.forEach((slide, slideIndex) => {
+          slide.hidden = slideIndex !== currentSlide;
+        });
+
+        previousButton.disabled = currentSlide === 0;
+        nextButton.disabled = currentSlide === slides.length - 1;
+        slideCounter.textContent = `${currentSlide + 1} / ${slides.length}`;
+        progressBar.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+        document.title = `${slides[currentSlide].dataset.title} | Catálogo Web de Esenciales`;
+
+        if (updateHash) {
+          history.replaceState(null, "", `#${currentSlide + 1}`);
+        }
+      };
+
+      const goToPrevious = () => showSlide(currentSlide - 1);
+      const goToNext = () => showSlide(currentSlide + 1);
+
+      previousButton.addEventListener("click", goToPrevious);
+      nextButton.addEventListener("click", goToNext);
+
+      fullscreenButton.addEventListener("click", async () => {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+          return;
+        }
+
+        await document.documentElement.requestFullscreen();
+      });
+
+      document.addEventListener("fullscreenchange", () => {
+        const isFullscreen = Boolean(document.fullscreenElement);
+        fullscreenButton.setAttribute(
+          "aria-label",
+          isFullscreen ? "Salir de pantalla completa" : "Activar pantalla completa",
+        );
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (["ArrowRight", "PageDown", " "].includes(event.key)) {
+          event.preventDefault();
+          goToNext();
+        }
+
+        if (["ArrowLeft", "PageUp"].includes(event.key)) {
+          event.preventDefault();
+          goToPrevious();
+        }
+
+        if (event.key === "Home") {
+          event.preventDefault();
+          showSlide(0);
+        }
+
+        if (event.key === "End") {
+          event.preventDefault();
+          showSlide(slides.length - 1);
+        }
+      });
+
+      document.addEventListener(
+        "touchstart",
+        (event) => {
+          touchStartX = event.changedTouches[0].clientX;
+        },
+        { passive: true },
+      );
+
+      document.addEventListener(
+        "touchend",
+        (event) => {
+          const distance = event.changedTouches[0].clientX - touchStartX;
+
+          if (Math.abs(distance) < 50) return;
+          distance < 0 ? goToNext() : goToPrevious();
+        },
+        { passive: true },
+      );
+
+      window.addEventListener("hashchange", () => {
+        showSlide(getSlideFromHash(), false);
+      });
+
+      showSlide(getSlideFromHash(), false);
+    </script>
+  </body>
+</html>

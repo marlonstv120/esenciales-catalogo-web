@@ -4,6 +4,8 @@ Registro de trabajo para fuentes que potencialmente se utilizarán en el informe
 
 Estados sugeridos: `Pendiente de verificar`, `Verificada`, `Citada en borrador`, `Descartada`.
 
+Para artículos presentados como Q1 o Q2, el registro debe conservar además la base consultada, la categoría temática, el año del cuartil y la evidencia de verificación. La existencia de un DOI no acredita por sí sola la indexación ni el cuartil. Las fuentes técnicas primarias se mantienen cuando son la autoridad directa sobre una tecnología o estándar, aunque estén publicadas en inglés.
+
 ```text
 Tema:
 Fuente:
@@ -14,19 +16,51 @@ Referencia APA:
 Estado:
 ```
 
-## Desarrollo web full stack y metodología del curso
+## Adopción de TIC y comercio electrónico en mipymes
 
-**Tema:** contexto académico, competencias full stack y Aprendizaje Basado en Proyectos.
+**Tema:** relación entre aptitud digital, gestión estratégica de TIC, adopción de comercio electrónico y desempeño organizacional.
 
-**Fuente:** Brochure Curso Opción de Grado (64 horas), Desarrollo Web Full Stack.
+**Fuente:** artículo en español publicado en *Estudios Gerenciales*.
 
-**URL/identificador:** `docs/sources/BROCHURE_COG_DESARROLLO_WEB_FULLSTACK.md`.
+**URL/identificador:** https://doi.org/10.1016/j.estger.2015.12.003
 
-**Fecha de consulta:** 5 de septiembre de 2026.
+**Fecha de consulta:** 11 de septiembre de 2026.
 
-**Sección donde se utiliza:** Introducción y marco conceptual.
+**Sección donde se utiliza:** Introducción, estudio de caso.
 
-**Referencia APA de trabajo:** Tecnológica Autónoma del Pacífico. (2026). *Brochure curso opción de grado (64 horas): Desarrollo web full stack* [Brochure].
+**Referencia APA de trabajo:** Alderete, M. V., Jones, C., & Motta, J. (2016). Gestión estratégica de tecnologías de información y comunicación y adopción del comercio electrónico en mipymes de Córdoba, Argentina. *Estudios Gerenciales, 32*(138), 4–13. https://doi.org/10.1016/j.estger.2015.12.003
+
+**Estado:** Citada en borrador por su pertinencia; no se presenta como Q1/Q2 mientras no exista evidencia histórica suficiente del cuartil aplicable.
+
+## Gestión estratégica de inventarios
+
+**Tema:** relación entre políticas de inventario, características de los productos y estrategia competitiva.
+
+**Fuente:** artículo en español publicado en *Ingeniare. Revista Chilena de Ingeniería*.
+
+**URL/identificador:** https://doi.org/10.4067/S0718-33052020000100133
+
+**Fecha de consulta:** 11 de septiembre de 2026.
+
+**Sección donde se utiliza:** Marco conceptual, gestión de inventario y disponibilidad comercial.
+
+**Referencia APA de trabajo:** González, A. (2020). Un modelo de gestión de inventarios basado en estrategia competitiva. *Ingeniare. Revista Chilena de Ingeniería, 28*(1), 133–142. https://doi.org/10.4067/S0718-33052020000100133
+
+**Estado:** Citada en borrador como fuente complementaria; no se presenta como Q1/Q2.
+
+## Servicios de backend con Supabase
+
+**Tema:** arquitectura de Supabase como plataforma de servicios de backend.
+
+**Fuente:** documentación oficial de Supabase.
+
+**URL/identificador:** https://supabase.com/docs/guides/getting-started/architecture
+
+**Fecha de consulta:** 7 de septiembre de 2026.
+
+**Sección donde se utiliza:** Marco conceptual, aplicación web full stack y modelo cliente-servidor.
+
+**Referencia APA de trabajo:** Supabase. (s. f.). *Architecture*. Recuperado el 7 de septiembre de 2026, de https://supabase.com/docs/guides/getting-started/architecture
 
 **Estado:** Citada en borrador.
 

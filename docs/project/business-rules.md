@@ -42,7 +42,7 @@ Se considera stock bajo una presentación activa de venta inmediata con entre un
 
 ### RN-10 - Revalidación y concurrencia
 
-Antes de confirmar, el backend vuelve a comprobar el stock de todas las líneas de venta inmediata. La validación, el descuento y el cambio de estado deben ejecutarse dentro de una transacción para impedir stock negativo, doble descuento o confirmaciones parciales.
+Antes de confirmar, una función de PostgreSQL vuelve a comprobar el stock de todas las líneas de venta inmediata. La validación, el descuento y el cambio de estado deben ejecutarse dentro de una transacción para impedir stock negativo, doble descuento o confirmaciones parciales.
 
 ### RN-11 - Disponibilidad por presentación
 
@@ -132,6 +132,16 @@ Una presentación inactiva se conserva para mantener relaciones históricas, per
 ### RN-25 - Precio de referencia del producto
 
 Cuando se implementen los filtros y ordenamientos SHOULD de precio, se usa el precio efectivo de presentaciones activas que admitan solicitudes. El filtro coincide si al menos una está dentro del rango y el orden utiliza el menor precio efectivo de cada producto. `Más recientes` utiliza la fecha de creación del producto.
+
+## Aceptación de términos y tratamiento de datos
+
+### RN-26 - Aceptación expresa por solicitud
+
+El visitante debe aceptar expresamente los Términos y condiciones y la Política de tratamiento de datos vigentes antes de registrar cada solicitud. El control debe iniciar desmarcado y la función de registro debe rechazar la operación si no recibe la aceptación.
+
+Cada solicitud conserva la fecha y hora de aceptación y las versiones de ambos documentos que fueron aceptadas. Esta evidencia pertenece a la solicitud porque el MVP no crea cuentas ni una entidad consolidada de clientes.
+
+La autorización para recibir publicidad o novedades no forma parte del MVP. Si se incorpora posteriormente, deberá ser opcional, independiente y no estar marcada previamente.
 
 ## Pendientes técnicos relacionados
 

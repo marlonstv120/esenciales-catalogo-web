@@ -9,11 +9,15 @@ Esta carpeta es la fuente permanente de contexto del proyecto. Las fuentes origi
 - [Requisitos](project/requirements.md): requisitos funcionales y no funcionales identificados.
 - [Reglas de negocio](project/business-rules.md): comportamiento obligatorio del dominio.
 - [Actores y flujos](project/actors-and-flows.md): participantes, permisos y recorridos principales.
+- [Guía de wireframes](project/wireframe-guide.md): pantallas, estados y proceso para bocetar en papel y trasladar el diseño a Figma.
+- [Identidad visual](project/visual-identity.md): guía derivada del logo para orientar colores, jerarquía y estilo de la interfaz.
 - [Arquitectura](architecture/overview.md): decisiones técnicas confirmadas.
 - [Modelo lógico de datos](architecture/data-model.md): entidades, restricciones y transacciones propuestas para PostgreSQL.
 - [Desarrollo](development/workflow.md): flujo de trabajo, [convenciones](development/conventions.md) y [herramientas recomendadas](development/tooling.md).
 - [Académico](academic/README.md): contexto del curso e informe en construcción.
 - [Historial](history/project-log.md): trazabilidad e hitos relevantes.
+- [Entregables del informe](../informe/README.md): briefing, requisitos, diseno, arquitectura y evidencias organizados para los hitos academicos.
+- [Registro de uso de IA](../ia/README.md): evidencia academica revisada por el equipo.
 
 ## Política de actualización
 

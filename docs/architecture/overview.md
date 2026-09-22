@@ -1,25 +1,25 @@
 # Arquitectura
 
-## Tecnologías exigidas por el curso
+## Tecnologías base del curso
 
-El curso establece HTML5, CSS3, JavaScript, Node.js, Express y Git/GitHub como tecnologías a utilizar. Esta exigencia académica no define por sí sola una arquitectura adicional.
+El curso establece HTML5, CSS3, JavaScript, Node.js, Express y Git/GitHub como tecnologías base. Posteriormente, el profesor autorizó emplear Supabase en sustitución de Express para agilizar el desarrollo. La aplicación conservará HTML5, CSS3 y JavaScript sin framework en el cliente; Node.js y Express no formarán parte de la arquitectura objetivo del MVP.
 
 ## Decisiones técnicas confirmadas
 
-PostgreSQL será el sistema gestor de base de datos del proyecto. Consulte [ADR-001](decisions/ADR-001-postgresql-como-sgbd.md).
+PostgreSQL será el sistema gestor de base de datos del proyecto y será provisto por Supabase. Consulte [ADR-001](decisions/ADR-001-postgresql-como-sgbd.md) y [ADR-007](decisions/ADR-007-servicios-backend-con-supabase.md).
 
 El frontend utilizará HTML5, CSS3 y JavaScript sin framework adicional. Consulte [ADR-002](decisions/ADR-002-frontend-sin-framework.md).
 
-El MVP se implementará como un monolito modular con Node.js y Express: Express servirá el frontend estático y expondrá la API bajo `/api`. Consulte [ADR-003](decisions/ADR-003-monolito-modular-con-express.md).
+El frontend estático consumirá los servicios de Supabase mediante su cliente JavaScript. Las operaciones de dominio críticas se expondrán como funciones RPC de PostgreSQL, no como una API propia de Express. Consulte [ADR-007](decisions/ADR-007-servicios-backend-con-supabase.md).
 
-El acceso a PostgreSQL utilizará el paquete `pg` y consultas SQL explícitas, sin ORM. Consulte [ADR-004](decisions/ADR-004-acceso-postgresql-con-pg-y-sql-explicito.md).
+Las migraciones, restricciones, políticas RLS y funciones RPC se mantendrán como SQL versionado. El cliente web no tendrá acceso a credenciales administrativas ni usará una conexión directa con privilegios de base de datos.
 
-La autenticación administrativa utilizará sesiones de servidor identificadas mediante cookie segura. Consulte [ADR-005](decisions/ADR-005-autenticacion-administrativa-con-sesiones.md).
+La autenticación administrativa utilizará Supabase Auth. Las políticas RLS y los privilegios de funciones autorizarán cada operación según el usuario autenticado.
 
-Las imágenes de productos se almacenarán en un servicio externo; PostgreSQL conservará sus URL y metadatos necesarios. Consulte [ADR-006](decisions/ADR-006-almacenamiento-externo-de-imagenes.md).
+Las imágenes de productos se almacenarán en Supabase Storage; PostgreSQL conservará su ruta, URL pública cuando aplique y metadatos necesarios. Consulte [ADR-006](decisions/ADR-006-almacenamiento-externo-de-imagenes.md) y ADR-007.
 
 ## Pendiente de definición
 
-El [modelo lógico de datos propuesto](data-model.md) define las entidades, restricciones y transacciones críticas que deberán materializarse en migraciones SQL. Sigue pendiente validar sus tipos e índices concretos al implementarlo.
+El [modelo lógico de datos propuesto](data-model.md) define las entidades, restricciones y transacciones críticas que deberán materializarse en migraciones SQL y funciones RPC. Sigue pendiente validar sus tipos, índices, políticas RLS y funciones concretas al implementarlo.
 
-La arquitectura de implementación debe concretar el proveedor de imágenes, el almacenamiento específico de sesiones, la validación técnica del teléfono, la estructura detallada de módulos y el proveedor de despliegue. Cualquier cambio a las decisiones aceptadas deberá justificarse y aprobarse como una decisión técnica relevante.
+La arquitectura de implementación debe concretar las políticas RLS de cada tabla y bucket, la validación técnica del teléfono, las funciones RPC, la estructura del cliente y el proveedor de despliegue del frontend. Cualquier cambio a las decisiones aceptadas deberá justificarse y aprobarse como una decisión técnica relevante.

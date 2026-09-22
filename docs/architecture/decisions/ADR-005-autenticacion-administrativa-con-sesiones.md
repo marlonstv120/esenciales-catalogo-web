@@ -2,11 +2,15 @@
 
 ## Estado
 
-Accepted
+Superseded
+
+Reemplazado por [ADR-007](ADR-007-servicios-backend-con-supabase.md) el 2026-09-07.
 
 ## Contexto
 
 El MVP requiere que el administrador inicie y cierre sesión y que las vistas y operaciones administrativas estén protegidas. La aplicación se servirá desde un único origen mediante Express, y no se requiere autenticación para visitantes ni clientes.
+
+Esta decisión se conserva como antecedente. Al reemplazarse Express por Supabase, la autenticación y la sesión administrada pasan a Supabase Auth.
 
 ## Decisión
 

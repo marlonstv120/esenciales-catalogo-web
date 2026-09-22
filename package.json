@@ -2,13 +2,17 @@
   "name": "esenciales-catalogo-web",
   "version": "1.0.0",
   "description": "Aplicación web Full Stack para la **gestión y publicación del catálogo de productos de Esenciales**, desarrollada como proyecto integrador del Curso de Opción de Grado en Desarrollo Web Full Stack.",
-  "main": "index.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "supabase:reset": "supabase db reset"
   },
   "repository": {
     "type": "git",
@@ -17,15 +21,15 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/marlonstv120/esenciales-catalogo-web/issues"
   },
   "homepage": "https://github.com/marlonstv120/esenciales-catalogo-web#readme",
-  "dependencies": {
-    "express": "^5.2.1"
-  },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "supabase": "^2.117.0",
+    "vite": "^8.2.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0"
   }
 }

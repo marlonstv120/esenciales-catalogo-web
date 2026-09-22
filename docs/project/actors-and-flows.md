@@ -16,7 +16,7 @@ Usuario autenticado responsable de:
 - Corregir solicitudes Nuevas dentro de los límites permitidos.
 - Confirmar, entregar o cancelar solicitudes.
 
-No se incluye inicialmente registro público de administradores, recuperación automática de contraseña ni permisos avanzados.
+No se incluye registro público de administradores ni gestión avanzada de roles. El administrador puede recuperar su contraseña mediante el correo asociado en Supabase Auth.
 
 ### Cliente o visitante
 
@@ -65,7 +65,9 @@ Revisar carrito y valor total de productos
         ↓
 Ingresar nombre, teléfono y datos opcionales
         ↓
-Backend revalida la solicitud
+Consultar y aceptar términos y política de datos
+        ↓
+Función de PostgreSQL revalida la solicitud
         ↓
 Registrar solicitud y precios históricos en PostgreSQL
         ↓
@@ -77,6 +79,8 @@ Cliente decide si continúa por WhatsApp
 ```
 
 La solicitud queda registrada incluso si el cliente no abre o no envía el mensaje de WhatsApp.
+
+El cliente no crea una cuenta al aceptar los documentos. La aceptación corresponde exclusivamente a la solicitud que registra.
 
 ## Flujo principal administrativo
 
@@ -97,7 +101,7 @@ Corrige datos o cantidades permitidas si el cliente lo solicita
         ↓
 Confirma la solicitud
         ↓
-Backend revalida y descuenta inventario inmediato
+Función de PostgreSQL revalida y descuenta inventario inmediato
         ↓
 Marca la solicitud como Entregada o Cancelada
 ```
@@ -111,7 +115,7 @@ Mientras la solicitud esté Nueva:
 3. El administrador puede modificar cantidades o retirar líneas existentes.
 4. El sistema conserva los precios históricos.
 5. El sistema impide agregar o duplicar líneas, cambiar presentaciones, alterar precios o dejar la solicitud vacía.
-6. El backend vuelve a validar cantidades y stock.
+6. Una función de PostgreSQL vuelve a validar cantidades y stock.
 7. La solicitud corregida puede confirmarse o cancelarse.
 
 ## Flujo de cambio después de confirmar

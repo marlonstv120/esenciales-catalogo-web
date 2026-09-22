@@ -14,6 +14,8 @@ Almacenar los archivos de imágenes de producto en un servicio externo especiali
 
 El proveedor concreto se elegirá antes de implementar la carga de imágenes y deberá ser compatible con el despliegue seleccionado.
 
+La selección posterior de Supabase Storage como proveedor se registra en [ADR-007](ADR-007-servicios-backend-con-supabase.md).
+
 ## Motivos
 
 - Evita depender del disco local o efímero del servidor de la aplicación.

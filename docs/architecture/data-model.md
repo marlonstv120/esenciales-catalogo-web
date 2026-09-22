@@ -2,18 +2,18 @@
 
 ## Estado
 
-Diseño técnico propuesto el 5 de septiembre de 2026. Deriva del alcance funcional MVP V1 y de las decisiones de datos confirmadas durante su definición. Debe validarse contra las migraciones SQL antes de considerarse implementado.
+Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. Deriva del alcance funcional MVP V1 y de las decisiones de datos confirmadas durante su definición. Debe validarse contra las migraciones SQL antes de considerarse implementado.
 
 ## Propósito
 
-Este documento define la estructura lógica inicial en PostgreSQL para administrar el catálogo, las solicitudes de compra y las sesiones administrativas. También establece las transacciones necesarias para preservar precios históricos e inventario consistente.
+Este documento define la estructura lógica inicial en PostgreSQL para administrar el catálogo y las solicitudes de compra. Supabase Auth administrará las credenciales y sesiones administrativas fuera de las tablas de negocio. También establece las transacciones necesarias para preservar precios históricos e inventario consistente.
 
-No sustituye las reglas de negocio en [business-rules.md](../project/business-rules.md). Las migraciones SQL y el código de Express deberán cumplir ambos documentos.
+No sustituye las reglas de negocio en [business-rules.md](../project/business-rules.md). Las migraciones SQL, políticas RLS y funciones RPC deberán cumplir ambos documentos.
 
 ## Convenciones
 
 - Tablas y columnas en español, minúsculas y sin tildes.
-- Las claves primarias se denominarán `id` y usarán enteros generados por PostgreSQL.
+- Las claves primarias de las tablas de negocio se denominarán `id` y usarán enteros generados por PostgreSQL, excepto `usuarios_administrativos`, que usará el identificador UUID de Supabase Auth.
 - Las claves foráneas se denominarán `<entidad>_id`.
 - Las fechas se almacenarán con zona horaria (`timestamptz`).
 - Los precios se almacenarán como enteros en pesos colombianos, sin decimales.
@@ -22,8 +22,9 @@ No sustituye las reglas de negocio en [business-rules.md](../project/business-ru
 
 ## Decisiones confirmadas
 
-- El inicio de sesión administrativo utiliza `nombre_usuario`.
-- Las sesiones administrativas se almacenan en PostgreSQL.
+- Supabase Auth gestiona el correo electrónico, las credenciales y la sesión del administrador.
+- Supabase Auth gestiona el envío del enlace y el flujo de recuperación de contraseña administrativa.
+- `usuarios_administrativos` autoriza qué usuarios de Supabase Auth pueden administrar el sistema.
 - `genero` admite `hombre`, `mujer`, `unisex` o valor nulo.
 - `referencia` es opcional y única cuando existe.
 - Los detalles de una solicitud muestran el nombre actual del producto y la etiqueta actual de la presentación.
@@ -40,7 +41,7 @@ productos 1 --- N imagenes_producto
 solicitudes 1 --- N detalles_solicitud
 presentaciones 1 --- N detalles_solicitud
 
-usuarios_administrativos 1 --- N sesiones
+auth.users 1 --- 0..1 usuarios_administrativos
 ```
 
 La relación entre `detalles_solicitud` y `presentaciones` permite recuperar el nombre actual del producto y la presentación. La relación se preserva incluso cuando un producto o una presentación deja de estar activo.
@@ -51,14 +52,12 @@ La relación entre `detalles_solicitud` y `presentaciones` permite recuperar el 
 
 | Columna | Tipo lógico | Reglas principales |
 | --- | --- | --- |
-| `id` | entero generado | Clave primaria. |
-| `nombre_usuario` | texto | Obligatorio; único sin distinguir mayúsculas o minúsculas. |
-| `contrasena_hash` | texto | Obligatorio; nunca almacena la contraseña en texto plano. |
+| `id` | UUID | Clave primaria y referencia a `auth.users.id`. |
 | `activo` | booleano | Obligatorio; valor inicial `true`. |
 | `creado_en` | fecha con zona horaria | Obligatorio; valor inicial de la base de datos. |
 | `actualizado_en` | fecha con zona horaria | Obligatorio; se actualiza al modificar el registro. |
 
-No se incluye un rol hasta que se confirme el segundo rol autenticado.
+La autenticación se realiza con el correo y la contraseña administrados por Supabase Auth; no se duplican ni se almacenan contraseñas en las tablas públicas. No se incluye un rol hasta que se confirme el segundo rol autenticado.
 
 ### `categorias`
 
@@ -125,12 +124,12 @@ no_disponible                -> No disponible
 | `id` | entero generado | Clave primaria. |
 | `producto_id` | entero | Obligatorio; referencia a `productos`. |
 | `url` | texto | Obligatoria; ubicación pública de la imagen. |
-| `identificador_externo` | texto | Obligatorio; identificador devuelto por el proveedor. |
+| `identificador_externo` | texto | Obligatorio; ruta del objeto en Supabase Storage. |
 | `texto_alternativo` | texto | Opcional. |
 | `posicion` | entero | Obligatoria; no negativa. |
 | `creado_en` | fecha con zona horaria | Obligatorio. |
 
-La combinación `producto_id` y `posicion` será única. El proveedor externo de imágenes sigue pendiente de selección.
+La combinación `producto_id` y `posicion` será única. Supabase Storage es el proveedor de imágenes confirmado.
 
 ### `solicitudes`
 
@@ -142,6 +141,9 @@ La combinación `producto_id` y `posicion` será única. El proveedor externo de
 | `telefono` | texto | Obligatorio y no vacío; no se almacena como número. |
 | `ciudad` | texto | Opcional. |
 | `observaciones` | texto | Opcional. |
+| `terminos_version` | texto | Obligatorio y no vacío; versión de los Términos y condiciones aceptados. |
+| `politica_datos_version` | texto | Obligatorio y no vacío; versión de la Política de tratamiento de datos aceptada. |
+| `aceptado_en` | fecha con zona horaria | Obligatorio; fecha y hora de aceptación de ambos documentos. |
 | `estado` | texto controlado | `nueva`, `confirmada`, `entregada` o `cancelada`. |
 | `creado_en` | fecha con zona horaria | Obligatorio. |
 | `actualizado_en` | fecha con zona horaria | Obligatorio. |
@@ -150,6 +152,8 @@ La combinación `producto_id` y `posicion` será única. El proveedor externo de
 | `cancelado_en` | fecha con zona horaria | Nula hasta cancelar. |
 
 El código se generará a partir de una secuencia de PostgreSQL. La secuencia puede tener huecos, conforme a RN-14.
+
+La evidencia de aceptación se almacena en `solicitudes`, no en una tabla separada, porque cada aceptación corresponde a una solicitud y el MVP no contiene cuentas ni una entidad consolidada de clientes. No se almacena un booleano redundante: la presencia obligatoria de las dos versiones y `aceptado_en` representa una aceptación válida.
 
 ### `detalles_solicitud`
 
@@ -169,12 +173,6 @@ La combinación `solicitud_id` y `presentacion_id` será única. Una solicitud n
 
 El valor total de productos se calculará sumando los subtotales de sus detalles. No se duplicará en `solicitudes` para evitar inconsistencias durante la edición de una solicitud Nueva.
 
-## Tabla técnica
-
-### `sesiones`
-
-Las sesiones administrativas se almacenarán en PostgreSQL y se asociarán a un usuario administrativo. Su estructura concreta dependerá de la librería de sesiones compatible con Express que se seleccione al implementar la autenticación. Esta librería podrá requerir nombres técnicos de columnas distintos de la convención del dominio.
-
 ## Integridad y conservación
 
 - Categorías, productos, presentaciones y usuarios administrativos se desactivan, no se eliminan desde la aplicación.
@@ -191,33 +189,34 @@ Las sesiones administrativas se almacenarán en PostgreSQL y se asociarán a un 
 - Stock y cantidades descontadas no negativos.
 - Cantidades entre uno y 99.
 - Stock igual a cero para presentaciones bajo pedido.
-- Unicidad de código de solicitud, nombre de usuario, referencia existente y posición de imagen por producto.
+- Unicidad de código de solicitud, referencia existente y posición de imagen por producto.
 - Unicidad de presentación por detalle de solicitud.
+- Versiones de términos y política no vacías y fecha de aceptación obligatoria en cada solicitud.
 - Cálculo consistente del subtotal.
 - Atomicidad y bloqueos en las transacciones de inventario.
 
-## Responsabilidades de Express
+## Responsabilidades del cliente y de Supabase
 
-- Validar y normalizar entradas antes de consultar PostgreSQL.
-- Aplicar las condiciones de publicación de un producto.
-- Calcular el resumen público de disponibilidad por producto.
-- Impedir transiciones de estado no permitidas.
-- Limitar la edición de solicitudes Nuevas a datos del cliente, cantidades y retiro de líneas existentes.
-- Revalidar catálogo, disponibilidad y precios antes de registrar o confirmar una solicitud.
-- Autenticar y autorizar operaciones administrativas.
-- Validar archivos antes de enviarlos al proveedor de imágenes.
+- El cliente valida la experiencia de formulario, pero no constituye una barrera de seguridad.
+- Las funciones RPC validan y normalizan entradas de solicitudes, aplican reglas de publicación, disponibilidad, precios, transiciones y edición permitida.
+- La función RPC de registro exige la aceptación y asigna desde configuración controlada las versiones vigentes y la fecha de aceptación; no confía en versiones arbitrarias enviadas por el navegador.
+- Supabase Auth identifica al administrador y las políticas RLS, permisos y funciones autorizan cada operación administrativa.
+- Las políticas RLS exponen al visitante solo el catálogo publicable y no permiten escrituras administrativas anónimas.
+- Las reglas de Storage validan la autorización de carga, modificación y eliminación de imágenes; el cliente también validará tipo y tamaño antes de cargarlas.
 
 ## Transacciones críticas
 
 ### Registro de una solicitud
 
+La función RPC de registro inicia y finaliza estas operaciones dentro de la transacción de PostgreSQL.
+
 ```text
 BEGIN
-Validar datos del cliente y carrito no vacío
+Validar datos del cliente, aceptación expresa y carrito no vacío
 Consultar productos y presentaciones actuales
 Revalidar actividad, precio, modo y stock aplicable
 Generar código con la secuencia de PostgreSQL
-Insertar solicitud en estado Nueva
+Insertar solicitud en estado Nueva con versiones vigentes y fecha de aceptación
 Insertar detalles con precio unitario histórico y cantidad_descontada en cero
 COMMIT
 ```
@@ -225,6 +224,8 @@ COMMIT
 Registrar una solicitud no descuenta ni reserva inventario.
 
 ### Confirmación de una solicitud
+
+Una función RPC exclusiva para administradores ejecuta estas operaciones dentro de una transacción de PostgreSQL.
 
 ```text
 BEGIN
@@ -243,6 +244,8 @@ Bloquear la solicitud evita una confirmación duplicada. Bloquear las presentaci
 
 ### Cancelación de una solicitud confirmada
 
+Una función RPC exclusiva para administradores ejecuta estas operaciones dentro de una transacción de PostgreSQL.
+
 ```text
 BEGIN
 Bloquear solicitud con SELECT ... FOR UPDATE
@@ -255,6 +258,8 @@ COMMIT
 La restitución usará `cantidad_descontada`, incluso si la presentación fue desactivada o cambió de modo después de confirmar.
 
 ### Edición de una solicitud Nueva
+
+Una función RPC exclusiva para administradores ejecuta estas operaciones dentro de una transacción de PostgreSQL.
 
 ```text
 BEGIN
@@ -270,9 +275,9 @@ La operación no podrá crear detalles, cambiar presentaciones ni actualizar pre
 
 ## Pendientes antes de escribir migraciones
 
-- Definir el proveedor de almacenamiento externo de imágenes y los metadatos exactos que entregue.
-- Elegir la librería y el almacenamiento concreto de las sesiones en PostgreSQL.
+- Definir el bucket, las políticas de Storage y las URL de imágenes que utilizará el catálogo.
+- Definir las políticas RLS y permisos de funciones para usuarios anónimos y administradores autenticados.
 - Precisar la validación técnica de teléfonos sin excluir números legítimos.
 - Validar los tipos SQL finales, índices y mecanismos para actualizar `actualizado_en`.
 - Revisar el diseño con los datos reales iniciales de Esenciales.
-- Probar las migraciones y las transacciones en una base PostgreSQL vacía antes de conectar Express.
+- Probar las migraciones, políticas RLS y funciones RPC en el entorno local de Supabase antes de conectar el cliente web.

@@ -2,11 +2,15 @@
 
 ## Estado
 
-Accepted
+Superseded
+
+Reemplazado por [ADR-007](ADR-007-servicios-backend-con-supabase.md) el 2026-09-07.
 
 ## Contexto
 
 El MVP requiere un frontend con HTML5, CSS3 y JavaScript, una API con Node.js y Express, autenticación administrativa y conexión a PostgreSQL. El frontend sin framework ya fue confirmado en ADR-002. Era necesario definir si el frontend y el backend se ejecutarían como proyectos independientes o como una sola aplicación.
+
+Esta decisión se conserva como antecedente. El profesor autorizó posteriormente el uso de Supabase en sustitución de Express para agilizar el desarrollo del MVP.
 
 ## Decisión
 

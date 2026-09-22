@@ -14,3 +14,4 @@ Estados permitidos: `Proposed`, `Accepted`, `Superseded` y `Deprecated`.
 - [ADR-004: Acceso a PostgreSQL con pg y SQL explícito](ADR-004-acceso-postgresql-con-pg-y-sql-explicito.md)
 - [ADR-005: Autenticación administrativa con sesiones](ADR-005-autenticacion-administrativa-con-sesiones.md)
 - [ADR-006: Almacenamiento externo de imágenes de producto](ADR-006-almacenamiento-externo-de-imagenes.md)
+- [ADR-007: Servicios de backend con Supabase](ADR-007-servicios-backend-con-supabase.md)

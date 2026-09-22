@@ -4,14 +4,14 @@ Este archivo resume los límites vigentes del proyecto. La especificación detal
 
 ## Confirmado por el equipo
 
-- El proyecto se desarrolla exclusivamente para Esenciales durante el MVP.
+- El proyecto se desarrolla exclusivamente para la empresa ESENCIALES durante el MVP.
 - Se prioriza un producto full stack completo, desplegado, comprensible y sustentable.
 - El cliente consulta el catálogo sin registrarse.
 - El proceso central registra una solicitud de compra y permite continuar voluntariamente hacia WhatsApp.
 - No se procesan pagos ni se considera la solicitud como una venta concluida.
 - El inventario, la disponibilidad y los precios se administran por presentación.
 - El catálogo utiliza productos destacados seleccionados manualmente, no afirmaciones automáticas de productos más vendidos.
-- PostgreSQL es el sistema gestor de base de datos confirmado.
+- PostgreSQL, provisto por Supabase, es el sistema gestor de base de datos confirmado.
 
 ## Ocho macrofuncionalidades
 
@@ -33,6 +33,7 @@ Esta agrupación es una decisión de organización del equipo. El supuesto máxi
 - Producto destacado mediante selección manual.
 - Catálogo público, detalle, búsqueda por nombre y filtros por categoría y disponibilidad.
 - Carrito, registro de solicitud, código único y flujo hacia WhatsApp.
+- Aceptación expresa de términos y política de tratamiento de datos al registrar cada solicitud.
 - Gestión de solicitudes nuevas, confirmadas, entregadas y canceladas.
 - Ajustes controlados de solicitudes nuevas.
 - Validación transaccional del inventario al confirmar y restituir.
@@ -47,17 +48,22 @@ Esta agrupación es una decisión de organización del equipo. El supuesto máxi
 ## Prioridad COULD
 
 - Configuración editable de redes y WhatsApp.
-- Generación interna de QR.
 
 ## Fuera del MVP
 
 - Pagos, autenticación de clientes y seguimiento público de solicitudes.
+- Gestión administrativa de pagos y ventas contra entrega.
+- Módulo de clientes e historial consolidado de compras.
+- Dirección y barrio dentro del registro web de la solicitud.
+- Costos internos de productos.
 - Facturación, contabilidad, cuentas por cobrar y almacén profesional.
 - Reseñas, favoritos, fidelización, chat interno y analítica avanzada.
+- Suscripción a novedades o comunicaciones promocionales.
 - API avanzada de WhatsApp Business.
 - Multiemprendimiento, precios mayoristas y gestión completa de proveedores.
 - Recomendador con inteligencia artificial y quiz de fragancias.
 - Ranking automático de productos más vendidos.
+- Reportes de ventas por periodo.
 
 ## Pendiente de validar
 

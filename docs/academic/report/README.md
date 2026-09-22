@@ -6,4 +6,8 @@ La estructura vigente se basa inicialmente en la plantilla disponible, pero las 
 
 No toda actividad de desarrollo pertenece automáticamente al informe. El equipo revisa manualmente qué contenido pasa al documento oficial y no debe guardar aquí el `.docx` oficial salvo decisión explícita posterior.
 
+El archivo fuente `docs/sources/Sitema Web para la Gestión y Publicación del Catálogo de Productos de Esenciales.docx` corresponde a la versión del informe técnico ajustada con las observaciones comunicadas por la coordinadora de proyectos de grado. El 10 de septiembre de 2026, el borrador incorpora los cambios de título, denominación de la empresa, resumen, abstract, introducción, tiempos verbales y encabezados, sin replicar como hechos afirmaciones de implementación, pruebas, despliegue o resultados que no cuentan con evidencia en el repositorio.
+
 Revise el borrador cuando haya una instrucción metodológica, cambie el problema u objetivo, se valide una decisión relevante, existan resultados o pruebas con evidencia útil, o se determine que un avance aporta al documento. Antes de editarlo, pregunte: "¿Este cambio realmente afecta o aporta evidencia al documento académico?" Si no, no lo actualice mecánicamente.
+
+El [plan de evidencias](EVIDENCE_PLAN.md) diferencia el uso de la entrevista, el [briefing derivado](../../project/briefing-esenciales.md), los comparativos, las pruebas, el diseño y el acceso mediante URL o QR entre la metodología, los resultados y la sustentación.

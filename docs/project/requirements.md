@@ -19,6 +19,7 @@ El estado `Aprobado por el equipo` no sustituye una validación académica poste
 | RF-01 | El sistema debe permitir que un usuario administrativo autorizado inicie sesión. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RF-02 | El sistema debe impedir que usuarios no autenticados accedan a vistas u operaciones administrativas. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RF-03 | El usuario autenticado debe poder cerrar sesión. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
+| RF-56 | El administrador debe poder solicitar la recuperación de su contraseña mediante un enlace enviado al correo asociado en Supabase Auth. | MUST | Aprobado por el equipo | Decisión del equipo, 2026-09-17 |
 
 ### Categorías
 
@@ -85,11 +86,14 @@ El estado `Aprobado por el equipo` no sustituye una validación académica poste
 | --- | --- | --- | --- | --- |
 | RF-38 | El sistema debe solicitar nombre y teléfono antes de registrar una solicitud de compra. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RF-39 | El sistema debe aceptar ciudad y observaciones como datos opcionales. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
-| RF-40 | El backend debe revalidar productos, presentaciones, cantidades, precios y disponibilidad antes de almacenar la solicitud. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
+| RF-40 | Una función de PostgreSQL debe revalidar productos, presentaciones, cantidades, precios y disponibilidad antes de almacenar la solicitud. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RF-41 | El sistema debe registrar la solicitud y su detalle en PostgreSQL conservando los precios aplicados. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RF-42 | El sistema debe asignar un código único y legible con formato inicial `ES-00001` a cada solicitud registrada correctamente; se permiten huecos y podrá ampliarse la cantidad de dígitos cuando sea necesario. | MUST | Aprobado por el equipo | Validación del equipo, 2026-09-03 |
 | RF-43 | El sistema debe preparar un mensaje de WhatsApp con código, cliente, líneas, cantidades, precios y valor total de productos. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RF-44 | El cliente debe decidir si abre y envía el mensaje desde WhatsApp; la solicitud debe permanecer registrada aunque no continúe. | MUST | Aprobado por el equipo | Validación del equipo, 2026-09-03 |
+| RF-57 | Antes de registrar la solicitud, el sistema debe mostrar enlaces a los Términos y condiciones y a la Política de tratamiento de datos, y exigir una aceptación expresa mediante un control inicialmente desmarcado. | MUST | Aprobado por el equipo | Indicación comunicada del profesor y decisión del equipo, 2026-09-17 |
+| RF-58 | El sistema debe impedir el registro de la solicitud si el visitante no acepta los documentos vigentes. | MUST | Aprobado por el equipo | Decisión del equipo, 2026-09-17 |
+| RF-59 | La solicitud debe conservar las versiones aceptadas de los Términos y condiciones y de la Política de tratamiento de datos, junto con la fecha y hora de aceptación. | MUST | Aprobado por el equipo | Decisión del equipo, 2026-09-17 |
 
 ### Administración de solicitudes
 
@@ -101,12 +105,11 @@ El estado `Aprobado por el equipo` no sustituye una validación académica poste
 | RF-48 | Mientras una solicitud esté Nueva, el administrador debe poder modificar cantidades o retirar líneas existentes. | MUST | Aprobado por el equipo | Validación del equipo, 2026-09-03 |
 | RF-49 | La edición de una solicitud Nueva no debe permitir agregar o duplicar líneas, cambiar presentaciones, alterar precios históricos ni dejar la solicitud sin líneas. | MUST | Aprobado por el equipo | Validación del equipo, 2026-09-03 |
 | RF-50 | El administrador debe poder realizar únicamente las transiciones de estado permitidas. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
-| RF-51 | Al confirmar, el backend debe comprobar que producto, categoría y presentación continúen activos; aplicar el modo vigente; impedir líneas inactivas, agotadas o no disponibles; y descontar dentro de una transacción solo el inventario de venta inmediata. | MUST | Aprobado por el equipo | MVP V1 y validación del equipo, 2026-09-03 |
-| RF-52 | Al cancelar una solicitud confirmada, el sistema debe restituir exactamente el inventario previamente descontado. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
+| RF-51 | Al confirmar, una función transaccional de PostgreSQL debe comprobar que producto, categoría y presentación continúen activos; aplicar el modo vigente; impedir líneas inactivas, agotadas o no disponibles; y descontar dentro de una transacción solo el inventario de venta inmediata. | MUST | Aprobado por el equipo | MVP V1 y validación del equipo, 2026-09-03 |
+| RF-52 | Al cancelar una solicitud confirmada, una función transaccional de PostgreSQL debe restituir exactamente el inventario previamente descontado. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RF-53 | Una solicitud confirmada debe ser inmutable; si cambia el acuerdo, debe cancelarse y generarse una nueva solicitud. | MUST | Aprobado por el equipo | Validación del equipo, 2026-09-03 |
 | RF-54 | El panel debería resumir solicitudes nuevas y confirmadas, presentaciones activas agotadas, presentaciones activas de venta inmediata con stock entre 1 y 3, y total de productos registrados. | SHOULD | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RF-55 | El panel podría permitir editar el número de WhatsApp, las redes sociales y textos públicos básicos. | COULD | Aprobado por el equipo | MVP V1, 2026-09-03 |
-| RF-56 | El panel podría generar un QR estático que apunte a la URL pública desplegada. | COULD | Aprobado por el equipo | MVP V1, 2026-09-03 |
 
 ## Requisitos no funcionales
 
@@ -115,10 +118,10 @@ El estado `Aprobado por el equipo` no sustituye una validación académica poste
 | RNF-01 | La interfaz debe funcionar en celular, tableta y computador con enfoque mobile-first. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RNF-02 | La interfaz debe permitir identificar fácilmente producto, precio, presentación, disponibilidad y acción principal. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RNF-03 | El sistema debe usar HTML semántico, formularios etiquetados, contraste suficiente y estados que no dependan solo del color. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
-| RNF-04 | El sistema debe proteger contraseñas y rutas administrativas, validar entradas en backend, proteger secretos y evitar errores que revelen información sensible. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
+| RNF-04 | El sistema debe proteger credenciales y operaciones administrativas mediante Supabase Auth, RLS y funciones con permisos controlados; validar entradas en las funciones de PostgreSQL, proteger secretos y evitar errores que revelen información sensible. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RNF-05 | Las operaciones de solicitudes e inventario deben evitar stock negativo, doble descuento y actualizaciones parciales. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RNF-06 | El código debe priorizar claridad, nombres comprensibles, responsabilidades definidas y ausencia de dependencias o abstracciones innecesarias. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
-| RNF-07 | La aplicación debe evitar cargas innecesarias y optimizar imágenes, listados y solicitudes al backend sin fijar métricas no medidas. | SHOULD | Aprobado por el equipo | MVP V1, 2026-09-03 |
+| RNF-07 | La aplicación debe evitar cargas innecesarias y optimizar imágenes, listados y operaciones contra Supabase sin fijar métricas no medidas. | SHOULD | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RNF-08 | Las páginas públicas deberían incluir títulos y descripciones adecuados, jerarquía semántica de encabezados, texto alternativo para imágenes relevantes y contenido indexable cuando corresponda. | SHOULD | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RNF-09 | El sistema debe desplegarse en producción y utilizar PostgreSQL en el entorno definitivo. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
 
@@ -127,4 +130,5 @@ El estado `Aprobado por el equipo` no sustituye una validación académica poste
 - El segundo rol autenticado solo se añadirá si el profesor lo exige.
 - La explicación de clasificaciones depende del contenido validado por Esenciales.
 - La validación técnica exacta del teléfono se definirá sin bloquear números legítimos.
+- El contenido de los Términos y condiciones y de la Política de tratamiento de datos debe ser elaborado y validado por Esenciales antes del despliegue; la documentación del proyecto no sustituye asesoría jurídica.
 - Autenticación, imágenes, despliegue y transacciones se concretarán durante el diseño técnico.

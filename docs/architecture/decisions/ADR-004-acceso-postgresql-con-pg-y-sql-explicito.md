@@ -2,11 +2,15 @@
 
 ## Estado
 
-Accepted
+Superseded
+
+Reemplazado por [ADR-007](ADR-007-servicios-backend-con-supabase.md) el 2026-09-07.
 
 ## Contexto
 
 PostgreSQL fue confirmado como SGBD en ADR-001. Aún debía definirse cómo la aplicación Node.js accedería a la base de datos. El MVP contiene reglas críticas de integridad, como la conservación de precios históricos y las transacciones de confirmación y cancelación de solicitudes.
+
+Esta decisión se conserva como antecedente. El acceso de la aplicación ya no se realizará mediante una API Node.js propia; Supabase administrará la conexión y expondrá operaciones controladas mediante su cliente JavaScript, RLS y funciones RPC.
 
 ## Decisión
 

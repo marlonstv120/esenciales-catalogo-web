@@ -1,6 +1,6 @@
 # Alcance funcional MVP V1
 
-**Proyecto:** Sistema web para la gestión y publicación del catálogo de productos de Esenciales  
+**Proyecto:** Sistema web para la gestión y publicación del catálogo de productos para la empresa ESENCIALES
 **Versión:** 1.0  
 **Fecha de consolidación:** 3 de septiembre de 2026  
 **Estado:** aprobado por el equipo; sujeto a validaciones académicas y de negocio expresamente identificadas  
@@ -26,6 +26,7 @@ La consolidación considera:
 
 - Las fuentes oficiales del curso disponibles en [`docs/sources/`](../sources/README.md).
 - El [contexto original del proyecto](../sources/CONTEXTO_PROYECTO_ESENCIALES.md).
+- La [entrevista de levantamiento de requerimientos](../sources/ENTREVISTA_LEVANTAMIENTO_REQUERIMIENTOS_ESENCIALES.md) y el [briefing derivado](briefing-esenciales.md).
 - Las decisiones de alcance y tecnología registradas en el repositorio.
 - El [análisis externo de Claude](../sources/ANALISIS_PROPUESTA_ESENCIALES_CLAUDE.md) únicamente como insumo de contraste.
 - Las decisiones funcionales aprobadas directamente por el equipo el 3 de septiembre de 2026.
@@ -36,19 +37,21 @@ Las afirmaciones comparativas del análisis externo no se consideran resultados 
 
 ## 3. Propósito del sistema
 
-Esenciales comercializa perfumes o lociones, splash, cremas, humidificadores y otros productos. La aplicación busca centralizar la administración y publicación de productos, presentaciones, precios, disponibilidad e inventario, y permitir que los clientes preparen una solicitud de compra antes de continuar la conversación comercial por WhatsApp.
+ESENCIALES comercializa principalmente perfumes inspirados 1.1, originales o importados y otros productos de perfumería. La aplicación busca centralizar la administración y publicación de productos, presentaciones, precios, disponibilidad e inventario, y permitir que los clientes preparen una solicitud de compra antes de continuar la conversación comercial por WhatsApp.
 
 El sistema no procesa pagos ni afirma que una solicitud registrada sea una venta concluida. La compra se confirma comercialmente con Esenciales por WhatsApp y administrativamente dentro del sistema.
+
+El propietario valida que el inventario se descuente cuando la solicitud pasa a `Confirmada`. Dirección y barrio se recopilan posteriormente por WhatsApp. El costo interno de los productos, la gestión de pagos, el módulo de clientes y los reportes de ventas permanecen fuera del MVP.
 
 ## 4. Objetivos vigentes
 
 ### Objetivo general
 
-Desarrollar una aplicación web full stack para centralizar la gestión, publicación y consulta del catálogo de productos, precios y disponibilidad del emprendimiento Esenciales.
+Desarrollar una aplicación web full stack que permita la gestión, publicación y consulta del catálogo de productos, precios y disponibilidad de la empresa ESENCIALES.
 
 ### Objetivos específicos
 
-1. Diagnosticar el proceso actual de gestión y presentación del catálogo del emprendimiento Esenciales, identificando las dificultades relacionadas con la organización y consulta de sus productos, precios y disponibilidad.
+1. Identificar el proceso actual de gestión y presentación del catálogo de la empresa ESENCIALES y las dificultades relacionadas con la organización y consulta de sus productos, precios y disponibilidad.
 2. Desarrollar una solución web con funcionalidades de acceso administrativo, gestión del catálogo, publicación pública, búsqueda, filtrado y registro de solicitudes de compra, que responda a las dificultades identificadas en el diagnóstico.
 3. Validar la aplicación web mediante pruebas funcionales y su despliegue en un entorno de producción para comprobar el cumplimiento de los requisitos definidos.
 
@@ -80,10 +83,11 @@ Incluye:
 
 - Inicio de sesión de usuarios administrativos autorizados.
 - Validación segura de credenciales.
+- Recuperación de contraseña mediante el correo asociado en Supabase Auth.
 - Protección de vistas y operaciones administrativas.
 - Cierre de sesión.
 
-No incluye inicialmente registro público, autenticación de clientes, recuperación automática de contraseña ni gestión avanzada de roles.
+No incluye registro público, autenticación de clientes ni gestión avanzada de roles.
 
 ### MF-02 - Gestión de la estructura del catálogo
 
@@ -242,10 +246,13 @@ Antes de registrar la solicitud se pedirán:
 - Teléfono obligatorio.
 - Ciudad opcional.
 - Observaciones opcionales.
+- Aceptación obligatoria, mediante un control inicialmente desmarcado, de los Términos y condiciones y de la Política de tratamiento de datos vigentes.
+
+Ambos documentos estarán disponibles mediante enlaces antes de aceptar. La solicitud conservará la fecha y hora de aceptación y la versión aceptada de cada documento. Esta aceptación no crea una cuenta de cliente. La suscripción a novedades o comunicaciones promocionales no forma parte del MVP.
 
 El valor mostrado se denominará `Valor total de productos` para diferenciarlo de la cantidad de unidades. No incluirá domicilio o envío; estos valores se confirmarán posteriormente según la ubicación del cliente.
 
-El backend volverá a validar productos, presentaciones, cantidades, precios y disponibilidad. Cuando el registro sea exitoso, asignará un código único con formato inicial `ES-00001`. Se permiten huecos y el formato podrá ampliar su cantidad de dígitos cuando sea necesario.
+Una función de PostgreSQL volverá a validar productos, presentaciones, cantidades, precios y disponibilidad. Cuando el registro sea exitoso, asignará un código único con formato inicial `ES-00001`. Se permiten huecos y el formato podrá ampliar su cantidad de dígitos cuando sea necesario.
 
 Después del registro, el sistema preparará un mensaje con código, cliente, productos, presentaciones, cantidades, precios y valor total. El cliente decidirá si abre WhatsApp y envía el mensaje. La solicitud permanecerá registrada aunque el cliente no continúe hacia WhatsApp.
 
@@ -277,7 +284,7 @@ Mientras una solicitud esté Nueva, el administrador podrá:
 
 No podrá agregar ninguna línea, duplicar líneas existentes, cambiar la presentación seleccionada ni alterar los precios históricos. La solicitud no podrá quedar sin líneas; si el cliente desiste de todas, deberá cancelarse.
 
-Al confirmar, el backend utilizará el modo de disponibilidad vigente después de la conversación comercial por WhatsApp. También comprobará que producto, categoría y presentación continúen activos. Revalidará el stock de las líneas que en ese momento estén en `Venta inmediata` y descontará sus unidades dentro de una transacción. Una línea inactiva, `Agotado` o `No disponible` impedirá confirmar; las líneas que estén `Bajo pedido` no descontarán inventario.
+Al confirmar, la función transaccional de PostgreSQL utilizará el modo de disponibilidad vigente después de la conversación comercial por WhatsApp. También comprobará que producto, categoría y presentación continúen activos. Revalidará el stock de las líneas que en ese momento estén en `Venta inmediata` y descontará sus unidades dentro de una transacción. Una línea inactiva, `Agotado` o `No disponible` impedirá confirmar; las líneas que estén `Bajo pedido` no descontarán inventario.
 
 Después de confirmada, la solicitud será inmutable. Si el acuerdo cambia, deberá cancelarse para restituir únicamente el inventario descontado y registrarse una nueva solicitud.
 
@@ -316,6 +323,7 @@ La estructura definitiva de PostgreSQL y el mecanismo de trazabilidad del descue
 ### MUST - Obligatorio para aceptar el MVP
 
 - Autenticación y protección administrativa.
+- Recuperación de contraseña administrativa.
 - Gestión de categorías.
 - Gestión de productos y al menos una imagen por producto publicado.
 - Gestión de presentaciones, precios, stock y disponibilidad.
@@ -324,12 +332,13 @@ La estructura definitiva de PostgreSQL y el mecanismo de trazabilidad del descue
 - Búsqueda por nombre.
 - Filtros por categoría y disponibilidad.
 - Carrito y registro de solicitud de compra.
-- Validación en backend y persistencia en PostgreSQL.
+- Validación mediante funciones de PostgreSQL y persistencia en Supabase PostgreSQL.
 - Código único de solicitud.
 - Gestión administrativa de solicitudes y ajustes mientras estén nuevas.
 - Confirmación y cancelación transaccional con inventario consistente.
 - Flujo voluntario hacia WhatsApp.
 - Seguridad y validaciones esenciales.
+- Aceptación y evidencia de los términos y la política de tratamiento de datos por cada solicitud.
 - Despliegue en producción.
 
 ### SHOULD - Importante si no compromete el núcleo
@@ -347,15 +356,19 @@ La estructura definitiva de PostgreSQL y el mecanismo de trazabilidad del descue
 ### COULD - Mejora si existe capacidad restante
 
 - Configuración editable de redes y WhatsApp.
-- Generación de QR desde el panel.
 - Mejoras adicionales de presentación que no agreguen nueva lógica central.
 
 ### WON'T - Fuera de este MVP
 
 - Pasarela de pagos.
+- Gestión administrativa de pagos y ventas contra entrega.
 - Registro o inicio de sesión de clientes.
+- Módulo consolidado de clientes e historial de compras.
+- Dirección y barrio dentro del registro web de la solicitud.
+- Costos internos de productos.
 - Seguimiento público de solicitudes.
 - Reseñas, favoritos y fidelización.
+- Suscripción a novedades o comunicaciones promocionales.
 - Facturación electrónica, contabilidad y cuentas por cobrar.
 - Reservas complejas de inventario.
 - Gestión profesional de movimientos de almacén.
@@ -364,6 +377,7 @@ La estructura definitiva de PostgreSQL y el mecanismo de trazabilidad del descue
 - Multiemprendimiento.
 - Precios mayoristas y gestión completa de proveedores.
 - Reportes financieros avanzados.
+- Reportes de ventas por periodo.
 - Recomendador con inteligencia artificial.
 - Quiz de fragancias.
 - Analítica avanzada de canales.
@@ -383,12 +397,12 @@ El MVP deberá permitir demostrar de principio a fin que:
 7. Encuentra el producto mediante búsqueda, categoría o disponibilidad.
 8. Abre el detalle, elige presentación y cantidad y agrega al carrito.
 9. Puede combinar una línea disponible con una línea bajo pedido.
-10. Ingresa nombre y teléfono y registra la solicitud.
-11. El backend valida y persiste la solicitud y su precio histórico en PostgreSQL.
+10. Ingresa nombre y teléfono, consulta y acepta los documentos vigentes, y registra la solicitud.
+11. Una función de PostgreSQL valida y persiste la solicitud y su precio histórico.
 12. El sistema genera un código `ES-00001` y prepara el mensaje para WhatsApp.
 13. El administrador visualiza la solicitud Nueva y puede corregir sus datos o cantidades permitidas.
 14. El administrador confirma la solicitud.
-15. El backend revalida y descuenta únicamente el inventario de venta inmediata.
+15. Una función transaccional de PostgreSQL revalida y descuenta únicamente el inventario de venta inmediata.
 16. La solicitud puede finalizar como Entregada.
 17. En un escenario alternativo, una solicitud confirmada puede cancelarse y restituir exactamente el inventario descontado.
 18. Una segunda confirmación concurrente no puede producir stock negativo.
@@ -406,16 +420,17 @@ El MVP deberá permitir demostrar de principio a fin que:
 - Validar las definiciones públicas exactas de `Original`, `1.1` e `Inspiración`.
 - Confirmar el número público de WhatsApp.
 - Confirmar textos de contacto, entrega y envío.
+- Elaborar y validar con Esenciales el contenido y las versiones iniciales de los Términos y condiciones y la Política de tratamiento de datos.
 - Recopilar fotografías y datos reales para pruebas y carga inicial.
 
 ### Técnicos
 
-- Definir el mecanismo de autenticación.
-- Definir el almacenamiento de imágenes.
-- Diseñar la estructura lógica definitiva de PostgreSQL.
-- Diseñar las transacciones de confirmación y cancelación.
+- Configurar Supabase Auth para el acceso administrativo.
+- Configurar Supabase Storage y sus políticas para las imágenes.
+- Materializar la estructura lógica de PostgreSQL mediante migraciones versionadas.
+- Diseñar e implementar las funciones RPC transaccionales de confirmación y cancelación.
 - Definir cómo registrar qué líneas descontaron inventario.
-- Definir proveedor o proveedores de despliegue.
+- Definir el proveedor de despliegue del cliente web.
 - Definir el formato técnico de validación del teléfono sin restringir casos legítimos.
 
 ## 12. Validación posterior

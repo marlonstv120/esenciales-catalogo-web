@@ -1,4 +1,5 @@
 import './styles.css';
+import { getPasswordSetupFlow } from './auth-flow.mjs';
 import {
   getAuthorizedSession,
   observeSession,
@@ -72,7 +73,12 @@ function showPasswordUpdate(message = '') {
       return;
     }
     const { error } = await updatePassword(password);
-    showPasswordUpdate(error ? 'No fue posible actualizar la contraseña.' : 'Contraseña actualizada. Puedes continuar.');
+    if (error) {
+      showPasswordUpdate('No fue posible actualizar la contraseña.');
+      return;
+    }
+    window.history.replaceState({}, '', window.location.pathname);
+    showAuthorized();
   });
 }
 
@@ -88,13 +94,11 @@ function showAuthorized() {
 async function refresh() {
   render('<p>Cargando acceso seguro...</p>');
   const { authorized } = await getAuthorizedSession();
-  if (authorized) showAuthorized();
+  if (authorized && getPasswordSetupFlow(window.location.href)) showPasswordUpdate();
+  else if (authorized) showAuthorized();
   else showSignIn();
 }
 
-observeSession((event) => {
-  if (event === 'PASSWORD_RECOVERY') showPasswordUpdate();
-  else refresh();
-});
+observeSession(() => refresh());
 
 refresh();

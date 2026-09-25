@@ -247,7 +247,7 @@ await requestPasswordRecovery(email.value.trim());
 await updatePassword(password.value);
 ```
 
-Al cargar, determinar `password-update` cuando la URL contenga el flujo de recuperacion de Supabase; en los demas casos usar `getAuthorizedSession()`. Suscribirse con `observeSession` y volver a validar autorizacion cuando cambie la sesion. Al cerrar sesion, volver a `sign-in`.
+Al cargar, determinar `password-update` cuando la URL contenga `type=invite` o `type=recovery` en el hash de Supabase; en los demas casos usar `getAuthorizedSession()`. Suscribirse con `observeSession` y volver a validar autorizacion cuando cambie la sesion. Al cerrar sesion, volver a `sign-in`.
 
 - [ ] **Step 3: Aplicar estilos mobile-first y estados visibles**
 

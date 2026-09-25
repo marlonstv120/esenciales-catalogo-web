@@ -32,7 +32,7 @@ La aplicacion incorporara una superficie administrativa minima con estos estados
 2. Sin sesion: muestra el formulario de correo y contrasena, junto con la opcion de solicitar recuperacion.
 3. Sesion autorizada: muestra un estado administrativo basico y permite cerrar sesion. Los CRUD se incorporaran en los incrementos posteriores.
 4. Sesion no autorizada o inactiva: cierra la sesion local y muestra un mensaje generico sin revelar informacion sobre cuentas o permisos.
-5. Recuperacion: solicita a Supabase el correo de recuperacion; tras la redireccion de Auth, permite establecer una contrasena nueva y volver al acceso.
+5. Invitacion o recuperacion: el usuario abre el enlace enviado por Auth; tras la redireccion, la aplicacion permite establecer una contrasena nueva y volver al acceso.
 
 El cliente usara las APIs de `@supabase/supabase-js` para iniciar sesion, cerrar sesion, solicitar recuperacion, actualizar contrasena y observar cambios de sesion. La URL de retorno de recuperacion se derivara del origen local o desplegado de la aplicacion y se configurara como URL permitida en Supabase Auth para cada entorno.
 

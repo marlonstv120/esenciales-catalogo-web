@@ -95,16 +95,19 @@ select lives_ok(
   $$insert into public.categorias (nombre) values ('Categoria creada por administrador')$$,
   'Administrador activo inserta categoria'
 );
-select lives_ok(
-  $$select * from public.productos where nombre = 'Producto RLS'$$,
+select results_eq(
+  $$select nombre from public.productos where nombre = 'Producto RLS'$$,
+  $$values ('Producto RLS'::text)$$,
   'Administrador activo consulta producto'
 );
-select lives_ok(
-  $$update public.presentaciones set stock = 2 where etiqueta = '100 ml RLS'$$,
+select results_eq(
+  $$update public.presentaciones set stock = 2 where etiqueta = '100 ml RLS' returning stock$$,
+  $$values (2::integer)$$,
   'Administrador activo modifica presentacion'
 );
-select lives_ok(
-  $$delete from public.imagenes_producto where identificador_externo = 'productos/rls.webp'$$,
+select results_eq(
+  $$delete from public.imagenes_producto where identificador_externo = 'productos/rls.webp' returning identificador_externo$$,
+  $$values ('productos/rls.webp'::text)$$,
   'Administrador activo elimina imagen'
 );
 select throws_ok(

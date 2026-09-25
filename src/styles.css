@@ -13,12 +13,19 @@ body {
   margin: 0;
 }
 
-.setup-message {
+.auth-page {
   display: grid;
   min-height: 100vh;
   place-content: center;
   padding: 2rem;
-  text-align: center;
+}
+
+.auth-card {
+  width: min(100%, 28rem);
+  padding: 2rem;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 0.5rem 2rem rgb(31 41 51 / 15%);
 }
 
 h1 {
@@ -28,3 +35,17 @@ h1 {
 p {
   margin: 0.5rem 0 0;
 }
+
+form, label {
+  display: grid;
+  gap: 0.45rem;
+}
+
+form { margin-top: 1.5rem; }
+label { margin-top: 0.75rem; font-weight: 700; }
+input, button { font: inherit; }
+input { padding: 0.65rem; border: 1px solid #52616b; border-radius: 0.35rem; }
+button { margin-top: 1rem; padding: 0.7rem 1rem; border: 0; border-radius: 0.35rem; background: #7c2d12; color: #fff; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid #0f766e; outline-offset: 2px; }
+.link-button { padding: 0; background: none; color: #7c2d12; text-decoration: underline; }
+.message { min-height: 1.5rem; }

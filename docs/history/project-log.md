@@ -160,6 +160,18 @@ Materialización local del primer incremento de implementación: base de datos d
 - [Pruebas de base de datos](../../supabase/tests/database/).
 - [Hoja de ruta de implementación](../development/mvp-implementation-roadmap.md).
 
+### Contexto
+
+Implementación local del segundo incremento: seguridad y autenticación administrativa.
+
+### Decisiones / cambios
+
+- Se agregó la migración `20260924000200_add_admin_auth_policies.sql`, con la función `es_administrador_activo()`, privilegios limitados y políticas RLS para las tablas del catálogo; `usuarios_administrativos` se mantiene cerrada para los roles de aplicación.
+- Se configuró Auth local sin registro público, con invitación controlada, recuperación de contraseña por correo y Mailpit en el puerto `55324`.
+- Se implementó el cliente mínimo de inicio de sesión, cierre, recuperación y verificación de autorización mediante RPC.
+- Las pruebas pgTAP cubren administrador activo, no autorizado e inactivo; `npm test` pasó con 110 aserciones y `npm run build` compiló correctamente el 25 de septiembre de 2026.
+- La validación visual manual de los flujos del cliente queda pendiente; la migración no se aplicó al proyecto remoto.
+
 ## 2026-09-21
 
 ### Contexto

@@ -271,8 +271,8 @@ Un incremento solo cambia a completado cuando cumple su puerta de salida y cuent
 | Incremento | Estado | Evidencia |
 | --- | --- | --- |
 | 1. Base de datos del catalogo | Completado | Migración `20260924000100_create_catalog_core.sql`, seed reproducible y 95 pruebas pgTAP locales. |
-| 2. Seguridad y autenticacion | Pendiente | Se definira al cerrar el Incremento 1 |
-| 3. Categorias | Pendiente | Se definira al cerrar el Incremento 2 |
+| 2. Seguridad y autenticacion | Completado localmente | Migración `20260924000200_add_admin_auth_policies.sql`, flujo Auth local y 110 pruebas pgTAP; pendiente validación visual manual del cliente. |
+| 3. Categorias | Pendiente | Se definira al cerrar la validacion visual del Incremento 2 |
 | 4. Productos y presentaciones | Pendiente | Se definira al cerrar el Incremento 3 |
 | 5. Imagenes | Pendiente | Se definira al cerrar el Incremento 4 |
 | 6. Catalogo publico | Pendiente | Se definira al cerrar el Incremento 5 |

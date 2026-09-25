@@ -2,7 +2,7 @@
 
 Aplicación web Full Stack para la **gestión y publicación del catálogo de productos de Esenciales**, desarrollada como proyecto integrador del Curso de Opción de Grado en Desarrollo Web Full Stack.
 
-> **Estado actual:** el MVP usa Supabase para los servicios de backend. El primer esquema local del catálogo, sus datos iniciales y su postura de seguridad cerrada están implementados y validados; la autenticación, las políticas de acceso y las funcionalidades del catálogo siguen pendientes.
+> **Estado actual:** el MVP usa Supabase para los servicios de backend. El esquema local del catálogo, la autenticación administrativa y sus políticas de acceso están implementados y validados localmente; las funcionalidades del catálogo siguen pendientes.
 
 ## Sobre el proyecto
 
@@ -73,7 +73,7 @@ La IA actúa como asistente de desarrollo. Las decisiones importantes del proyec
 
 ## Estado de implementación
 
-El prototipo inicial con Node.js y Express fue sustituido por una base de frontend con Vite, HTML5, CSS3 y JavaScript sin framework. Supabase está vinculado al proyecto remoto y el entorno local cuenta con una primera migración validada para el núcleo del catálogo. Están pendientes la autenticación administrativa, las políticas de acceso, Storage y las funcionalidades del catálogo.
+El prototipo inicial con Node.js y Express fue sustituido por una base de frontend con Vite, HTML5, CSS3 y JavaScript sin framework. Supabase está vinculado al proyecto remoto y el entorno local cuenta con migraciones validadas para el núcleo del catálogo y su autorización administrativa. Están pendientes Storage y las funcionalidades del catálogo.
 
  La arquitectura, estructura del código y decisiones técnicas se incorporarán progresivamente a partir del [alcance funcional MVP V1](docs/project/functional-scope.md).
 

@@ -10,6 +10,7 @@ import {
 } from './auth.js';
 
 const app = document.querySelector('#app');
+let passwordSetupFlow = getPasswordSetupFlow(window.location.href);
 
 function render(content) {
   app.innerHTML = `<section class="auth-card"><h1>Esenciales</h1>${content}</section>`;
@@ -77,6 +78,7 @@ function showPasswordUpdate(message = '') {
       showPasswordUpdate('No fue posible actualizar la contraseña.');
       return;
     }
+    passwordSetupFlow = null;
     window.history.replaceState({}, '', window.location.pathname);
     showAuthorized();
   });
@@ -94,7 +96,7 @@ function showAuthorized() {
 async function refresh() {
   render('<p>Cargando acceso seguro...</p>');
   const { authorized } = await getAuthorizedSession();
-  if (authorized && getPasswordSetupFlow(window.location.href)) showPasswordUpdate();
+  if (authorized && (passwordSetupFlow || getPasswordSetupFlow(window.location.href))) showPasswordUpdate();
   else if (authorized) showAuthorized();
   else showSignIn();
 }

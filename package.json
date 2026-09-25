@@ -12,7 +12,9 @@
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",
-    "supabase:reset": "supabase db reset"
+    "supabase:reset": "supabase db reset",
+    "supabase:test-db": "supabase test db",
+    "test": "npm run supabase:test-db"
   },
   "repository": {
     "type": "git",

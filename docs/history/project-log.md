@@ -140,6 +140,26 @@ Diseño inicial del modelo lógico de datos antes de crear la infraestructura de
 
 - [Modelo lógico de datos](../architecture/data-model.md).
 
+## 2026-09-24
+
+### Contexto
+
+Materialización local del primer incremento de implementación: base de datos del catálogo.
+
+### Decisiones / cambios
+
+- Se materializó y validó localmente el núcleo PostgreSQL del catálogo mediante la migración `20260924000100_create_catalog_core.sql`, datos iniciales reproducibles y 95 pruebas pgTAP de estructura, integridad y seguridad cerrada.
+- Se crearon `usuarios_administrativos`, `categorias`, `productos`, `presentaciones` e `imagenes_producto`, con relaciones, restricciones, índices y marcas de tiempo.
+- Se precargaron las cinco categorías iniciales y se comprobó que el seed es idempotente.
+- Se habilitó RLS y se revocaron los privilegios directos de `anon` y `authenticated`; las políticas de acceso permitidas y la autenticación administrativa permanecen para el siguiente incremento.
+- Se cambiaron los puertos locales de Supabase al bloque `55320-55324` y `55329`, debido a una reserva de puertos de Windows que impedía utilizar el bloque predeterminado.
+
+### Referencias
+
+- [Migración inicial](../../supabase/migrations/20260924000100_create_catalog_core.sql).
+- [Pruebas de base de datos](../../supabase/tests/database/).
+- [Hoja de ruta de implementación](../development/mvp-implementation-roadmap.md).
+
 ## 2026-09-21
 
 ### Contexto

@@ -25,6 +25,6 @@ Instalar una extensión no configura por sí sola la herramienta correspondiente
 - Vite está instalado como dependencia de desarrollo y se ejecuta con `npm run dev`; `npm run build` genera la compilación de producción.
 - La CLI de Supabase está instalada como dependencia de desarrollo. `npm run supabase:start` inicia el entorno local con Docker y `npm run supabase:stop` lo detiene.
 - PostgreSQL podrá administrarse mediante Supabase Studio, la CLI de Supabase o una conexión autorizada, sin guardar contraseñas en el repositorio.
-- Las migraciones, políticas RLS y funciones RPC deberán mantenerse en archivos SQL versionados cuando se inicialice Supabase.
+- Las migraciones, políticas RLS y funciones RPC se mantienen en archivos SQL versionados bajo `supabase/migrations/`.
 
 Las dependencias se incorporan únicamente cuando responden a una necesidad concreta de la implementación.

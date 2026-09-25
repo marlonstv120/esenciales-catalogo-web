@@ -20,6 +20,6 @@ Las imágenes de productos se almacenarán en Supabase Storage; PostgreSQL conse
 
 ## Pendiente de definición
 
-El [modelo lógico de datos propuesto](data-model.md) define las entidades, restricciones y transacciones críticas que deberán materializarse en migraciones SQL y funciones RPC. Sigue pendiente validar sus tipos, índices, políticas RLS y funciones concretas al implementarlo.
+La migración `20260924000100_create_catalog_core.sql` materializa y valida localmente las entidades del núcleo de catálogo, sus restricciones, índices, marcas de tiempo y una postura RLS cerrada. El [modelo lógico de datos](data-model.md) conserva como diseño pendiente las solicitudes, sus transacciones y las funciones RPC.
 
-La arquitectura de implementación debe concretar las políticas RLS de cada tabla y bucket, la validación técnica del teléfono, las funciones RPC, la estructura del cliente y el proveedor de despliegue del frontend. Cualquier cambio a las decisiones aceptadas deberá justificarse y aprobarse como una decisión técnica relevante.
+La arquitectura de implementación debe concretar las políticas RLS permitidas de cada tabla y bucket, la validación técnica del teléfono, las funciones RPC, la estructura del cliente y el proveedor de despliegue del frontend. Cualquier cambio a las decisiones aceptadas deberá justificarse y aprobarse como una decisión técnica relevante.

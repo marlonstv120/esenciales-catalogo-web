@@ -2,7 +2,7 @@
 
 Aplicación web Full Stack para la **gestión y publicación del catálogo de productos de Esenciales**, desarrollada como proyecto integrador del Curso de Opción de Grado en Desarrollo Web Full Stack.
 
-> **Estado actual:** el MVP adoptará Supabase para los servicios de backend. El prototipo inicial con Node.js y Express permanece en el repositorio como antecedente técnico, pero ya no corresponde a la arquitectura vigente. La configuración de Supabase y las funcionalidades del catálogo están pendientes.
+> **Estado actual:** el MVP usa Supabase para los servicios de backend. El primer esquema local del catálogo, sus datos iniciales y su postura de seguridad cerrada están implementados y validados; la autenticación, las políticas de acceso y las funcionalidades del catálogo siguen pendientes.
 
 ## Sobre el proyecto
 
@@ -73,7 +73,7 @@ La IA actúa como asistente de desarrollo. Las decisiones importantes del proyec
 
 ## Estado de implementación
 
-El prototipo inicial con Node.js y Express fue sustituido por una base de frontend con Vite, HTML5, CSS3 y JavaScript sin framework. Esta base se conectará a Supabase. Están pendientes la creación y configuración del proyecto Supabase, las migraciones, la autenticación, las políticas de seguridad y las funcionalidades del catálogo.
+El prototipo inicial con Node.js y Express fue sustituido por una base de frontend con Vite, HTML5, CSS3 y JavaScript sin framework. Supabase está vinculado al proyecto remoto y el entorno local cuenta con una primera migración validada para el núcleo del catálogo. Están pendientes la autenticación administrativa, las políticas de acceso, Storage y las funcionalidades del catálogo.
 
  La arquitectura, estructura del código y decisiones técnicas se incorporarán progresivamente a partir del [alcance funcional MVP V1](docs/project/functional-scope.md).
 
@@ -92,7 +92,7 @@ npm run supabase:start
 npm run dev
 ```
 
-Supabase Studio estará disponible en `http://127.0.0.1:54323`. Vite mostrará la URL del cliente en la terminal, normalmente `http://localhost:5173`.
+Supabase Studio estará disponible en `http://127.0.0.1:55323`. Vite mostrará la URL del cliente en la terminal, normalmente `http://localhost:5173`.
 
 Para detener los servicios locales de Supabase:
 

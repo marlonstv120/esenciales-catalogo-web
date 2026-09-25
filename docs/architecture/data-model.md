@@ -2,7 +2,7 @@
 
 ## Estado
 
-Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. Deriva del alcance funcional MVP V1 y de las decisiones de datos confirmadas durante su definición. Debe validarse contra las migraciones SQL antes de considerarse implementado.
+Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo formado por `usuarios_administrativos`, `categorias`, `productos`, `presentaciones` e `imagenes_producto` fue materializado en `20260924000100_create_catalog_core.sql` y validado localmente el 24 de septiembre de 2026 mediante `supabase db reset` y 95 aserciones pgTAP. Las tablas de solicitudes, las funciones RPC, las políticas de acceso permitidas y la integración del cliente siguen pendientes.
 
 ## Propósito
 
@@ -273,11 +273,10 @@ COMMIT
 
 La operación no podrá crear detalles, cambiar presentaciones ni actualizar precios históricos.
 
-## Pendientes antes de escribir migraciones
+## Pendientes para los incrementos siguientes
 
 - Definir el bucket, las políticas de Storage y las URL de imágenes que utilizará el catálogo.
-- Definir las políticas RLS y permisos de funciones para usuarios anónimos y administradores autenticados.
+- Definir las políticas RLS permitidas y los permisos de funciones para visitantes y administradores autenticados. Las cinco tablas del núcleo ya tienen RLS habilitado sin políticas permisivas.
 - Precisar la validación técnica de teléfonos sin excluir números legítimos.
-- Validar los tipos SQL finales, índices y mecanismos para actualizar `actualizado_en`.
 - Revisar el diseño con los datos reales iniciales de Esenciales.
-- Probar las migraciones, políticas RLS y funciones RPC en el entorno local de Supabase antes de conectar el cliente web.
+- Materializar y probar las tablas, restricciones y funciones RPC de solicitudes e inventario en el entorno local antes de conectar esos flujos al cliente web.

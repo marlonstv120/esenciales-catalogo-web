@@ -2,9 +2,9 @@
 
 **Propósito:** definir qué debe dibujarse primero en papel y lápiz y qué debe trasladarse después a Figma para representar el MVP de ESENCIALES.
 
-**Estado:** guía de diseño basada en el alcance funcional aprobado. La organización visual propuesta debe revisarse con el equipo y con el propietario durante el bocetado; no agrega funcionalidades al MVP.
+**Estado:** guía estructural basada en el alcance funcional aprobado. Define pantallas, contenido, flujos y estados; el tratamiento visual compartido se rige por el [sistema visual](DESIGN.md). Los wireframes y mockups no son una especificación visual definitiva ni agregan funcionalidades al MVP.
 
-**Fuentes:** [alcance funcional](functional-scope.md), [requisitos](requirements.md), [reglas de negocio](business-rules.md), [actores y flujos](actors-and-flows.md) y [briefing validado](briefing-esenciales.md).
+**Fuentes:** [alcance funcional](functional-scope.md), [requisitos](requirements.md), [reglas de negocio](business-rules.md), [actores y flujos](actors-and-flows.md), [briefing validado](briefing-esenciales.md) y [sistema visual](DESIGN.md).
 
 ## 1. Cómo utilizar esta guía
 

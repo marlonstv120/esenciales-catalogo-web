@@ -272,9 +272,9 @@ Un incremento solo cambia a completado cuando cumple su puerta de salida y cuent
 | --- | --- | --- |
 | 1. Base de datos del catalogo | Completado | Migración `20260924000100_create_catalog_core.sql`, seed reproducible y 95 pruebas pgTAP locales. |
 | 2. Seguridad y autenticacion | Completado localmente | Migración `20260924000200_add_admin_auth_policies.sql`, flujo Auth local y 110 pruebas pgTAP; pendiente validación visual manual del cliente. |
-| 3. Categorias | Pendiente | Se definira al cerrar la validacion visual del Incremento 2 |
-| 4. Productos y presentaciones | Pendiente | Se definira al cerrar el Incremento 3 |
-| 5. Imagenes | Pendiente | Se definira al cerrar el Incremento 4 |
+| 3. Categorias | Implementado localmente | CRUD administrativo, 110 pruebas pgTAP y 31 pruebas de cliente; pendiente recorrido manual responsive. |
+| 4. Productos y presentaciones | Implementado localmente | Shell hash administrativo, CRUD de productos y presentaciones, promocion e inventario rapido; `npm run test:auth` y `npm run build` pasaron el 26 de septiembre de 2026. Pendiente validacion manual responsive y de accesibilidad. |
+| 5. Imagenes | Implementado localmente | Migración `20260926000100_add_product_images_storage.sql`, bucket publico con lectura publica y escritura administrativa, imagen principal con validacion JPEG/PNG/WebP de 5 MiB y compensacion; `npm run supabase:reset`, `npm run supabase:test-db`, pruebas Node y `npm run build` pasaron el 26 de septiembre de 2026. Pendiente recorrido manual de carga, reemplazo, retiro, teclado y responsive. |
 | 6. Catalogo publico | Pendiente | Se definira al cerrar el Incremento 5 |
 | 7. Busqueda y filtros | Pendiente | Se definira al cerrar el Incremento 6 |
 | 8. Carrito | Pendiente | Se definira al cerrar el Incremento 7 |

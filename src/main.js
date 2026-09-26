@@ -1,106 +1,29 @@
 import './styles.css';
-import { getPasswordSetupFlow } from './auth-flow.mjs';
-import {
-  getAuthorizedSession,
-  observeSession,
-  requestPasswordRecovery,
-  signIn,
-  signOut,
-  updatePassword,
-} from './auth.js';
+import { getPostPasswordUpdateView, getPasswordSetupFlow, shouldRenderPasswordUpdate } from './auth-flow.mjs';
+import { authCard, getPasswordToggleState, loadingView, passwordUpdateView, recoveryView, signInView } from './auth-views.mjs';
+import { getAuthorizedSession, observeSession, requestPasswordRecovery, signIn, signOut, updatePassword } from './auth.js';
+import { startAdminShell } from './admin-shell.js';
 
 const app = document.querySelector('#app');
-let passwordSetupFlow = getPasswordSetupFlow(window.location.href);
+let passwordUpdateActive = Boolean(getPasswordSetupFlow(window.location.href));
+let authorizationGeneration = 0;
+let stopAdminShell = null;
 
 function render(content) {
-  app.innerHTML = `<section class="auth-card"><h1>Esenciales</h1>${content}</section>`;
+  stopAdminShell?.(); stopAdminShell = null;
+  app.innerHTML = authCard(content);
+  app.querySelectorAll('[data-password-toggle]').forEach((button) => button.addEventListener('click', () => {
+    const input = app.querySelector(`#${button.dataset.passwordToggle}`);
+    const next = getPasswordToggleState(input.type === 'text');
+    input.type = next.inputType; button.setAttribute('aria-pressed', next.pressed); button.setAttribute('aria-label', next.label);
+  }));
 }
 
-function showSignIn(message = '') {
-  render(`
-    <p>Acceso administrativo</p>
-    <form id="sign-in-form">
-      <label>Correo<input name="email" type="email" autocomplete="email" required></label>
-      <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
-      <button>Iniciar sesión</button>
-    </form>
-    <button class="link-button" id="show-recovery" type="button">¿Olvidaste tu contraseña?</button>
-    <p class="message" role="status">${message}</p>
-  `);
-  document.querySelector('#sign-in-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const { error } = await signIn(form.get('email').trim(), form.get('password'));
-    if (error) showSignIn('No fue posible iniciar sesión. Verifica tus datos.');
-  });
-  document.querySelector('#show-recovery').addEventListener('click', showRecovery);
-}
-
-function showRecovery(message = '') {
-  render(`
-    <p>Solicita un enlace para recuperar tu contraseña.</p>
-    <form id="recovery-form">
-      <label>Correo<input name="email" type="email" autocomplete="email" required></label>
-      <button>Enviar enlace</button>
-    </form>
-    <button class="link-button" id="show-sign-in" type="button">Volver al acceso</button>
-    <p class="message" role="status">${message}</p>
-  `);
-  document.querySelector('#recovery-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const email = new FormData(event.currentTarget).get('email').trim();
-    await requestPasswordRecovery(email);
-    showRecovery('Si el correo está registrado, revisa el enlace enviado.');
-  });
-  document.querySelector('#show-sign-in').addEventListener('click', () => showSignIn());
-}
-
-function showPasswordUpdate(message = '') {
-  render(`
-    <p>Define una nueva contraseña.</p>
-    <form id="password-form">
-      <label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" required minlength="6"></label>
-      <label>Confirmar contraseña<input name="confirmation" type="password" autocomplete="new-password" required minlength="6"></label>
-      <button>Actualizar contraseña</button>
-    </form>
-    <p class="message" role="status">${message}</p>
-  `);
-  document.querySelector('#password-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const password = form.get('password');
-    if (password !== form.get('confirmation')) {
-      showPasswordUpdate('Las contraseñas deben coincidir.');
-      return;
-    }
-    const { error } = await updatePassword(password);
-    if (error) {
-      showPasswordUpdate('No fue posible actualizar la contraseña.');
-      return;
-    }
-    passwordSetupFlow = null;
-    window.history.replaceState({}, '', window.location.pathname);
-    showAuthorized();
-  });
-}
-
-function showAuthorized() {
-  render(`
-    <p>Sesión administrativa activa.</p>
-    <p>La gestión de categorías se habilitará en el siguiente incremento.</p>
-    <button id="sign-out" type="button">Cerrar sesión</button>
-  `);
-  document.querySelector('#sign-out').addEventListener('click', () => signOut());
-}
-
-async function refresh() {
-  render('<p>Cargando acceso seguro...</p>');
-  const { authorized } = await getAuthorizedSession();
-  if (authorized && (passwordSetupFlow || getPasswordSetupFlow(window.location.href))) showPasswordUpdate();
-  else if (authorized) showAuthorized();
-  else showSignIn();
-}
-
-observeSession(() => refresh());
-
-refresh();
+function markFormBusy(form) { const button = form.querySelector('[type="submit"]'); button.textContent = button.dataset.busyLabel; button.disabled = true; button.setAttribute('aria-busy', 'true'); }
+function showSignIn(message = '', tone = 'error') { render(signInView(message, tone)); app.querySelector('#sign-in-form').addEventListener('submit', async (event) => { event.preventDefault(); markFormBusy(event.currentTarget); const form = new FormData(event.currentTarget); const { error } = await signIn(form.get('email').trim(), form.get('password')); if (error) showSignIn('No fue posible iniciar sesion. Verifica tus datos.'); }); app.querySelector('#show-recovery').addEventListener('click', () => showRecovery()); }
+function showRecovery(message = '', tone = 'error') { render(recoveryView(message, tone)); app.querySelector('#recovery-form').addEventListener('submit', async (event) => { event.preventDefault(); markFormBusy(event.currentTarget); const { error } = await requestPasswordRecovery(new FormData(event.currentTarget).get('email').trim()); if (error) showRecovery('No fue posible enviar el enlace. Intentalo de nuevo.'); else showRecovery('Si el correo esta registrado, revisa el enlace enviado.', 'success'); }); app.querySelector('#show-sign-in').addEventListener('click', () => showSignIn()); }
+function showPasswordUpdate(message = '') { render(passwordUpdateView(message)); app.querySelector('#password-form').addEventListener('submit', async (event) => { event.preventDefault(); markFormBusy(event.currentTarget); const form = new FormData(event.currentTarget); if (form.get('password') !== form.get('confirmation')) return showPasswordUpdate('Las contraseñas deben coincidir.'); const { error } = await updatePassword(form.get('password')); if (error) return showPasswordUpdate('No fue posible actualizar la contraseña.'); const { authorized } = await getAuthorizedSession(); passwordUpdateActive = false; window.history.replaceState({}, '', window.location.pathname); if (getPostPasswordUpdateView(authorized) === 'authorized') showAuthorized(); else showSignIn('Contraseña actualizada. Puedes iniciar sesión.', 'success'); }); }
+function showAuthorized(generation = authorizationGeneration) { stopAdminShell?.(); stopAdminShell = startAdminShell({ app, generation, isCurrentGeneration: () => generation === authorizationGeneration, onSignOut: signOut }); }
+async function refresh() { const generation = ++authorizationGeneration; stopAdminShell?.(); stopAdminShell = null; if (passwordUpdateActive) return; render(loadingView()); const { authorized } = await getAuthorizedSession(); if (passwordUpdateActive || generation !== authorizationGeneration) return; if (authorized) showAuthorized(generation); else showSignIn(); }
+observeSession((event) => { if (shouldRenderPasswordUpdate(event, window.location.href, passwordUpdateActive)) { passwordUpdateActive = true; showPasswordUpdate(); } else refresh(); });
+if (passwordUpdateActive) showPasswordUpdate(); else refresh();

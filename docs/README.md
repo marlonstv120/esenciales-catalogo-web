@@ -9,6 +9,7 @@ Esta carpeta es la fuente permanente de contexto del proyecto. Las fuentes origi
 - [Requisitos](project/requirements.md): requisitos funcionales y no funcionales identificados.
 - [Reglas de negocio](project/business-rules.md): comportamiento obligatorio del dominio.
 - [Actores y flujos](project/actors-and-flows.md): participantes, permisos y recorridos principales.
+- [Sistema visual](project/DESIGN.md): fuente principal de identidad aplicada, tokens, componentes, responsive y accesibilidad de la interfaz.
 - [Guía de wireframes](project/wireframe-guide.md): pantallas, estados y proceso para bocetar en papel y trasladar el diseño a Figma.
 - [Identidad visual](project/visual-identity.md): guía derivada del logo para orientar colores, jerarquía y estilo de la interfaz.
 - [Arquitectura](architecture/overview.md): decisiones técnicas confirmadas.

@@ -140,6 +140,34 @@ Diseño inicial del modelo lógico de datos antes de crear la infraestructura de
 
 - [Modelo lógico de datos](../architecture/data-model.md).
 
+## 2026-09-25
+
+### Contexto
+
+Consolidación de una dirección visual compartida antes de continuar la implementación de las interfaces públicas y administrativas.
+
+### Decisiones / cambios
+
+- Se aprueba la dirección `perfumería boutique clara con anclas oscuras`.
+- El catálogo público y la administración compartirán el mismo sistema visual, con mayor expresión de marca en el catálogo y mayor neutralidad y densidad operativa en la administración.
+- Se confirman negro, dorado y dorado claro como colores centrales, junto con una variante bronce accesible, superficies cálidas y colores semánticos independientes.
+- Se adopta Source Sans 3 como única familia tipográfica de interfaz y se reserva el lettering manuscrito para el logo oficial.
+- Se definen reglas para fotografía, responsive, componentes, estados, movimiento y accesibilidad WCAG 2.2 AA.
+- `docs/project/DESIGN.md` pasa a ser la fuente principal del sistema visual; los wireframes y mockups permanecen como referencias estructurales y de flujo.
+- La apariencia provisional del frontend no se conserva como referencia visual, aunque su comportamiento válido deberá mantenerse durante la adaptación posterior.
+
+### Pendientes
+
+- Obtener variantes oficiales del logo y recopilar fotografías reales de productos.
+- Confirmar el contenido público de WhatsApp, contacto, entrega y envío.
+- Validar en implementación renderizada los puntos de quiebre, estados y ajustes de densidad antes de declarar la interfaz terminada.
+
+### Referencias
+
+- [Sistema visual](../project/DESIGN.md).
+- [Identidad visual](../project/visual-identity.md).
+- [Guía de wireframes](../project/wireframe-guide.md).
+
 ## 2026-09-24
 
 ### Contexto
@@ -171,6 +199,52 @@ Implementación local del segundo incremento: seguridad y autenticación adminis
 - Se implementó el cliente mínimo de inicio de sesión, cierre, recuperación y verificación de autorización mediante RPC.
 - Las pruebas pgTAP cubren administrador activo, no autorizado e inactivo; `npm test` pasó con 110 aserciones y `npm run build` compiló correctamente el 25 de septiembre de 2026.
 - La validación visual manual de los flujos del cliente queda pendiente; la migración no se aplicó al proyecto remoto.
+
+## 2026-09-26
+
+### Contexto
+
+Implementacion local del quinto incremento: imagen principal de producto.
+
+### Decisiones / cambios
+
+- Se agrego la migracion `20260926000100_add_product_images_storage.sql`: bucket publico `productos`, limite de 5 MiB, JPEG/PNG/WebP, lectura publica y operaciones de escritura limitadas a `es_administrador_activo()`.
+- Se implemento la coordinacion cliente de carga, reemplazo, retiro y reintento de limpieza. La referencia PostgreSQL se conserva como fuente de verdad y los fallos posteriores de Storage quedan recuperables sin exponer referencias incoherentes.
+- El editor administrativo presenta un area 4:5 con respaldo neutral, texto alternativo editable, seleccion, reemplazo, retiro, estado ocupado y mensajes de error recuperables.
+- `npm run supabase:reset`, `npm run supabase:test-db`, pruebas Node y `npm run build` pasaron localmente el 26 de septiembre de 2026. No se aplicaron migraciones ni archivos al proyecto remoto.
+
+### Pendientes
+
+- Ejecutar y documentar el recorrido manual de carga, reemplazo, retiro, error, reintento de limpieza, teclado y responsive en 390 px, 768 px y escritorio.
+
+### Referencias
+
+- [Migracion de Storage](../../supabase/migrations/20260926000100_add_product_images_storage.sql).
+- [Plan del Incremento 5](../superpowers/plans/2026-09-26-incremento-5-imagenes.md).
+
+## 2026-09-26
+
+### Contexto
+
+Implementacion local del tercer incremento: administracion de categorias.
+
+### Decisiones / cambios
+
+- Se implemento el CRUD administrativo de categorias: listado, creacion, edicion, activacion y desactivacion sin eliminacion fisica.
+- El cliente reutiliza las politicas RLS existentes y traduce nombres vacios o duplicados a mensajes recuperables.
+- Se agregaron pruebas de modulo y vistas para normalizacion, estados, acciones y escape de contenido; `npm test` paso con 110 pruebas pgTAP y 31 pruebas de cliente, y `npm run build` paso el 26 de septiembre de 2026.
+- El recorrido manual responsive de categorias y la validacion visual pendiente de Auth no se realizaron durante este incremento.
+
+### Contexto
+
+Implementacion local del cuarto incremento: productos, presentaciones e inventario administrativo.
+
+### Decisiones / cambios
+
+- Se incorporo un shell administrativo modular con rutas hash para categorias, productos e inventario; el CRUD de categorias se traslado a su propio controlador.
+- Se implementaron productos y presentaciones con activacion, desactivacion, precio promocional, disponibilidad derivada y resumen de `No publicable` sin simular imagenes.
+- Se agrego edicion rapida de precio, promocion, stock, modo y estado de una presentacion desde Inventario. Bajo pedido normaliza el stock a cero antes de guardar.
+- `npm run test:auth` paso con 38 pruebas de cliente y `npm run build` paso el 26 de septiembre de 2026. La validacion manual responsive y de accesibilidad de los flujos administrativos sigue pendiente.
 
 ## 2026-09-21
 

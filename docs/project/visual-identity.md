@@ -1,6 +1,6 @@
 # Identidad visual de ESENCIALES
 
-**Estado:** referencia visual derivada del [logo oficial](../sources/logo_esenciales.jpg). Sirve de guía para el diseño del sitio y no modifica el alcance funcional del MVP.
+**Estado:** referencia visual derivada del [logo oficial](../sources/logo_esenciales.jpg). El [sistema visual](DESIGN.md) es la fuente principal para aplicar esta identidad a la interfaz y no modifica el alcance funcional del MVP.
 
 ## Elementos confirmados
 
@@ -12,9 +12,9 @@
 - **Estilo:** minimalista, elegante y asociado a la perfumería de lujo.
 - **Tratamiento visual:** fondo negro liso y trazos/texto con acabado dorado brillante o metálico.
 
-## Paleta de referencia
+## Paleta de marca
 
-Los siguientes valores reproducen de forma aproximada el contraste observado en el logo. Deben validarse con el propietario antes de declararlos colores de marca definitivos.
+Los siguientes valores, derivados del logo, fueron adoptados como colores centrales del sistema visual. Sus combinaciones accesibles y variantes operativas se definen en [DESIGN.md](DESIGN.md#5-color).
 
 | Uso sugerido | Color | Valor de referencia |
 | --- | --- | --- |
@@ -34,7 +34,7 @@ El dorado degradado se reserva para el logo y detalles destacados. Los controles
 
 ## Orientación para la interfaz
 
-- El sitio público puede usar el negro como base visual, dorado para llamados a la acción y acentos, y superficies neutras que mantengan una lectura cómoda de productos e imágenes.
+- El sitio público usa superficies claras cálidas como base, bloques negros puntuales como anclas de marca y dorado selectivo para acentos; los llamados a la acción siguen las combinaciones accesibles definidas en el sistema visual.
 - La página de inicio debe dar protagonismo al logo, al eslogan y a las fotografías de productos, sin recargarla con decoraciones que compitan con la marca.
 - Las tarjetas, botones y separadores pueden retomar líneas finas, curvas suaves y espacio generoso, coherentes con el isotipo.
 - La administración debe diferenciarse visualmente del sitio público, pero puede conservar la identidad mediante el logo y acentos dorados discretos.
@@ -42,7 +42,5 @@ El dorado degradado se reserva para el logo y detalles destacados. Los controles
 
 ## Pendiente de validación
 
-- Valores de color oficiales y variantes autorizadas para fondos claros.
 - Archivo vectorial o versiones horizontales, reducidas y monocromáticas del logo.
-- Tipografías licenciadas o alternativas aprobadas para la interfaz.
 - Reglas de tamaño mínimo, área de protección y usos no permitidos del logo.

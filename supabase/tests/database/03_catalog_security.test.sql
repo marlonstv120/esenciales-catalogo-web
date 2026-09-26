@@ -1,6 +1,6 @@
 begin;
 
-select plan(24);
+select plan(27);
 
 select ok((select relrowsecurity from pg_class where oid = 'public.usuarios_administrativos'::regclass), 'RLS activo en usuarios_administrativos');
 select ok((select relrowsecurity from pg_class where oid = 'public.categorias'::regclass), 'RLS activo en categorias');
@@ -30,6 +30,10 @@ select ok(has_table_privilege('authenticated', 'public.categorias', 'INSERT'), '
 select ok(has_table_privilege('authenticated', 'public.productos', 'UPDATE'), 'authenticated modifica productos sujeto a RLS');
 select ok(has_table_privilege('authenticated', 'public.presentaciones', 'INSERT'), 'authenticated crea presentaciones sujeto a RLS');
 select ok(has_table_privilege('authenticated', 'public.imagenes_producto', 'DELETE'), 'authenticated elimina imagenes sujeto a RLS');
+
+select ok(exists (select 1 from storage.buckets where id = 'productos' and public), 'bucket productos publico existe');
+select policies_are('storage', 'objects', array['lectura_publica_imagenes_productos', 'administrador_activo_gestiona_imagenes_productos'], 'Storage solo define lectura publica y gestion administrativa');
+select policy_roles_are('storage', 'objects', 'administrador_activo_gestiona_imagenes_productos', array['authenticated'], 'solo authenticated puede intentar gestionar objetos sujeto a autorizacion');
 
 select * from finish();
 rollback;

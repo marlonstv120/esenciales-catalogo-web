@@ -14,7 +14,7 @@
     "supabase:status": "supabase status",
     "supabase:reset": "supabase db reset",
     "supabase:test-db": "supabase test db",
-    "test:auth": "node --test tests/auth-flow.test.mjs",
+    "test:auth": "node --test",
     "test": "npm run supabase:test-db && npm run test:auth"
   },
   "repository": {

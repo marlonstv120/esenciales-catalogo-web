@@ -2,10 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   getPostPasswordUpdateView,
+  getAdminAuthReturnUrl,
   getPasswordSetupFlow,
   shouldRenderPasswordUpdate,
   shouldShowPasswordUpdate,
 } from '../src/auth-flow.mjs';
+
+test('returns Auth recovery and invitation flows to the admin route', () => {
+  assert.equal(getAdminAuthReturnUrl('http://localhost:5173'), 'http://localhost:5173/admin');
+});
 
 test('recognizes invitation links as password setup flows', () => {
   assert.equal(

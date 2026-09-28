@@ -2,7 +2,7 @@
 
 ## Estado
 
-Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo formado por `usuarios_administrativos`, `categorias`, `productos`, `presentaciones` e `imagenes_producto` fue materializado en `20260924000100_create_catalog_core.sql` y validado localmente el 24 de septiembre de 2026 mediante `supabase db reset` y 95 aserciones pgTAP. Las tablas de solicitudes, las funciones RPC, las políticas de acceso permitidas y la integración del cliente siguen pendientes.
+Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo fue materializado en `20260924000100_create_catalog_core.sql`; las políticas administrativas, Storage y las RPC de lectura pública se implementaron en migraciones posteriores. El cliente consulta el catálogo mediante `obtener_catalogo_publico()` y `obtener_producto_publico(integer)`, manteniendo las tablas cerradas a `anon`. Las tablas de solicitudes y sus RPC transaccionales siguen pendientes.
 
 ## Propósito
 
@@ -201,7 +201,7 @@ El valor total de productos se calculará sumando los subtotales de sus detalles
 - Las funciones RPC validan y normalizan entradas de solicitudes, aplican reglas de publicación, disponibilidad, precios, transiciones y edición permitida.
 - La función RPC de registro exige la aceptación y asigna desde configuración controlada las versiones vigentes y la fecha de aceptación; no confía en versiones arbitrarias enviadas por el navegador.
 - Supabase Auth identifica al administrador y las políticas RLS, permisos y funciones autorizan cada operación administrativa.
-- Las políticas RLS exponen al visitante solo el catálogo publicable y no permiten escrituras administrativas anónimas.
+- `obtener_catalogo_publico()` y `obtener_producto_publico(integer)` exponen solo el catálogo publicable; las tablas relacionadas permanecen cerradas a lectura anónima directa. Las RPC no aceptan escrituras.
 - Las reglas de Storage validan la autorización de carga, modificación y eliminación de imágenes; el cliente también validará tipo y tamaño antes de cargarlas.
 
 ## Transacciones críticas

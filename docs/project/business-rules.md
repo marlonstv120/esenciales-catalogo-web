@@ -50,7 +50,7 @@ La disponibilidad se determina por presentación activa y no únicamente por pro
 
 En tarjetas, el resumen utiliza esta precedencia: `Disponible` si existe al menos una presentación disponible; de lo contrario, `Bajo pedido` si existe al menos una presentación en ese modo; `Agotado` si las presentaciones restantes de venta inmediata tienen stock cero; y `No disponible` si ninguna admite solicitudes. El detalle conserva el estado individual de cada presentación.
 
-El filtro de disponibilidad incluye un producto cuando al menos una presentación activa coincide con el estado seleccionado.
+La disponibilidad se muestra por presentación y en el resumen de cada tarjeta, pero el catálogo no ofrece un filtro por disponibilidad (decisión del equipo del 28 de septiembre de 2026, en reemplazo de la regla de filtrado anterior).
 
 ### RN-12 - Agotado automático
 
@@ -131,7 +131,7 @@ Una presentación inactiva se conserva para mantener relaciones históricas, per
 
 ### RN-25 - Precio de referencia del producto
 
-Cuando se implementen los filtros y ordenamientos SHOULD de precio, se usa el precio efectivo de presentaciones activas que admitan solicitudes. El filtro coincide si al menos una está dentro del rango y el orden utiliza el menor precio efectivo de cada producto. `Más recientes` utiliza la fecha de creación del producto.
+El filtro obligatorio de precio usa el precio efectivo de presentaciones activas que admitan solicitudes y coincide si al menos una está dentro del rango. Si se implementa el ordenamiento SHOULD por precio, utiliza el menor precio efectivo solicitable de cada producto; `Más recientes` utiliza la fecha de creación del producto.
 
 ## Aceptación de términos y tratamiento de datos
 

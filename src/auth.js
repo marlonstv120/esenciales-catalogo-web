@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { getAdminAuthReturnUrl } from './auth-flow.mjs';
 
 export async function getAuthorizedSession() {
   const {
@@ -30,7 +31,7 @@ export function signOut() {
 
 export function requestPasswordRecovery(email) {
   return supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/`,
+    redirectTo: getAdminAuthReturnUrl(window.location.origin),
   });
 }
 

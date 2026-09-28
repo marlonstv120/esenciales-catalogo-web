@@ -5,16 +5,20 @@ export function getAdminRoute(hash) {
   return routes.includes(route) ? route : 'categorias';
 }
 
-function shellView(route) {
-  const label = route[0].toUpperCase() + route.slice(1);
+export function shellView(route) {
+  const labels = { categorias: 'Categorías', productos: 'Productos', inventario: 'Inventario' };
+  const label = labels[route] || labels.categorias;
+  const navigation = `<a href="#categorias" ${route === 'categorias' ? 'aria-current="page"' : ''}>Categorías</a><a href="#productos" ${route === 'productos' ? 'aria-current="page"' : ''}>Productos</a><a href="#inventario" ${route === 'inventario' ? 'aria-current="page"' : ''}>Inventario</a>`;
+  const shopLink = `<a class="admin-shop-link" href="/" target="_blank" rel="noopener noreferrer">Ver tienda <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6m0-6-9 9"/><path d="M20 14v6H4V4h6"/></svg></a>`;
   return `<a class="skip-link" href="#admin-content">Saltar a contenido</a>
     <div class="admin-shell">
-      <aside class="admin-navigation" aria-label="Administracion">
-        <p class="eyebrow">ESENCIALES</p><h1>Administracion</h1>
-        <nav><a href="#categorias" ${route === 'categorias' ? 'aria-current="page"' : ''}>Categorias</a><a href="#productos" ${route === 'productos' ? 'aria-current="page"' : ''}>Productos</a><a href="#inventario" ${route === 'inventario' ? 'aria-current="page"' : ''}>Inventario</a></nav>
-        <button class="secondary-button" type="button" id="sign-out">Cerrar sesion</button>
+      <aside class="admin-navigation" aria-label="Administración">
+        <a class="admin-navigation__brand" href="#categorias" aria-label="ESENCIALES — Categorías"><img src="/assets/brand/esenciales-logo-horizontal.png" alt=""></a>
+        <nav class="admin-navigation__links" aria-label="Secciones administrativas">${navigation}</nav>
+        <div class="admin-navigation__actions">${shopLink}<button class="secondary-button" type="button" data-sign-out>Cerrar sesión</button></div>
+        <details class="admin-mobile-menu"><summary aria-label="Menú administrativo">Menú</summary><div class="admin-mobile-menu__panel"><nav aria-label="Secciones administrativas">${navigation}</nav><div class="admin-mobile-menu__actions">${shopLink}<button class="secondary-button" type="button" data-sign-out>Cerrar sesión</button></div></div></details>
       </aside>
-      <main class="admin-main" id="admin-content" tabindex="-1"><header class="admin-header"><div><p class="eyebrow">Administracion</p><h2>${label}</h2></div></header><div data-admin-outlet></div></main>
+      <main class="admin-main" id="admin-content" tabindex="-1"><div class="admin-main__inner"><header class="admin-header"><div><p class="eyebrow">Administración</p><h1>${label}</h1></div></header><div data-admin-outlet></div></div></main>
     </div>`;
 }
 
@@ -31,7 +35,7 @@ export function startAdminShell({ app, generation, isCurrentGeneration, onSignOu
     if (!active || !isCurrentGeneration()) return;
     const route = getAdminRoute(window.location.hash);
     app.innerHTML = shellView(route);
-    app.querySelector('#sign-out').addEventListener('click', onSignOut);
+    app.querySelectorAll('[data-sign-out]').forEach((button) => button.addEventListener('click', onSignOut));
     const screen = await renderers[route]();
     if (!active || !isCurrentGeneration()) return;
     await screen({ ...context, outlet: app.querySelector('[data-admin-outlet]') });

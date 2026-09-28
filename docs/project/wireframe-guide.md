@@ -160,8 +160,8 @@ El acceso general a WhatsApp y los textos de entrega o envío permanecen pendien
 
 - Título `Catálogo`.
 - Campo `Buscar por nombre`.
-- Filtro por categoría.
-- Filtro por disponibilidad: Disponible, Bajo pedido, Agotado y No disponible.
+- Botón `Filtros` que despliega categoría, género, clasificación y precio mínimo y máximo en COP.
+- Accesos rápidos combinables `Hombre`, `Mujer`, `Original` y `1.1`, sincronizados con el panel.
 - Acción para limpiar filtros.
 - Cantidad de resultados.
 - Cuadrícula o lista de tarjetas.
@@ -169,7 +169,7 @@ El acceso general a WhatsApp y los textos de entrega o envío permanecen pendien
 
 **Contenido SHOULD:**
 
-- Filtros por género, marca y rango de precio.
+- Filtro por marca.
 - Orden por más recientes, menor precio, mayor precio o nombre.
 
 **Estados que se deben representar:**

@@ -35,7 +35,7 @@ test('marks category details and action variants for responsive styling', () => 
 test('renders a labeled required category form and preserves its value', () => {
   const view = categoryFormView({ nombre: 'Cremas', error: 'Ese nombre ya existe.' });
 
-  assert.match(view, /<label for="category-name">Nombre de la categoria<\/label>/);
+  assert.match(view, /<label for="category-name">Nombre de la categoría<\/label>/);
   assert.match(view, /id="category-name"[^>]*required/);
   assert.match(view, /value="Cremas"/);
   assert.match(view, /role="alert">Ese nombre ya existe/);
@@ -44,7 +44,7 @@ test('renders a labeled required category form and preserves its value', () => {
 test('renders a deactivation warning and confirmation controls', () => {
   const view = deactivationDialogView({ id: 1, nombre: 'Splash' });
 
-  assert.match(view, /sus productos se ocultaran del catalogo publico/);
+  assert.match(view, /sus productos se ocultarán del catálogo público/);
   assert.match(view, /data-category-confirm-deactivate="1"/);
   assert.match(view, /data-category-cancel-dialog/);
 });
@@ -59,7 +59,7 @@ test('marks a pending deactivation as busy and disables confirmation', () => {
 test('renders loading, empty, and retry states', () => {
   assert.match(categoriesView([], { loading: true }), /aria-busy="true"/);
   assert.match(categoriesView([], { error: 'Sin conexion.' }), /data-category-retry/);
-  assert.match(categoriesView([]), /Aun no hay categorias/);
+  assert.match(categoriesView([]), /Aún no hay categorías/);
 });
 
 test('escapes category names before rendering them', () => {

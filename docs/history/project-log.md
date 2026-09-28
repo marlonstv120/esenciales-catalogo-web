@@ -200,6 +200,30 @@ Implementación local del segundo incremento: seguridad y autenticación adminis
 - Las pruebas pgTAP cubren administrador activo, no autorizado e inactivo; `npm test` pasó con 110 aserciones y `npm run build` compiló correctamente el 25 de septiembre de 2026.
 - La validación visual manual de los flujos del cliente queda pendiente; la migración no se aplicó al proyecto remoto.
 
+## 2026-09-27
+
+### Contexto
+
+Implementacion local del sexto incremento: catalogo publico.
+
+### Decisiones / cambios
+
+- Se agregaron `20260926000200_add_public_catalog_rpc.sql` y `20260927000100_add_public_reference_normal_price.sql`, con dos RPC de lectura; `anon` no obtiene privilegios directos sobre las tablas de catalogo, el stock numerico no se expone y las tarjetas pueden mostrar el precio normal junto a la promocion de referencia.
+- Se implementaron portada, categorias agrupadas, destacados publicables, detalle de presentaciones, rutas publicas y carrito informativo. `/admin` conserva Auth y el workspace administrativo.
+- La recuperacion redirige a `/admin` y la allowlist local de Auth admite esa ruta. Los servicios locales se reiniciaron desde el volumen existente, sin `supabase db reset`; el conteo de usuarios locales Auth permanecio en uno.
+- `npm test` paso con 138 pruebas pgTAP y 69 pruebas Node; `npm run build` paso el 27 de septiembre de 2026. `supabase migration up --local` aplico las migraciones locales pendientes. No se enviaron migraciones remotas.
+
+### Pendientes
+
+- Validar manualmente rutas, teclado, responsive, zoom, errores/reintentos e invitacion/recuperacion Auth en 390 px, 768 px y escritorio.
+
+### Referencias
+
+- [Migracion de RPC publicas](../../supabase/migrations/20260926000200_add_public_catalog_rpc.sql).
+- [Precio normal de referencia](../../supabase/migrations/20260927000100_add_public_reference_normal_price.sql).
+- [ADR-008: lectura publica mediante RPC](../architecture/decisions/ADR-008-lectura-publica-del-catalogo-mediante-rpc.md).
+- [Plan del Incremento 6](../superpowers/plans/2026-09-26-incremento-6-catalogo-publico.md).
+
 ## 2026-09-26
 
 ### Contexto

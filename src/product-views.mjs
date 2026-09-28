@@ -2,7 +2,16 @@ function escapeHtml(value = '') { return String(value).replaceAll('&', '&amp;').
 function money(value) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value || 0); }
 export function presentationStatus(presentation) { if (!presentation.activo) return 'Inactiva'; if (presentation.modo_disponibilidad === 'bajo_pedido') return 'Bajo pedido'; if (presentation.modo_disponibilidad === 'no_disponible') return 'No disponible'; return Number(presentation.stock) > 0 ? 'Disponible' : 'Agotado'; }
 function validPresentation(p) { return p.activo && p.etiqueta && Number.isInteger(Number(p.precio_normal)) && Number(p.precio_normal) > 0 && Number(p.stock) >= 0 && ['venta_inmediata', 'bajo_pedido', 'no_disponible'].includes(p.modo_disponibilidad); }
-export function publicationSummary(product) { const reasons = []; if (!product.activo) reasons.push('Producto inactivo'); if (!product.categoria?.activo) reasons.push('Categoria inactiva'); if (!product.imagenes_producto?.length) reasons.push('Imagen pendiente'); if (!product.presentaciones?.some(validPresentation)) reasons.push('Falta presentacion activa valida'); return reasons.length ? `<p class="status status--warning"><strong>No publicable.</strong> ${reasons.map(escapeHtml).join('. ')}.</p>` : '<p class="status status--active">Publicable cuando se habilite el catalogo.</p>'; }
+export function productSaveConfirmation(product) {
+  if (!product?.id) return '';
+  const publicable = Number.isSafeInteger(Number(product.id)) && Number(product.id) > 0
+    && product.activo && product.categorias?.activo && product.nombre?.trim() && product.descripcion?.trim()
+    && product.imagenes_producto?.length && product.presentaciones?.some(validPresentation);
+  return `<div class="product-save-confirmation"><p class="message message--success" role="status">Producto guardado correctamente.</p>${publicable
+    ? `<a class="admin-public-link" href="/producto/${Number(product.id)}" target="_blank" rel="noopener noreferrer">Ver producto en la tienda</a>`
+    : ''}</div>`;
+}
+export function publicationSummary(product) { const reasons = []; if (!product.activo) reasons.push('Producto inactivo'); if (!product.categoria?.activo) reasons.push('Categoría inactiva'); if (!product.imagenes_producto?.length) reasons.push('Imagen pendiente'); if (!product.presentaciones?.some(validPresentation)) reasons.push('Falta presentación activa válida'); return reasons.length ? `<p class="status status--warning"><strong>No publicable.</strong> ${reasons.map(escapeHtml).join('. ')}.</p>` : '<p class="status status--active">Publicable en el catálogo.</p>'; }
 export function presentationRowView(presentation) { return `<li class="presentation-item"><div><strong>${escapeHtml(presentation.etiqueta)}</strong><span>${money(presentation.precio_promocional || presentation.precio_normal)}${presentation.precio_promocional ? ` <s>${money(presentation.precio_normal)}</s>` : ''}</span></div><span class="status">${presentationStatus(presentation)}</span></li>`; }
 export function productsView(products, { loading, error, query = '', category = '', status = '' } = {}) {
   if (loading) return '<p class="loading-state" role="status">Cargando productos...</p>';

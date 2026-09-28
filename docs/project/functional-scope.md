@@ -209,21 +209,18 @@ Una sección educativa sobre clasificaciones comerciales tendrá prioridad SHOUL
 El mínimo obligatorio incluye:
 
 - Búsqueda por nombre.
-- Filtro por categoría.
-- Filtro por disponibilidad.
+- Filtros combinables por categoría, género, clasificación y rango de precio, con accesos rápidos a Hombre, Mujer, Original y 1.1.
 
 Tienen prioridad SHOULD:
 
-- Filtro por género.
 - Filtro por marca.
-- Filtro por rango de precio.
 - Ordenamiento por fecha reciente, menor precio, mayor precio o nombre.
 
 La interfaz seguirá un enfoque mobile-first para usuarios procedentes principalmente de Instagram, TikTok y WhatsApp.
 
-El filtro de disponibilidad opera sobre las presentaciones activas: un producto coincide cuando al menos una tiene el estado seleccionado. La tarjeta conserva el resumen definido para el producto y el detalle permite identificar la presentación que produjo la coincidencia.
+La disponibilidad continúa visible en la tarjeta y por presentación en el detalle, pero no se utiliza como filtro. Esta decisión del equipo del 28 de septiembre de 2026 reemplaza el filtro de disponibilidad inicialmente aprobado. Los filtros de género y clasificación aceptan varios valores por grupo; los grupos se combinan entre sí. El filtro de precio coincide cuando al menos una presentación activa y solicitable tiene un precio efectivo dentro del rango inclusivo, teniendo en cuenta el precio promocional vigente.
 
-Cuando se implementen los filtros y ordenamientos SHOULD relacionados con precio, se utilizará el precio efectivo de las presentaciones activas que admitan solicitudes. El filtro por rango coincidirá si al menos una presentación está dentro del rango; el orden por precio utilizará el menor precio efectivo del producto; y `Más recientes` utilizará la fecha de creación del producto.
+Si se implementa el ordenamiento SHOULD por precio, se utilizará el menor precio efectivo de las presentaciones activas que admitan solicitudes; `Más recientes` utilizará la fecha de creación del producto.
 
 ### MF-07 - Carrito y generación de solicitud de compra
 

@@ -4,7 +4,7 @@ Este archivo registra cambios funcionales o hitos de implementación, no el cont
 
 ## Added
 
-- Aún no hay cambios de producto: el proyecto está en inicialización documental.
+- Catálogo público básico: portada, productos destacados, catálogo por categorías, detalle por presentación y carrito informativo. Implementado localmente; pendiente validación manual.
 
 ## Changed
 

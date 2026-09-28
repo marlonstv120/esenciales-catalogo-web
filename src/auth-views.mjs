@@ -1,4 +1,4 @@
-const logoUrl = new URL('../docs/sources/logo_esenciales.jpg', import.meta.url).href;
+const logoUrl = '/assets/brand/esenciales-logo-completo.png';
 
 export function getPasswordToggleState(passwordVisible) {
   return passwordVisible
@@ -43,12 +43,12 @@ export function authCard(content) {
     <section class="auth-shell" aria-labelledby="auth-title">
       <aside class="auth-brand" aria-label="ESENCIALES">
         <img class="auth-logo" src="${logoUrl}" alt="ESENCIALES">
-        <p class="auth-brand-note">Catálogo y gestión, reunidos en un solo lugar.</p>
       </aside>
       <div class="auth-card">
         <p class="eyebrow">Área privada</p>
         <h1 id="auth-title">Administración</h1>
         ${content}
+        <a class="auth-back-link" href="/">Volver a la tienda</a>
       </div>
     </section>`;
 }

@@ -28,7 +28,7 @@ function categoryRowView(category) {
 
 export function categoriesView(categories, state = {}) {
   if (state.loading) {
-    return '<section class="category-content" aria-busy="true"><p class="loading-state" role="status">Cargando categorias...</p></section>';
+    return '<section class="category-content" aria-busy="true"><p class="loading-state" role="status">Cargando categorías...</p></section>';
   }
 
   if (state.error) {
@@ -36,7 +36,7 @@ export function categoriesView(categories, state = {}) {
   }
 
   if (!categories.length) {
-    return '<section class="category-content"><p class="empty-state">Aun no hay categorias. Crea la primera para organizar el catalogo.</p></section>';
+    return '<section class="category-content"><p class="empty-state">Aún no hay categorías. Crea la primera para organizar el catálogo.</p></section>';
   }
 
   return `<section class="category-content"><ul class="category-list">${categories.map(categoryRowView).join('')}</ul></section>`;
@@ -44,14 +44,14 @@ export function categoriesView(categories, state = {}) {
 
 export function categoryFormView({ category, nombre = '', error = '' } = {}) {
   const value = nombre || category?.nombre || '';
-  const title = category ? 'Editar categoria' : 'Nueva categoria';
+  const title = category ? 'Editar categoría' : 'Nueva categoría';
 
   return `
     <aside class="category-panel" aria-labelledby="category-panel-title">
       <div class="category-panel-header"><h2 id="category-panel-title">${title}</h2><button class="icon-button" type="button" data-category-cancel aria-label="Cerrar formulario">Cerrar</button></div>
       <form class="category-form" id="category-form" novalidate>
         <div class="field">
-          <label for="category-name">Nombre de la categoria</label>
+          <label for="category-name">Nombre de la categoría</label>
           <input id="category-name" name="nombre" type="text" required maxlength="120" value="${escapeHtml(value)}" aria-describedby="category-message">
         </div>
         <p class="message message--error" id="category-message" role="alert">${escapeHtml(error)}</p>
@@ -68,8 +68,8 @@ export function deactivationDialogView(category, { busy = false } = {}) {
     <div class="category-dialog-backdrop">
       <section class="category-dialog" role="dialog" aria-modal="true" aria-labelledby="deactivate-title" aria-busy="${busy}">
         <h2 id="deactivate-title">Desactivar ${name}</h2>
-        <p>La categoria se conservara, pero sus productos se ocultaran del catalogo publico.</p>
-        <div class="category-form-actions"><button class="secondary-button" type="button" data-category-cancel-dialog${busy ? ' disabled' : ''}>Cancelar</button><button class="danger-button" type="button" data-category-confirm-deactivate="${id}"${busy ? ' disabled' : ''}>Desactivar categoria</button></div>
+        <p>La categoría se conservará, pero sus productos se ocultarán del catálogo público.</p>
+        <div class="category-form-actions"><button class="secondary-button" type="button" data-category-cancel-dialog${busy ? ' disabled' : ''}>Cancelar</button><button class="danger-button" type="button" data-category-confirm-deactivate="${id}"${busy ? ' disabled' : ''}>Desactivar categoría</button></div>
       </section>
     </div>`;
 }

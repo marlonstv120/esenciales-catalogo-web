@@ -58,7 +58,7 @@ Si estos documentos entran en conflicto, se aplicara la prioridad definida en `A
 | 4 | Productos y presentaciones | Gestion del nucleo comercial e inventario | 3 |
 | 5 | Imagenes | Storage y asociacion segura de imagenes | 4 |
 | 6 | Catalogo publico | Inicio, tarjetas, destacados y detalle | 5 |
-| 7 | Busqueda y filtros | Nombre, categoria y disponibilidad | 6 |
+| 7 | Busqueda y filtros | Nombre, categoria, genero, clasificacion y precio; disponibilidad visible sin filtro | 6 |
 | 8 | Carrito | Preparacion local de una solicitud | 7 |
 | 9 | Registro de solicitudes | Persistencia transaccional y WhatsApp | 8 |
 | 10 | Administracion de solicitudes | Estados e inventario transaccional | 9 |
@@ -157,11 +157,11 @@ Si estos documentos entran en conflicto, se aplicara la prioridad definida en `A
 
 **Objetivo:** encontrar productos por los mecanismos MUST.
 
-**Incluye:** busqueda por nombre, categoria y disponibilidad, combinacion de criterios, limpieza de filtros y estados sin resultados.
+**Incluye:** busqueda por nombre, filtros combinables por categoria, genero, clasificacion y rango de precio, accesos rapidos, limpieza de filtros y estados sin resultados. La disponibilidad se conserva visible pero no se filtra, segun decision del equipo del 28 de septiembre de 2026.
 
 **Requisitos:** RF-28, RF-29; RN-11; RNF-01 a RNF-03, RNF-07.
 
-**Puerta de salida:** los resultados cumplen la semantica por presentacion y no muestran productos no publicables.
+**Puerta de salida:** el precio cumple la semantica por presentacion solicitable, los resultados no muestran productos no publicables y la disponibilidad sigue visible.
 
 ### 8. Carrito
 
@@ -227,7 +227,7 @@ Las siguientes capacidades se evaluaran despues de estabilizar los MUST relacion
 
 - varias imagenes y orden visual;
 - precio promocional;
-- filtros por genero, marca y precio;
+- filtro por marca;
 - ordenamiento;
 - persistencia local del carrito;
 - dashboard sencillo;
@@ -257,7 +257,7 @@ Cada plan ejecutable debe incluir, segun corresponda:
 - prueba que falle antes de implementar el comportamiento;
 - implementacion minima que satisfaga el requisito;
 - prueba positiva y prueba de rechazo;
-- `supabase db reset` para cambios de base de datos;
+- `supabase migration up --local` para aplicar migraciones pendientes sin borrar usuarios ni datos locales; reservar `supabase db reset` para una reconstrucción limpia autorizada explícitamente;
 - `supabase test db` para SQL, RLS o RPC;
 - `npm run build` para cambios del cliente;
 - comprobacion manual de estados de carga, vacio, exito y error;
@@ -275,8 +275,8 @@ Un incremento solo cambia a completado cuando cumple su puerta de salida y cuent
 | 3. Categorias | Implementado localmente | CRUD administrativo, 110 pruebas pgTAP y 31 pruebas de cliente; pendiente recorrido manual responsive. |
 | 4. Productos y presentaciones | Implementado localmente | Shell hash administrativo, CRUD de productos y presentaciones, promocion e inventario rapido; `npm run test:auth` y `npm run build` pasaron el 26 de septiembre de 2026. Pendiente validacion manual responsive y de accesibilidad. |
 | 5. Imagenes | Implementado localmente | Migración `20260926000100_add_product_images_storage.sql`, bucket publico con lectura publica y escritura administrativa, imagen principal con validacion JPEG/PNG/WebP de 5 MiB y compensacion; `npm run supabase:reset`, `npm run supabase:test-db`, pruebas Node y `npm run build` pasaron el 26 de septiembre de 2026. Pendiente recorrido manual de carga, reemplazo, retiro, teclado y responsive. |
-| 6. Catalogo publico | Pendiente | Se definira al cerrar el Incremento 5 |
-| 7. Busqueda y filtros | Pendiente | Se definira al cerrar el Incremento 6 |
+| 6. Catalogo publico | Implementado localmente | Migraciones `20260926000200_add_public_catalog_rpc.sql` y `20260927000100_add_public_reference_normal_price.sql`; dos RPC solo lectura, tablas sin lectura anonima directa; portada, categorias agrupadas, destacados, precio promocional junto a normal, detalle por presentacion, carrito informativo y rutas `/admin`. `npm test` paso con 138 pruebas pgTAP y 69 pruebas Node; `npm run build` paso. El usuario local se mantuvo durante reinicio de servicios por cambio de allowlist; no se ejecuto `db reset`. Pendiente revision manual visual responsive, teclado, recuperacion Auth y enlaces directos. No se enviaron migraciones remotas. |
+| 7. Busqueda y filtros | Implementado localmente; revisión manual pendiente | RPC `buscar_catalogo_publico`, búsqueda por nombre, categoría, género, clasificación, rango de precio y accesos rápidos; pruebas pgTAP y Node, compilación local. Verificar panel, teclado y responsive antes de cerrar. |
 | 8. Carrito | Pendiente | Se definira al cerrar el Incremento 7 |
 | 9. Registro de solicitudes | Pendiente | Se definira al cerrar el Incremento 8 |
 | 10. Administracion de solicitudes | Pendiente | Se definira al cerrar el Incremento 9 |

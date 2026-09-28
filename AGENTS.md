@@ -211,7 +211,7 @@ For tasks that create or meaningfully modify user-facing interfaces, use the `fr
 Before proposing or implementing frontend changes:
 
 1. Read the relevant requirements, business rules, actors/flows, and existing frontend code.
-2. Consult `docs/project/DESIGN.md` as the primary source for the shared visual system, `docs/project/visual-identity.md` for the brand source, and `docs/project/wireframe-guide.md` for established UI/UX structure and behavior.
+2. Before any visual change, consult `docs/project/DESIGN.md` as the primary visual source, `docs/project/visual-identity.md` for identity, `docs/project/wireframe-guide.md` for UI/UX structure, and the existing official assets in `public/assets/brand/`. Follow those canonical sources rather than duplicating their rules here.
 3. Distinguish confirmed design decisions from preliminary references and pending validations. Do not turn proposed colors, typography, mockups, or visual references into confirmed project decisions.
 4. Preserve established visual and interaction patterns unless there is a justified reason to change them.
 5. Design for the actual users, tasks, content, and technical constraints of Esenciales.

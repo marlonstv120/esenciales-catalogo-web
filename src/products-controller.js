@@ -1,12 +1,12 @@
 import { retryImageCleanup, removeImage, replaceImage, updateImageAlt, uploadImage, validateImage } from './images.js';
 import { listCategories } from './categories.js';
 import { productImageEditorView } from './product-image-views.mjs';
-import { productFormView, productsView, presentationFormView } from './product-views.mjs';
+import { productFormView, productSaveConfirmation, productsView, presentationFormView } from './product-views.mjs';
 import { listProducts, savePresentation, saveProduct } from './products.js';
 import { supabase } from './supabase.js';
 
 let state = {
-  products: [], categories: [], editor: null, presentation: null, values: {}, error: '', loading: true,
+  products: [], categories: [], editor: null, presentation: null, values: {}, error: '', loading: true, saved: false,
   query: '', category: '', status: '', image: null, imageAlt: '', imageBusy: false, imageError: '', cleanupPath: '',
 };
 
@@ -18,6 +18,7 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   const draw = () => {
     outlet.innerHTML = state.editor
       ? productFormView({ product: state.editor, categories: state.categories, values: state.values, error: state.error })
+        + (state.saved ? productSaveConfirmation(state.editor) : '')
         + productImageEditorView({ product: state.editor, image: state.image, altText: state.imageAlt, busy: state.imageBusy, error: state.imageError, cleanupPath: state.cleanupPath })
         + (state.presentation ? presentationFormView({ presentation: state.presentation, values: state.values, error: state.error }) : '')
       : `<section class="admin-page"><div class="page-toolbar"><div class="field"><label for="product-search">Buscar por nombre</label><input id="product-search" value="${state.query}"></div><div class="field"><label for="product-category-filter">Categoria</label><select id="product-category-filter"><option value="">Todas</option>${state.categories.map((category) => `<option value="${category.id}" ${state.category === String(category.id) ? 'selected' : ''}>${category.nombre}</option>`).join('')}</select></div><div class="field"><label for="product-status-filter">Estado</label><select id="product-status-filter"><option value="">Todos</option><option value="true" ${state.status === 'true' ? 'selected' : ''}>Activos</option><option value="false" ${state.status === 'false' ? 'selected' : ''}>Inactivos</option></select></div><button class="primary-button" type="button" data-product-create>Nuevo producto</button></div>${productsView(state.products, state)}</section>`;
@@ -37,12 +38,12 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     const values = { ...formValues(form), destacado: form.elements.destacado.checked, activo: form.elements.activo.checked };
     const { data, error } = await saveProduct(supabase, state.editor?.id, values);
     if (error) {
-      state = { ...state, values, error: databaseError(error) };
+      state = { ...state, values, error: databaseError(error), saved: false };
       draw();
       return;
     }
     const image = currentImage(state.editor);
-    state = { ...state, editor: { ...data, categorias: state.categories.find((category) => category.id === data.categoria_id), presentaciones: state.editor?.presentaciones || [], imagenes_producto: state.editor?.imagenes_producto || [] }, values: {}, error: '', image, imageAlt: image?.texto_alternativo || data.nombre };
+    state = { ...state, editor: { ...data, categorias: state.categories.find((category) => category.id === data.categoria_id), presentaciones: state.editor?.presentaciones || [], imagenes_producto: state.editor?.imagenes_producto || [] }, values: {}, error: '', image, imageAlt: image?.texto_alternativo || data.nombre, saved: true };
     draw();
   }
 
@@ -126,8 +127,8 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
 
   function bind() {
     outlet.querySelector('[data-products-retry]')?.addEventListener('click', load);
-    outlet.querySelector('[data-product-create]')?.addEventListener('click', () => { state = { ...state, editor: {}, values: {}, error: '', image: null, imageAlt: '', imageError: '', cleanupPath: '' }; draw(); });
-    outlet.querySelectorAll('[data-product-edit]').forEach((button) => button.addEventListener('click', () => { const editor = state.products.find((product) => String(product.id) === button.dataset.productEdit); const image = currentImage(editor); state = { ...state, editor, values: {}, error: '', image, imageAlt: image?.texto_alternativo || editor.nombre, imageError: '', cleanupPath: '' }; draw(); }));
+    outlet.querySelector('[data-product-create]')?.addEventListener('click', () => { state = { ...state, editor: {}, values: {}, error: '', image: null, imageAlt: '', imageError: '', cleanupPath: '', saved: false }; draw(); });
+    outlet.querySelectorAll('[data-product-edit]').forEach((button) => button.addEventListener('click', () => { const editor = state.products.find((product) => String(product.id) === button.dataset.productEdit); const image = currentImage(editor); state = { ...state, editor, values: {}, error: '', image, imageAlt: image?.texto_alternativo || editor.nombre, imageError: '', cleanupPath: '', saved: false }; draw(); }));
     outlet.querySelector('[data-product-close]')?.addEventListener('click', () => { state = { ...state, editor: null, presentation: null, values: {}, error: '', image: null, imageAlt: '', imageError: '', cleanupPath: '' }; draw(); });
     outlet.querySelector('#product-form')?.addEventListener('submit', (event) => { event.preventDefault(); if (event.currentTarget.checkValidity()) saveCurrent(event.currentTarget); else event.currentTarget.reportValidity(); });
     outlet.querySelector('[data-presentation-create]')?.addEventListener('click', () => { state = { ...state, presentation: {}, values: {}, error: '' }; draw(); });

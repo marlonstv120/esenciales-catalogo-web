@@ -23,9 +23,10 @@ test('keeps the identifiers required by authentication event handlers', () => {
 test('renders the official identity and a semantic administration heading', () => {
   const view = authCard(signInView());
 
-  assert.match(view, /logo_esenciales\.jpg/);
+  assert.match(view, /esenciales-logo-completo\.png/);
   assert.match(view, /alt="ESENCIALES"/);
   assert.match(view, /<h1[^>]*>Administración<\/h1>/);
+  assert.match(view, /class="auth-back-link" href="\/">Volver a la tienda<\/a>/);
 });
 
 test('associates visible labels, help, and status with sign-in controls', () => {

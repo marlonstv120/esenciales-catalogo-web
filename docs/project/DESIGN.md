@@ -1,8 +1,8 @@
 # Sistema visual de ESENCIALES
 
-**Estado:** decisiones visuales aprobadas para el MVP.
+**Estado:** dirección visual aprobada para el MVP: opción B, boutique oscura equilibrada con catálogo claro.
 
-**Fecha de aprobación:** 25 de septiembre de 2026.
+**Fecha de aprobación de la dirección B:** 27 de septiembre de 2026.
 
 ## 1. Propósito y alcance
 
@@ -10,33 +10,49 @@ Este documento es la fuente principal para diseñar y revisar la interfaz compar
 
 No modifica el alcance funcional. Las pantallas y recorridos se definen en la [guía de wireframes](wireframe-guide.md); los comportamientos obligatorios, en [requisitos](requirements.md), [reglas de negocio](business-rules.md) y [actores y flujos](actors-and-flows.md). Si una mejora visual exige nueva lógica de negocio, debe registrarse primero como propuesta y validarse antes de tratarse como requisito.
 
-Los wireframes y mockups existentes son referencias de estructura y flujo, no especificaciones visuales. La apariencia provisional del frontend tampoco constituye un patrón que deba preservarse.
+Los wireframes y mockups son referencias de estructura, flujo y atmósfera, no especificaciones rígidas ni evidencia de funcionalidad implementada. La apariencia provisional del frontend tampoco constituye un patrón que deba preservarse.
 
 ## 2. Principios y dirección visual
 
-La dirección aprobada es **perfumería boutique clara con anclas oscuras**.
+La dirección aprobada es **opción B: boutique oscura equilibrada con catálogo claro**.
 
-**Tesis visual:** una perfumería boutique cercana y ordenada, con fotografías protagonistas, negro como ancla de marca, superficies funcionales blancas y oro contenido.
+**Tesis visual:** una boutique de aromas elegante y cercana, con encabezado, hero y pie oscuros que expresan la marca, y un cuerpo de catálogo marfil o blanco que facilita explorar y comparar productos.
 
 Principios:
 
 1. La claridad, la tarea y el funcionamiento prevalecen sobre la decoración.
 2. Las fotografías expresan el producto; la interfaz les proporciona orden y contexto.
-3. El negro aporta contraste y ancla la marca; no domina todas las superficies.
+3. El negro domina encabezado, hero y pie, no las superficies de lectura.
 4. El dorado se usa de forma selectiva para identidad, énfasis y selección.
 5. El espacio y la jerarquía sustituyen adornos, tarjetas y sombras innecesarias.
 6. La interfaz debe sentirse elegante, moderna y cercana, no ostentosa ni genérica.
 7. Todo patrón debe funcionar con teclado, tacto, puntero, zoom y texto ampliado.
-8. El blanco es la superficie funcional principal. El marfil o blanco cálido es un recurso opcional y puntual, nunca un fondo base obligatorio ni un marco permanente alrededor de las pantallas.
+8. El catálogo y las tareas funcionales usan marfil o blanco. Evitar marcos exteriores decorativos.
+9. El catálogo público puede tener títulos editoriales; la administración conserva una presentación contenida y funcional.
 
 ## 3. Catálogo público y administración
 
 Ambas áreas comparten colores, tipografía, espaciado, controles, estados y comportamiento accesible. Deben reconocerse como partes del mismo producto.
 
+### Activos de portada y categorías
+
+Las imágenes de composición aprobadas están disponibles en `public/assets/images/`:
+
+| Recurso web | Uso |
+| --- | --- |
+| `/assets/images/home/hero-esenciales-boutique-oscura.png` | Imagen del hero con texto y CTA superpuestos en HTML |
+| `/assets/images/categories/categoria-perfumes-lociones.png` | Perfumes / Lociones |
+| `/assets/images/categories/categoria-splash.png` | Splash |
+| `/assets/images/categories/categoria-cremas-corporales.png` | Cremas |
+| `/assets/images/categories/categoria-humidificadores.png` | Humidificadores, ilustración que no confirma inventario |
+| `/assets/images/categories/categoria-otros-productos.png` | Otros productos |
+
+Son imágenes ilustrativas, no fotografías de productos de la base de datos. No incorporar dentro de ellas el logo ni presentar su contenido como existencias reales. Solo mostrar accesos de categorías activas que lleguen en los datos.
+
 ### Catálogo público
 
 - Usa más espacio, fotografía y composición de marca.
-- Puede incorporar bloques negros puntuales para identidad o llamados principales.
+- Usa encabezado, hero y pie oscuros; el cuerpo y las tarjetas permanecen claros.
 - Prioriza descubrir productos, entender precio y disponibilidad y avanzar hacia la solicitud.
 - Evita información administrativa, decoración competitiva y rutas de compra falsas.
 
@@ -49,15 +65,24 @@ Ambas áreas comparten colores, tipografía, espaciado, controles, estados y com
 
 ## 4. Logo y uso de marca
 
-El archivo vigente es el [logo oficial](../sources/logo_esenciales.jpg). Debe utilizarse sin sustituirlo por estrellas, símbolos improvisados ni texto en una fuente cursiva aproximada.
+Las variantes oficiales de trabajo se conservan en `public/assets/brand/` (rutas web bajo `/assets/brand/`):
+
+| Archivo | Uso principal |
+| --- | --- |
+| `esenciales-logo-completo.png` | Portada institucional, acceso administrativo o pie amplio |
+| `esenciales-logo-horizontal.png` | Encabezado público |
+| `esenciales-isotipo.png` | Favicon y espacios compactos |
+| `esenciales-nombre.png` | Solo si el isotipo ya está presente y la composición lo justifica |
+
+Véase [identidad visual](visual-identity.md) para el origen de la marca. No reconstruir la caligrafía con una fuente.
 
 - Conservar proporciones y evitar deformación, recorte o recoloración arbitraria.
-- No separar ni reconstruir el lettering, isotipo o eslogan.
+- Mantener tamaño automático y espacio libre al menos equivalente al ancho del atomizador del isotipo; no añadir efectos.
 - Sobre fondos incompatibles, ubicar la versión disponible dentro de una superficie negra suficiente, sin añadir marcos decorativos.
 - Proporcionar texto alternativo según el contexto: `ESENCIALES` cuando identifica la marca y alternativa vacía cuando repite un nombre visible adyacente.
 - El logo no reemplaza el título de la página ni otros textos que deban ser HTML.
 
-Siguen pendientes del propietario un archivo vectorial, versiones horizontal, reducida y monocromática, y reglas oficiales de tamaño mínimo y área de protección. Hasta disponer de ellas, no deben inventarse variantes.
+Siguen pendientes del propietario un archivo vectorial y reglas oficiales de tamaño mínimo y protección; las cuatro variantes PNG anteriores ya existen.
 
 ## 5. Color
 
@@ -73,12 +98,12 @@ Los nombres propuestos pueden trasladarse posteriormente a CSS custom properties
 | `--color-brand-bronze` | `#765C00` | Texto, foco y énfasis de marca sobre superficies claras |
 | `--color-ink` | `#17140F` | Texto principal |
 | `--color-text-muted` | `#5F574C` | Texto secundario |
-| `--color-surface-page` | `#FFFFFF` | Fondo principal de páginas y áreas funcionales |
+| `--color-surface-page` | `#F8F3EA` | Fondo cálido del cuerpo del catálogo público |
 | `--color-surface` | `#FFFFFF` | Formularios, tablas y contenido elevado |
-| `--color-surface-subtle` | `#F5F5F5` | Agrupación suave, esqueletos, estados secundarios y fondos de imagen |
-| `--color-surface-warm` | `#FFF9EE` | Recurso cálido opcional y puntual; no usar como base o marco permanente |
-| `--color-border` | `#DEDEDE` | Separadores decorativos y límites no interactivos |
-| `--color-border-strong` | `#737373` | Controles y límites que deben percibirse |
+| `--color-surface-subtle` | `#F3EEE5` | Agrupación suave, esqueletos y fondos de imagen |
+| `--color-surface-dark` | `#0B0A08` | Encabezado, hero, pie y bloques de identidad |
+| `--color-border` | `#DED6C9` | Separadores discretos |
+| `--color-border-strong` | `#71695F` | Controles y límites significativos |
 
 Combinaciones verificadas:
 
@@ -87,11 +112,11 @@ Combinaciones verificadas:
 - `#765C00` sobre `#FFFFFF`: `6.36:1`.
 - `#17140F` sobre `#FFFFFF`: `18.37:1`.
 - `#5F574C` sobre `#FFFFFF`: `7.11:1`.
-- `#737373` sobre `#FFFFFF`: `4.74:1`.
+- Las combinaciones nuevas con marfil y bordes cálidos deben comprobarse en la interfaz renderizada.
 
 El CTA principal predeterminado usa negro con texto blanco. Un botón dorado puede utilizar fondo `#D4AF37` y texto negro cuando la composición requiera mayor presencia de marca. El dorado no debe convertirse en color predeterminado para todos los controles.
 
-Las superficies exteriores no deben crear un borde decorativo permanente alrededor de la aplicación. Los grises claros se reservan para jerarquía, separación o estados secundarios. Una superficie cálida solo se incorpora cuando su aporte sea deliberado y local, sin desplazar al blanco como base funcional.
+La dirección oscura no convierte toda la aplicación en modo oscuro. El marfil no es un marco alrededor de la página; el blanco sigue reservado a tarjetas, formularios y superficies funcionales. El dorado no se usa como texto ordinario sobre blanco o marfil.
 
 ### Colores semánticos
 
@@ -107,7 +132,7 @@ Estos pares orientan texto y fondo. Bordes, iconos, foco y estados interactivos 
 
 ## 6. Tipografía y jerarquía
 
-La familia principal es **Source Sans 3**. Es una sans-serif legible, adecuada para texto, precios, formularios y tablas, dispone de varios pesos y mantiene claridad en tamaños compactos. Debe incorporarse preferentemente como archivo web optimizado y alojado por el proyecto; no requiere una librería de interfaz.
+La fuente funcional es **Source Sans 3** (pesos 400, 600 y 700): navegación, texto, precios, botones, formularios, tablas y toda la administración. La fuente editorial **Cormorant Garamond** (peso 600 y opcionalmente 700) se reserva para títulos `h1` y `h2` públicos. No utilizarla en párrafos, precios, controles o administración. Ambas deben alojarse localmente en formatos web optimizados con `font-display: swap` cuando se incorporen; mientras tanto se usan fallbacks sin afirmar que ya están cargadas.
 
 Fallbacks:
 
@@ -115,7 +140,11 @@ Fallbacks:
 font-family: "Source Sans 3", "Segoe UI", Arial, sans-serif;
 ```
 
-No se introduce una segunda familia. El lettering manuscrito pertenece exclusivamente al logo.
+```css
+font-family: "Cormorant Garamond", Georgia, serif;
+```
+
+El lettering manuscrito pertenece exclusivamente a las imágenes oficiales del logo.
 
 Escala base sugerida:
 
@@ -126,8 +155,8 @@ Escala base sugerida:
 | `--text-md` | `1rem` | Texto y controles |
 | `--text-lg` | `1.125rem` | Énfasis y subtítulos |
 | `--text-xl` | `1.5rem` | Títulos de sección |
-| `--text-2xl` | `2rem` | Título principal compacto |
-| `--text-display` | `clamp(2.25rem, 5vw, 3.5rem)` | Portada pública |
+| `--text-2xl` | `clamp(1.8rem, 4vw, 2.5rem)` | Título de página |
+| `--text-display` | `clamp(2.5rem, 6vw, 4.75rem)` | Portada pública |
 
 - Texto general: peso `400`, interlineado entre `1.5` y `1.65`.
 - Controles y subtítulos: peso `600`.
@@ -149,6 +178,7 @@ Escala espacial:
 | `--space-8` | `2rem` |
 | `--space-12` | `3rem` |
 | `--space-16` | `4rem` |
+| `--space-24` | `6rem` |
 
 El catálogo usa normalmente separaciones de `--space-6` a `--space-16`; la administración, de `--space-3` a `--space-8` según densidad.
 
@@ -160,8 +190,8 @@ El catálogo usa normalmente separaciones de `--space-6` a `--space-16`; la admi
 | `--radius-round` | `999px` | Solo indicadores breves o controles circulares |
 
 - Bordes ordinarios: `1px`; selección destacada: `2px` sin cambiar el tamaño exterior.
-- Sombra baja: `0 1px 2px rgb(23 20 15 / 8%)`.
-- Sombra elevada: `0 8px 24px rgb(23 20 15 / 12%)`, reservada para diálogos, drawers o elementos realmente superpuestos.
+- Sombra baja: `0 1px 3px rgb(23 20 15 / 8%)`.
+- Sombra elevada: `0 12px 30px rgb(23 20 15 / 14%)`, reservada para superposiciones.
 - No envolver cada sección en una tarjeta. Fondo, espacio, borde o encabezado pueden establecer jerarquía sin contenedor elevado.
 
 ## 8. Fotografías e imágenes
@@ -189,10 +219,10 @@ Puntos iniciales para probar el cambio de composición:
 
 Estos valores pueden ajustarse durante la verificación renderizada si el contenido demuestra otra necesidad.
 
-- Contenedor público: ancho máximo orientativo de `75rem`, centrado y con margen lateral fluido.
+- Contenedor público: ancho máximo orientativo de `75rem` a `80rem`, centrado y con margen lateral mínimo de `1rem`.
 - Formularios de una tarea: ancho legible entre `28rem` y `42rem` según contenido.
 - Navegación pública móvil: identidad, carrito siempre visible y menú para enlaces secundarios.
-- Catálogo móvil: buscador visible; filtros y ordenamiento en panel; cuadrícula de una o dos columnas según el ancho real de la tarjeta.
+- Catálogo móvil: buscador visible; botón de filtros con panel para categoría, género, clasificación y precio, junto a accesos rápidos combinables; cuadrícula de una o dos columnas según el ancho real de la tarjeta. El ordenamiento permanece opcional.
 - Detalle móvil: imagen, información, presentación, cantidad y CTA en orden de lectura.
 - Formularios: una columna en anchos estrechos; dos columnas solo para campos relacionados y suficientemente amplios.
 - Tablas: mantener tabla accesible cuando permita comparación; usar lista de registros en móvil, sin ocultar datos o acciones esenciales.
@@ -205,10 +235,24 @@ Estos valores pueden ajustarse durante la verificación renderizada si el conten
 ### Pública
 
 - Base: `Inicio`, `Catálogo` y `Carrito`.
+- Encabezado negro compacto de aproximadamente `64–72px` en escritorio y `56–64px` en móvil según el contenido; logo horizontal a la izquierda y carrito con icono SVG, nombre accesible y contador al extremo derecho. En móvil los enlaces secundarios pueden agruparse en un menú accesible.
+- Administración tiene una entrada discreta, por ejemplo en el pie de página, sin perder acceso a `/admin`.
 - El carrito permanece visible y comunica su cantidad de forma consistente.
 - El enlace activo se identifica con texto, peso o borde además del color.
 - Contacto, redes y WhatsApp general solo aparecen cuando su contenido sea confirmado.
 - WhatsApp no se convierte en botón flotante obligatorio: el flujo confirmado lo ofrece después de registrar la solicitud.
+
+### Portada pública
+
+Orden: encabezado oscuro, hero editorial, accesos de categorías disponibles, `Productos destacados` si existen y pie oscuro con entrada discreta a Administración.
+
+- El hero usa `/assets/images/home/hero-esenciales-boutique-oscura.png`: producto visual a la derecha y espacio oscuro para texto HTML a la izquierda. No se incrustan textos ni logos en la imagen.
+- Título aprobado: `Tu aroma, siempre contigo.`
+- Texto aprobado: `Explora lociones, perfumes y opciones de cuidado personal para cada estilo y ocasión.`
+- CTA exacto: `Ver catálogo`.
+- En móvil el mensaje y el CTA preceden al producto visual; ajustar el encuadre sin recortar información esencial. Un overlay solo si el contraste renderizado lo requiere.
+- Mostrar únicamente categorías presentes en la consulta; usar su imagen representativa cuando exista, y enlace textual si no existe mapeo. Una imagen ilustrativa no demuestra inventario.
+- Los destacados usan la tarjeta del catálogo; si no hay destacados, no se muestra la sección.
 
 ### Administrativa
 
@@ -225,6 +269,7 @@ El MVP necesita un conjunto pequeño:
 ### Botones y enlaces
 
 - Variantes: primario negro, secundario con borde, marca dorado, textual y destructivo.
+- Altura táctil recomendada `44px`, padding horizontal consistente entre `1rem` y `1.25rem`, radio `--radius-md` y estados sin desplazamiento del layout.
 - Estados: `hover`, `focus-visible`, `active`, `disabled` y `busy`.
 - Una pantalla debe tener una acción principal evidente; no todos los botones compiten con el mismo peso.
 - Un botón ocupado conserva su ancho, impide envíos duplicados y comunica progreso.
@@ -239,7 +284,7 @@ El MVP necesita un conjunto pequeño:
 
 ### Tarjeta de producto
 
-- Imagen, nombre, precio o `Desde $X`, disponibilidad textual y acción clara para abrir el detalle.
+- Imagen `4 / 5`, categoría, nombre, precio o `Desde $X`, disponibilidad textual y enlace `Ver producto` para abrir el detalle. Reutilizar la misma tarjeta en inicio y catálogo.
 - La tarjeta completa puede ser navegable solo si mantiene semántica y no contiene controles interactivos anidados.
 - Estados: normal, foco, imagen ausente y producto no solicitable. No requiere sombra elevada por defecto.
 
@@ -354,8 +399,10 @@ WCAG 2.2 nivel AA es la línea base.
 
 No quedan decisiones visuales bloqueantes para comenzar la adaptación del frontend. Permanecen pendientes activos y contenido externo al sistema:
 
-- Obtener del propietario versiones vectorial, horizontal, reducida y monocromática del logo y sus reglas oficiales de uso.
+- Obtener del propietario una versión vectorial y reglas oficiales de uso.
 - Recopilar y revisar fotografías reales de productos.
+- Definir el favicon derivado del isotipo sin alterar la marca.
+- Alojar localmente los archivos web optimizados de Source Sans 3 y Cormorant Garamond.
 - Confirmar WhatsApp, contacto, entrega y envío antes de incorporarlos.
 - Validar mediante implementación renderizada los puntos de quiebre y ajustes finos de densidad; esta comprobación no autoriza cambiar contenido o alcance.
 
@@ -367,6 +414,7 @@ No quedan decisiones visuales bloqueantes para comenzar la adaptación del front
 - [Reglas de negocio](business-rules.md): disponibilidad, inventario, solicitudes y publicación.
 - [Actores y flujos](actors-and-flows.md): recorridos del visitante y administrador.
 - [Alcance funcional](functional-scope.md): prioridades y límites del MVP.
-- [Logo oficial](../sources/logo_esenciales.jpg): activo de marca disponible.
+- [Logo original](../sources/logo_esenciales.jpg) y variantes de trabajo en `../../public/assets/brand/`.
+- [Referencia aprobada opción B](../sources/referencia-pagina-opcion-b.png): atmósfera, jerarquía y composición; no fuente de productos ni precios.
 - [`docs/wireframes/wireframes.html`](../wireframes/wireframes.html): referencia estructural de baja fidelidad.
 - [`informe/03-diseno/`](../../informe/03-diseno/): evidencias y exportaciones de diseño, no fuente visual definitiva.

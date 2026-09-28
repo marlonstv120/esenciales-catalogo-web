@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { presentationFormView, presentationRowView, publicationSummary } from '../src/product-views.mjs';
+import { presentationFormView, presentationRowView, productSaveConfirmation, publicationSummary } from '../src/product-views.mjs';
 import { productImageEditorView } from '../src/product-image-views.mjs';
 
 const validPresentation = {
@@ -50,4 +50,16 @@ test('keeps the fallback available when an existing image fails to load', () => 
 test('offers an explicit action to save an existing image alternative text', () => {
   const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { id: 3, url: 'https://example.test/aroma.jpg' } });
   assert.match(view, /data-image-alt-save/);
+});
+
+test('offers public product link only after saving a publishable product with a valid id', () => {
+  const product = {
+    id: 4, activo: true, categorias: { activo: true }, nombre: 'Aroma', descripcion: 'Descripción',
+    imagenes_producto: [{ id: 1 }], presentaciones: [validPresentation],
+  };
+  const view = productSaveConfirmation(product);
+  assert.match(view, /Producto guardado correctamente/);
+  assert.match(view, /href="\/producto\/4" target="_blank" rel="noopener noreferrer"/);
+  assert.doesNotMatch(productSaveConfirmation({ ...product, imagenes_producto: [] }), /Ver producto en la tienda/);
+  assert.doesNotMatch(productSaveConfirmation({ ...product, id: 'bad' }), /Ver producto en la tienda/);
 });

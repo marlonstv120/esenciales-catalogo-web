@@ -45,9 +45,9 @@ Desarrollar una aplicación web full stack que permita la gestión, publicación
 ## Estado
 
 - **Alcance funcional:** MVP V1 aprobado por el equipo el 3 de septiembre de 2026, con pendientes académicos, de negocio y técnicos identificados.
-- **Implementación:** base de frontend con Vite, HTML5, CSS3 y JavaScript creada; el núcleo del esquema de catálogo, sus datos iniciales y RLS cerrado están validados localmente. Aún no hay funcionalidades del catálogo conectadas al cliente.
+- **Implementación:** acceso administrativo, gestión de categorías, productos, presentaciones e imágenes, catálogo público y búsqueda con filtros están implementados localmente. El acceso anónimo usa RPC de solo lectura; carrito funcional y solicitudes siguen pendientes. El usuario confirmó la revisión manual del incremento 6; falta revisar los filtros nuevos de forma visual y responsive.
 - **Tecnologías base del curso:** HTML5, CSS3, JavaScript, Node.js, Express y Git/GitHub. El profesor autorizó usar Supabase en sustitución de Express para agilizar el desarrollo; la autorización y su alcance están registrados en las instrucciones del profesor.
 - **Decisiones técnicas confirmadas:** Supabase proveerá PostgreSQL, autenticación, almacenamiento de imágenes y acceso a datos; el frontend utilizará HTML5, CSS3 y JavaScript sin framework adicional.
-- **Arquitectura restante:** pendientes las políticas RLS permitidas, las funciones RPC, Storage, la integración del cliente y el despliegue.
+- **Arquitectura restante:** pendientes las funciones transaccionales de solicitudes, validaciones complementarias y el proveedor de despliegue del frontend.
 
 Consulte el [alcance funcional MVP V1](functional-scope.md) para conocer las macrofuncionalidades, prioridades, límites y criterios de aceptación.

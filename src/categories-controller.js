@@ -6,9 +6,9 @@ const initialState = { categories: [], mode: null, selectedCategory: null, dialo
 let state = { ...initialState };
 
 function errorMessage(error) {
-  if (error?.code === 'category_name_required') return 'Ingresa un nombre para la categoria.';
-  if (error?.code === '23505') return 'Ya existe una categoria con ese nombre.';
-  return 'No fue posible guardar la categoria. Intentalo de nuevo.';
+  if (error?.code === 'category_name_required') return 'Ingresa un nombre para la categoría.';
+  if (error?.code === '23505') return 'Ya existe una categoría con ese nombre.';
+  return 'No fue posible guardar la categoría. Inténtalo de nuevo.';
 }
 
 function content() {
@@ -23,7 +23,7 @@ export async function renderCategoriesScreen({ outlet, generation, isCurrentGene
     state = { ...state, loading: true, error: '' }; draw();
     const { data, error } = await listCategories(supabase);
     if (!isCurrentGeneration() || generation !== undefined && !isCurrentGeneration()) return;
-    state = error ? { ...state, loading: false, error: 'No fue posible cargar las categorias.' } : { ...state, loading: false, categories: data };
+    state = error ? { ...state, loading: false, error: 'No fue posible cargar las categorías.' } : { ...state, loading: false, categories: data };
     draw();
   }
   async function save(form) {

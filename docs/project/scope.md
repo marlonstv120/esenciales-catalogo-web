@@ -31,7 +31,7 @@ Esta agrupación es una decisión de organización del equipo. El supuesto máxi
 - Autenticación administrativa.
 - Categorías, productos, presentaciones, precio, imagen mínima, stock y disponibilidad.
 - Producto destacado mediante selección manual.
-- Catálogo público, detalle, búsqueda por nombre y filtros por categoría y disponibilidad.
+- Catálogo público, detalle, búsqueda por nombre y filtros combinables por categoría, género, clasificación y rango de precio; disponibilidad visible sin filtro (decisión del equipo del 28 de septiembre de 2026).
 - Carrito, registro de solicitud, código único y flujo hacia WhatsApp.
 - Aceptación expresa de términos y política de tratamiento de datos al registrar cada solicitud.
 - Gestión de solicitudes nuevas, confirmadas, entregadas y canceladas.
@@ -41,7 +41,7 @@ Esta agrupación es una decisión de organización del equipo. El supuesto máxi
 
 ## Prioridad SHOULD
 
-- Varias imágenes, filtros ampliados y ordenamiento.
+- Varias imágenes, filtro por marca y ordenamiento.
 - Promociones, dashboard y persistencia local del carrito.
 - Familia olfativa y explicación validada de clasificaciones comerciales.
 

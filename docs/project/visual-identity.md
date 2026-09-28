@@ -2,6 +2,10 @@
 
 **Estado:** referencia visual derivada del [logo oficial](../sources/logo_esenciales.jpg). El [sistema visual](DESIGN.md) es la fuente principal para aplicar esta identidad a la interfaz y no modifica el alcance funcional del MVP.
 
+Las variantes oficiales de trabajo existentes en `public/assets/brand/` son `esenciales-logo-completo.png`, `esenciales-logo-horizontal.png`, `esenciales-isotipo.png` y `esenciales-nombre.png`. La versión horizontal corresponde al encabezado público; el isotipo, a espacios compactos o favicon; el logo completo, a contextos institucionales, acceso administrativo o pie amplio cuando convenga. El archivo del nombre solo se utiliza si el isotipo ya aparece en la composición. Véanse las [reglas de uso](DESIGN.md#4-logo-y-uso-de-marca).
+
+La dirección vigente es boutique oscura equilibrada: encabezado, hero y pie oscuros con dorado selectivo; cuerpo del catálogo, tarjetas y administración claros. Los recursos ilustrativos de portada y categorías se documentan en [DESIGN.md](DESIGN.md#activos-de-portada-y-categorías); sus etiquetas neutras no sustituyen ni recrean la marca oficial.
+
 ## Elementos confirmados
 
 - **Nombre de marca:** Esenciales.
@@ -34,13 +38,13 @@ El dorado degradado se reserva para el logo y detalles destacados. Los controles
 
 ## Orientación para la interfaz
 
-- El sitio público usa superficies claras cálidas como base, bloques negros puntuales como anclas de marca y dorado selectivo para acentos; los llamados a la acción siguen las combinaciones accesibles definidas en el sistema visual.
-- La página de inicio debe dar protagonismo al logo, al eslogan y a las fotografías de productos, sin recargarla con decoraciones que compitan con la marca.
+- El sitio público usa negro en encabezado, hero y pie, con cuerpo de catálogo claro; los llamados a la acción siguen las combinaciones accesibles definidas en el sistema visual.
+- La página de inicio presenta la marca en el encabezado, sin repetir un logo grande; usa fotografías reales cuando estén disponibles.
 - Las tarjetas, botones y separadores pueden retomar líneas finas, curvas suaves y espacio generoso, coherentes con el isotipo.
 - La administración debe diferenciarse visualmente del sitio público, pero puede conservar la identidad mediante el logo y acentos dorados discretos.
 - La accesibilidad prevalece sobre el estilo: texto, disponibilidad, errores y estados de solicitudes deben expresarse también con etiquetas o mensajes claros.
 
 ## Pendiente de validación
 
-- Archivo vectorial o versiones horizontales, reducidas y monocromáticas del logo.
+- Archivo vectorial y versión monocromática del logo; las variantes horizontal y reducida PNG ya existen.
 - Reglas de tamaño mínimo, área de protección y usos no permitidos del logo.

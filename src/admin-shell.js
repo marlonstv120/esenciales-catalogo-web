@@ -16,12 +16,12 @@ export function shellView(route) {
   return `<a class="skip-link" href="#admin-content">Saltar a contenido</a>
     <div class="admin-shell">
       <aside class="admin-navigation" aria-label="Administración">
-        <a class="admin-navigation__brand" href="#inventario" aria-label="ESENCIALES — Inventario"><img src="${appPath('/assets/brand/esenciales-logo-horizontal.png')}" alt=""></a><p class="admin-navigation__title">Administración</p>
+        <a class="admin-navigation__brand" href="#inventario" aria-label="ESENCIALES — Inventario"><img src="${appPath('/assets/brand/esenciales-logo-horizontal.png')}" alt=""></a>
         <nav class="admin-navigation__links" aria-label="Secciones administrativas">${navigation}</nav>
         <div class="admin-navigation__actions">${shopLink}<button class="admin-sign-out" type="button" data-sign-out><svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 17l5-5-5-5M15 12H3m9-8h7v16h-7"/></svg>Cerrar sesión</button></div>
         <details class="admin-mobile-menu"><summary aria-label="Menú administrativo">Menú</summary><div class="admin-mobile-menu__panel"><nav aria-label="Secciones administrativas">${navigation}</nav><div class="admin-mobile-menu__actions">${shopLink}<button class="admin-sign-out" type="button" data-sign-out>Cerrar sesión</button></div></div></details>
       </aside>
-      <main class="admin-main" id="admin-content" tabindex="-1"><div class="admin-main__inner"><header class="admin-header"><div><p class="eyebrow">Administración</p><h1>${label}</h1></div></header><div data-admin-outlet></div></div></main>
+      <main class="admin-main" id="admin-content" tabindex="-1"><div class="admin-main__inner"><header class="admin-header"><div><p class="eyebrow">Administración / ${label}</p><h1>${label}</h1></div></header><div data-admin-outlet></div></div></main>
     </div>`;
 }
 

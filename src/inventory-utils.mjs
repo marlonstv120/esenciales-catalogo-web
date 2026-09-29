@@ -71,6 +71,8 @@ export function sortInventory(products, order = '') {
   return [...products].sort((a, b) => {
     if (order.startsWith('stock')) return direction * (productStock(a) - productStock(b)) || a.nombre.localeCompare(b.nombre, 'es');
     if (order.startsWith('name')) return direction * a.nombre.localeCompare(b.nombre, 'es');
+    if (order.startsWith('category')) return direction * (a.categorias?.nombre || '').localeCompare(b.categorias?.nombre || '', 'es') || a.nombre.localeCompare(b.nombre, 'es');
+    if (order.startsWith('status')) return direction * (Number(Boolean(a.activo)) - Number(Boolean(b.activo))) || a.nombre.localeCompare(b.nombre, 'es');
     if (order === 'newest' || order === 'oldest') return direction * (new Date(a.creado_en) - new Date(b.creado_en));
     if (order.startsWith('price')) {
       const left = productPriceRange(a)?.min;

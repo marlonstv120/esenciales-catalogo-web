@@ -1,7 +1,7 @@
 import { retryImageCleanup, removeImage, replaceImage, updateImageAlt, uploadImage, validateImage } from './images.js';
 import { listCategories } from './categories.js';
 import { productImageEditorView } from './product-image-views.mjs';
-import { productFormView, productSaveConfirmation, productsView, presentationFormView } from './product-views.mjs';
+import { productFormView, productSaveConfirmation, presentationFormView } from './product-views.mjs';
 import { listProducts, savePresentation, saveProduct } from './products.js';
 import { filterInventory, sortInventory } from './inventory-utils.mjs';
 import { inventoryDashboardView } from './inventory-views.mjs';
@@ -34,6 +34,13 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   if (!state.inventoryInitialized) state = { ...state, filters: filtersFromHash(), inventoryInitialized: true };
   const resetPage = (nextFilters) => ({ ...nextFilters, page: 1 });
   const filteredProducts = () => sortInventory(filterInventory(state.products, state.filters), state.filters.order);
+  const openProduct = (productId) => {
+    const editor = state.products.find((product) => String(product.id) === String(productId));
+    if (!editor) return;
+    const image = currentImage(editor);
+    state = { ...state, editor, values: {}, error: '', image, imageAlt: image?.texto_alternativo || editor.nombre, imageError: '', cleanupPath: '', saved: false };
+    draw();
+  };
   const draw = () => {
     outlet.innerHTML = state.editor
       ? productFormView({ product: state.editor, categories: state.categories, values: state.values, error: state.error })
@@ -154,7 +161,7 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   function bind() {
     outlet.querySelector('[data-products-retry]')?.addEventListener('click', load);
     outlet.querySelector('[data-product-create]')?.addEventListener('click', () => { state = { ...state, editor: {}, values: {}, error: '', image: null, imageAlt: '', imageError: '', cleanupPath: '', saved: false }; draw(); });
-    outlet.querySelectorAll('[data-product-edit]').forEach((button) => button.addEventListener('click', () => { const editor = state.products.find((product) => String(product.id) === button.dataset.productEdit); const image = currentImage(editor); state = { ...state, editor, values: {}, error: '', image, imageAlt: image?.texto_alternativo || editor.nombre, imageError: '', cleanupPath: '', saved: false }; draw(); }));
+    outlet.querySelectorAll('[data-product-edit]').forEach((button) => button.addEventListener('click', (event) => { event.stopPropagation(); openProduct(button.dataset.productEdit); }));
     outlet.querySelector('[data-product-close]')?.addEventListener('click', () => { state = { ...state, editor: null, presentation: null, values: {}, error: '', image: null, imageAlt: '', imageError: '', cleanupPath: '' }; draw(); });
     outlet.querySelector('#product-form')?.addEventListener('submit', (event) => { event.preventDefault(); if (event.currentTarget.checkValidity()) saveCurrent(event.currentTarget); else event.currentTarget.reportValidity(); });
     outlet.querySelector('[data-presentation-create]')?.addEventListener('click', () => { state = { ...state, presentation: {}, values: {}, error: '' }; draw(); });
@@ -176,9 +183,14 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     outlet.querySelectorAll('[data-inventory-availability]').forEach((button) => button.addEventListener('click', () => { const availability = state.filters.availability === button.dataset.inventoryAvailability ? '' : button.dataset.inventoryAvailability; state = { ...state, filters: resetPage({ ...state.filters, availability }) }; draw(); }));
     outlet.querySelectorAll('[data-inventory-status]').forEach((button) => button.addEventListener('click', () => { const status = state.filters.status === button.dataset.inventoryStatus ? '' : button.dataset.inventoryStatus; state = { ...state, filters: resetPage({ ...state.filters, status }) }; draw(); }));
     outlet.querySelector('[data-inventory-featured]')?.addEventListener('click', () => { state = { ...state, filters: resetPage({ ...state.filters, featured: !state.filters.featured }) }; draw(); });
-    outlet.querySelectorAll('[data-inventory-filter-clear], [data-inventory-show-all]').forEach((button) => button.addEventListener('click', () => { state = { ...state, filters: { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: '', page: 1 }, drawerOpen: false }; draw(); }));
+    outlet.querySelectorAll('[data-inventory-filter-clear]').forEach((button) => button.addEventListener('click', () => { state = { ...state, filters: { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: '', page: 1 }, drawerOpen: false }; draw(); }));
     outlet.querySelectorAll('[data-inventory-page]').forEach((button) => button.addEventListener('click', () => { state = { ...state, filters: { ...state.filters, page: Number(button.dataset.inventoryPage) } }; draw(); }));
-    outlet.querySelectorAll('[data-product-expand]').forEach((button) => button.addEventListener('click', () => { state = { ...state, expandedId: String(state.expandedId) === button.dataset.productExpand ? null : button.dataset.productExpand }; draw(); }));
+    outlet.querySelectorAll('[data-inventory-sort]').forEach((button) => button.addEventListener('click', () => { const field = button.dataset.inventorySort; const order = state.filters.order === `${field}-asc` ? `${field}-desc` : `${field}-asc`; state = { ...state, filters: resetPage({ ...state.filters, order }) }; draw(); }));
+    outlet.querySelectorAll('[data-product-open]').forEach((row) => {
+      row.addEventListener('dblclick', (event) => { if (!event.target.closest('button, a, input, select')) openProduct(row.dataset.productOpen); });
+      row.addEventListener('click', (event) => { if (!event.target.closest('button, a, input, select') && window.matchMedia('(max-width: 63.9375rem)').matches) openProduct(row.dataset.productOpen); });
+      row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openProduct(row.dataset.productOpen); } });
+    });
   }
 
   await load();

@@ -82,7 +82,13 @@ test('trims a new category name before saving it', () => {
 
   createCategory(client, '  Splash  ');
 
-  assert.deepEqual(client.calls[1], { method: 'insert', payload: { nombre: 'Splash' } });
+  assert.deepEqual(client.calls[1], { method: 'insert', payload: { nombre: 'Splash', activo: true } });
+});
+
+test('preserves an inactive state when creating a category', () => {
+  const client = fakeClient();
+  createCategory(client, 'Prueba', false);
+  assert.deepEqual(client.calls[1], { method: 'insert', payload: { nombre: 'Prueba', activo: false } });
 });
 
 test('does not submit an empty category name', () => {

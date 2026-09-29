@@ -4,11 +4,11 @@ export function listCategories(client) {
   return client.from('categorias').select(categoryColumns).order('nombre', { ascending: true });
 }
 
-export function createCategory(client, name) {
+export function createCategory(client, name, activo = true) {
   const nombre = name.trim();
   if (!nombre) return { data: null, error: { code: 'category_name_required' } };
 
-  return client.from('categorias').insert({ nombre }).select(categoryColumns).single();
+  return client.from('categorias').insert({ nombre, activo: Boolean(activo) }).select(categoryColumns).single();
 }
 
 export function updateCategory(client, id, changes) {

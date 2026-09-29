@@ -50,7 +50,7 @@ La disponibilidad se determina por presentación activa y no únicamente por pro
 
 En tarjetas, el resumen utiliza esta precedencia: `Disponible` si existe al menos una presentación disponible; de lo contrario, `Bajo pedido` si existe al menos una presentación en ese modo; `Agotado` si las presentaciones restantes de venta inmediata tienen stock cero; y `No disponible` si ninguna admite solicitudes. El detalle conserva el estado individual de cada presentación.
 
-La disponibilidad se muestra por presentación y en el resumen de cada tarjeta, pero el catálogo no ofrece un filtro por disponibilidad (decisión del equipo del 28 de septiembre de 2026, en reemplazo de la regla de filtrado anterior).
+La disponibilidad se muestra por presentación y en el resumen de cada tarjeta. El catálogo permite combinar filtros por los cuatro resúmenes públicos `Disponible`, `Bajo pedido`, `Agotado` y `No disponible` (decisión del equipo del 29 de septiembre de 2026).
 
 ### RN-12 - Agotado automático
 

@@ -15,6 +15,7 @@ Esta carpeta es la fuente permanente de contexto del proyecto. Las fuentes origi
 - [Arquitectura](architecture/overview.md): decisiones técnicas confirmadas.
 - [Modelo lógico de datos](architecture/data-model.md): entidades, restricciones y transacciones propuestas para PostgreSQL.
 - [Desarrollo](development/workflow.md): flujo de trabajo, [convenciones](development/conventions.md) y [herramientas recomendadas](development/tooling.md).
+- [Plan de rediseño del catálogo](development/catalog-redesign-plan.md): plan técnico del catálogo unificado, filtros persistentes, tarjetas y carrito local básico.
 - [Académico](academic/README.md): contexto del curso e informe en construcción.
 - [Historial](history/project-log.md): trazabilidad e hitos relevantes.
 - [Entregables del informe](../informe/README.md): briefing, requisitos, diseno, arquitectura y evidencias organizados para los hitos academicos.

@@ -853,7 +853,7 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
   background: var(--color-surface-subtle);
 }
 
-.public-product-image img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
+.public-product-image img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .public-image-fallback { margin: 1rem; color: var(--color-text-muted); text-align: center; }
 .catalog-status { width: fit-content; margin: 0.125rem 0 0; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 600; }
 .catalog-status--available { color: var(--color-success); background: var(--color-success-bg); }
@@ -887,6 +887,76 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
 .public-skeleton { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1.25rem; }
 .public-skeleton span { display: block; aspect-ratio: 4 / 5; background: var(--color-surface-subtle); }
 .public-error { max-width: 40rem; }
+
+/* Unified public catalog: compact controls, single grid, and non-nested actions. */
+.catalog-toolbar { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem; align-items: end; }
+.catalog-search { min-width: 0; }
+.catalog-search input, .catalog-order select { width: 100%; min-height: 2.75rem; padding: 0.5rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-ink); }
+.catalog-filters-toggle { min-height: 2.75rem; }
+.catalog-clear { grid-column: 1 / -1; }
+.catalog-order { display: grid; grid-column: 1 / -1; gap: 0.25rem; color: var(--color-text-muted); font-size: 0.875rem; font-weight: 600; }
+.catalog-filter-panel { z-index: 4; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-page); box-shadow: 0 12px 30px rgb(23 20 15 / 14%); }
+.catalog-filter-panel__heading { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); }
+.catalog-filter-panel__heading h2 { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.5rem; }
+.catalog-filter-panel__body { display: grid; gap: 0.9rem; padding: 1rem; }
+.catalog-filter-panel label { display: grid; gap: 0.3rem; font-weight: 600; }
+.catalog-filter-panel fieldset { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; margin: 0; padding: 0.75rem; border: 1px solid var(--color-border); }
+.catalog-filter-panel fieldset legend { padding-inline: 0.25rem; font-weight: 700; }
+.catalog-filter-panel fieldset label { display: flex; align-items: center; gap: 0.4rem; font-weight: 400; }
+.catalog-filter-panel input[type="checkbox"] { width: 1rem; height: 1rem; }
+.catalog-filter-panel select, .catalog-filter-panel input:not([type="checkbox"]) { min-height: 2.75rem; padding: 0.5rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); background: #fff; }
+.catalog-filter-panel__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.catalog-filter-panel__actions > * { flex: 1 1 10rem; }
+.catalog-filter-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: -0.5rem 0 1rem; padding: 0; list-style: none; }
+.catalog-filter-tags li { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.45rem 0.25rem 0.65rem; border: 1px solid var(--color-border); border-radius: var(--radius-round); background: var(--color-surface); font-size: 0.875rem; }
+.catalog-filter-tags button { display: grid; width: 1.5rem; height: 1.5rem; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-ink); font-size: 1.25rem; cursor: pointer; }
+.public-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.public-product-card { display: grid; border-radius: var(--radius-lg); overflow: hidden; }
+.public-product-card__image-link { position: relative; display: block; color: inherit; }
+.public-product-card__image-link .catalog-status { position: absolute; top: 0.5rem; left: 0.5rem; margin: 0; border: 1px solid currentColor; background: var(--color-surface); }
+.public-product-card__content { display: grid; grid-template-rows: auto auto minmax(2.5em, auto) 1fr; gap: 0.35rem; padding: 0.7rem; }
+.public-product-card h3 { margin: 0; font-size: 1rem; line-height: 1.2; }
+.public-product-card h3 a { color: inherit; text-decoration: none; }
+.public-product-card h3 a:hover { color: var(--color-brand-bronze); text-decoration: underline; }
+.public-product-card__description { display: -webkit-box; margin: 0; overflow: hidden; color: var(--color-text-muted); font-size: 0.875rem; line-height: 1.25; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+.public-product-card__footer { display: flex; align-items: end; justify-content: space-between; gap: 0.5rem; margin-top: 0.35rem; }
+.public-product-card__price { margin: 0; font-size: 1rem; line-height: 1.2; }
+.public-product-card__normal-price { display: block; color: var(--color-text-muted); font-size: 0.875rem; font-weight: 400; }
+.public-add-button { display: grid; flex: 0 0 auto; width: 2.75rem; height: 2.75rem; place-items: center; padding: 0; border: 1px solid var(--color-border-strong); border-radius: 50%; background: var(--color-brand-black); color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer; }
+.public-add-button:hover { background: var(--color-brand-bronze); }
+.public-add-button:disabled { cursor: not-allowed; opacity: 0.55; }
+.public-empty-state { max-width: 38rem; padding: clamp(1.5rem, 5vw, 3rem); border: 1px solid var(--color-border); background: var(--color-surface); text-align: center; }
+.public-empty-state h2 { margin-top: 0; font-family: "Cormorant Garamond", Georgia, serif; }
+.public-selector { position: fixed; z-index: 10; right: max(1rem, calc((100vw - 75rem) / 2)); bottom: 1rem; left: 1rem; display: grid; gap: 0.75rem; max-width: 28rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-page); box-shadow: 0 12px 30px rgb(23 20 15 / 20%); }
+.public-selector__heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.public-selector__heading h2, .public-selector p { margin: 0; }
+.public-selector__option { display: grid; gap: 0.2rem; padding: 0.75rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); background: #fff; color: var(--color-ink); text-align: left; cursor: pointer; }
+.public-selector__option:hover { border-color: var(--color-brand-bronze); background: var(--color-surface-subtle); }
+.public-cart { display: grid; gap: 1.5rem; }
+.public-cart__items { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.public-cart__items li { display: grid; gap: 0.75rem; padding: 1rem; border: 1px solid var(--color-border); background: var(--color-surface); }
+.public-cart__items li > div { display: grid; gap: 0.15rem; }
+.public-cart__items li span { color: var(--color-text-muted); font-size: 0.875rem; }
+.public-cart__items label { display: grid; grid-template-columns: auto 5rem; align-items: center; gap: 0.5rem; font-weight: 600; }
+.public-cart__items input { min-height: 2.5rem; padding: 0.25rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); }
+.public-cart__summary { display: grid; justify-items: start; gap: 0.75rem; padding-top: 1rem; border-top: 1px solid var(--color-border); }
+.public-cart__summary p { margin: 0; }
+.public-live-region { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+@media (min-width: 40rem) {
+  .catalog-toolbar { grid-template-columns: minmax(18rem, 1fr) auto auto; }
+  .catalog-clear { grid-column: auto; }
+  .catalog-order { grid-column: auto; min-width: 9rem; }
+  .public-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .public-cart__items li { grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; }
+}
+
+@media (min-width: 64rem) {
+  .catalog-filters { position: relative; }
+  .catalog-filter-panel { position: absolute; z-index: 5; top: 3.25rem; right: 0; width: min(28rem, 100%); }
+  .public-product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; }
+  .public-selector { left: auto; }
+}
 
 @media (min-width: 40rem) {
   .public-mobile-menu { display: none; }

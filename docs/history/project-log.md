@@ -1,5 +1,15 @@
 # Bitácora del proyecto
 
+## 2026-09-29
+
+### Decisiones / cambios
+
+- Se aprueba el catálogo público unificado: categoría deja de ser sección visual y se aplica mediante parámetros de URL compartibles.
+- Se reincorpora disponibilidad como filtro combinable y se conservan los estados públicos En stock, Bajo pedido, Agotado y No disponible.
+- Se incorpora ordenamiento por destacados, precio y nombre sin ampliar el contrato público con fecha de creación.
+- Se planifica e implementa un carrito local básico sin reserva de inventario, pagos, solicitudes ni WhatsApp.
+- El filtro administrativo de agotamiento debe comunicar `Con presentación agotada` para no confundir un producto mixto con un producto totalmente agotado.
+
 ## 2026-09-28
 
 ### Contexto

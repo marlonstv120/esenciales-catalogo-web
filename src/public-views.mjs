@@ -1,245 +1,85 @@
 import { appPath } from './app-paths.mjs';
-import { hasCatalogFilters, parseCatalogFilters } from './public-catalog-filters.mjs';
+import { getCartCount, getCartTotal } from './public-cart.mjs';
+import { getCatalogFilterCount, hasCatalogFilters, parseCatalogFilters } from './public-catalog-filters.mjs';
 
 const logoUrl = appPath('/assets/brand/esenciales-logo-horizontal.png');
-const categoryImages = {
-  perfumeslociones: appPath('/assets/images/categories/categoria-perfumes-lociones.png'),
-  splash: appPath('/assets/images/categories/categoria-splash.png'),
-  cremas: appPath('/assets/images/categories/categoria-cremas-corporales.png'),
-  cremascorporales: appPath('/assets/images/categories/categoria-cremas-corporales.png'),
-  humidificadores: appPath('/assets/images/categories/categoria-humidificadores.png'),
-  otrosproductos: appPath('/assets/images/categories/categoria-otros-productos.png'),
-};
-
-function escapeHtml(value = '') {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-function money(value) {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function productsFromRows(rows = []) {
-  return rows.filter((row) => row.producto_id != null);
-}
-
-function categoriesFromRows(rows = []) {
-  const categories = new Map();
-  for (const row of rows) {
-    categories.set(row.categoria_id, {
-      id: row.categoria_id,
-      nombre: row.categoria_nombre,
-    });
-  }
-  return [...categories.values()];
-}
-
-function statusClass(status = '') {
-  return {
-    Disponible: 'available',
-    'Bajo pedido': 'under-order',
-    Agotado: 'sold-out',
-    'No disponible': 'unavailable',
-  }[status] || 'neutral';
-}
+const categoryImages = { perfumeslociones: appPath('/assets/images/categories/categoria-perfumes-lociones.png'), splash: appPath('/assets/images/categories/categoria-splash.png'), cremas: appPath('/assets/images/categories/categoria-cremas-corporales.png'), cremascorporales: appPath('/assets/images/categories/categoria-cremas-corporales.png'), humidificadores: appPath('/assets/images/categories/categoria-humidificadores.png'), otrosproductos: appPath('/assets/images/categories/categoria-otros-productos.png') };
+const escapeHtml = (value = '') => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+const money = (value) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value).replace(/\s|COP/g, '');
+const productsFromRows = (rows = []) => rows.filter((row) => row.producto_id != null);
+const categoriesFromRows = (rows = []) => [...new Map(rows.map((row) => [row.categoria_id, { id: row.categoria_id, nombre: row.categoria_nombre }])).values()];
+const statusClass = (status = '') => ({ Disponible: 'available', 'Bajo pedido': 'under-order', Agotado: 'sold-out', 'No disponible': 'unavailable' }[status] || 'neutral');
+const statusLabel = (status = '') => status === 'Disponible' ? 'En stock' : status;
 
 function imageView(product) {
   const fallback = '<p class="public-image-fallback" data-public-image-fallback>Imagen no disponible</p>';
-  if (!product.imagen_url) return `<div class="public-product-image">${fallback}</div>`;
-  return `<div class="public-product-image"><img data-public-image src="${escapeHtml(product.imagen_url)}" alt="${escapeHtml(product.texto_alternativo || product.nombre || '')}" loading="lazy"><p class="public-image-fallback" data-public-image-fallback hidden>Imagen no disponible</p></div>`;
+  return !product.imagen_url ? `<div class="public-product-image">${fallback}</div>` : `<div class="public-product-image"><img data-public-image src="${escapeHtml(product.imagen_url)}" alt="${escapeHtml(product.texto_alternativo || product.nombre || '')}" loading="lazy"><p class="public-image-fallback" data-public-image-fallback hidden>Imagen no disponible</p></div>`;
 }
 
 function productCardView(product, featured = false) {
-  const price = product.precio_desde
-    ? `Desde ${money(product.precio_referencia)}`
-    : money(product.precio_referencia);
-  const normalReferencePrice = Number(product.precio_normal_referencia) > Number(product.precio_referencia)
-    ? `<s class="public-product-card__normal-price">${money(product.precio_normal_referencia)}</s>`
-    : '';
+  const price = product.precio_desde ? `Desde ${money(product.precio_referencia)}` : money(product.precio_referencia);
+  const normal = Number(product.precio_normal_referencia) > Number(product.precio_referencia) ? `<s class="public-product-card__normal-price">${money(product.precio_normal_referencia)}</s>` : '';
+  const unavailable = ['Agotado', 'No disponible'].includes(product.disponibilidad);
   return `<article class="public-product-card${featured ? ' public-product-card--featured' : ''}">
-    <a class="public-product-card__link" href="${appPath(`/producto/${Number(product.producto_id)}`)}">
-      ${imageView(product)}
-      <p class="public-product-card__category">${escapeHtml(product.categoria_nombre)}</p>
-      <h3>${escapeHtml(product.nombre)}</h3>
-      <p class="public-product-card__price">${price} ${normalReferencePrice}</p>
-      <p class="catalog-status catalog-status--${statusClass(product.disponibilidad)}">${escapeHtml(product.disponibilidad)}</p>
-      ${featured
-        ? '<span class="public-product-card__action" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>'
-        : '<span class="public-product-card__action">Ver producto</span>'}
-    </a>
+    <a class="public-product-card__image-link" href="${appPath(`/producto/${Number(product.producto_id)}`)}">${imageView(product)}<span class="catalog-status catalog-status--${statusClass(product.disponibilidad)}">${escapeHtml(statusLabel(product.disponibilidad))}</span></a>
+    <div class="public-product-card__content"><p class="public-product-card__category">${escapeHtml(product.categoria_nombre)}</p><h3><a href="${appPath(`/producto/${Number(product.producto_id)}`)}">${escapeHtml(product.nombre)}</a></h3><p class="public-product-card__description">${escapeHtml(product.descripcion || '')}</p><div class="public-product-card__footer"><p class="public-product-card__price">${price} ${normal}</p><button class="public-add-button" type="button" data-product-add="${Number(product.producto_id)}" aria-label="Agregar ${escapeHtml(product.nombre)} al carrito" ${unavailable ? 'disabled aria-describedby="product-unavailable"' : ''}>+</button></div>${unavailable ? '<span id="product-unavailable" class="visually-hidden">Producto no disponible para agregar al carrito.</span>' : ''}</div>
   </article>`;
 }
 
 function categoryLinks(rows) {
-  return categoriesFromRows(rows)
-    .map((category) => {
-      const key = category.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
-      const image = categoryImages[key];
-      return `<a href="${appPath(`/catalogo#categoria-${category.id}`)}">${image ? `<img data-category-image src="${image}" alt="" loading="lazy" width="320" height="240">` : ''}<span>${escapeHtml(category.nombre)}</span></a>`;
-    })
-    .join('');
+  return categoriesFromRows(rows).map((category) => {
+    const key = category.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const image = categoryImages[key];
+    return `<a href="${appPath(`/catalogo?categoria=${category.id}`)}">${image ? `<img data-category-image src="${image}" alt="" loading="lazy" width="320" height="240">` : ''}<span>${escapeHtml(category.nombre)}</span></a>`;
+  }).join('');
 }
 
-export function publicShellView(content, currentRoute = 'home') {
+export function publicShellView(content, currentRoute = 'home', cart = { items: [] }) {
   const active = (route) => currentRoute === route ? ' aria-current="page"' : '';
-  return `<a class="skip-link" href="#main-content">Saltar al contenido</a>
-    <header class="public-header">
-      <div class="public-header__inner"><details class="public-mobile-menu"><summary aria-label="Abrir menú de navegación"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary><nav aria-label="Navegación móvil"><a href="${appPath('/')}"${active('home')}>Inicio</a><a href="${appPath('/catalogo')}"${active('catalog')}>Catálogo</a><a href="${appPath('/admin')}">Administración</a></nav></details><a class="public-brand" href="${appPath('/')}"><img src="${escapeHtml(logoUrl)}" alt="ESENCIALES"></a>
-      <nav class="public-navigation" aria-label="Principal">
-        <a href="${appPath('/')}"${active('home')}>Inicio</a>
-        <a href="${appPath('/catalogo')}"${active('catalog')}>Catálogo</a>
-      </nav>
-      <a class="public-cart-link" href="${appPath('/carrito')}" aria-label="Carrito (0)"${active('cart')}><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l2.4 12h13l2-9H5"/></svg><span class="public-cart-link__count" aria-hidden="true">0</span></a></div>
-    </header>
-    <main class="public-main" id="main-content">${content}</main>
-    <footer class="public-footer"><div class="public-footer__inner"><span>ESENCIALES</span><a href="${appPath('/admin')}">Administración</a></div></footer>`;
+  const count = getCartCount(cart);
+  return `<a class="skip-link" href="#main-content">Saltar al contenido</a><header class="public-header"><div class="public-header__inner"><details class="public-mobile-menu"><summary aria-label="Abrir menú de navegación"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary><nav aria-label="Navegación móvil"><a href="${appPath('/')}"${active('home')}>Inicio</a><a href="${appPath('/catalogo')}"${active('catalog')}>Catálogo</a><a href="${appPath('/admin')}">Administración</a></nav></details><a class="public-brand" href="${appPath('/')}" aria-label="Inicio"><img src="${escapeHtml(logoUrl)}" alt="ESENCIALES"></a><nav class="public-navigation" aria-label="Principal"><a href="${appPath('/')}"${active('home')}>Inicio</a><a href="${appPath('/catalogo')}"${active('catalog')}>Catálogo</a></nav><a class="public-cart-link" href="${appPath('/carrito')}" aria-label="Carrito (${count})"${active('cart')}><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l2.4 12h13l2-9H5"/></svg><span class="public-cart-link__count" aria-hidden="true">${count}</span></a></div></header><main class="public-main" id="main-content">${content}</main><footer class="public-footer"><div class="public-footer__inner"><span>ESENCIALES</span><a href="${appPath('/admin')}">Administración</a></div></footer><div class="public-live-region" role="status" aria-live="polite" aria-atomic="true"></div>`;
 }
 
 export function homeView(rows = []) {
-  const products = productsFromRows(rows);
-  // Until test records are corrected in administration, omit the known fixture from home.
-  const featured = products.filter((product) => product.destacado && product.nombre?.trim().toLowerCase() !== 'prubea');
-  const categories = categoryLinks(rows);
-  return `<section class="public-hero" aria-labelledby="home-title">
-      <div class="public-hero__content">
-      <h1 id="home-title">Tu aroma, siempre contigo.</h1>
-      <p>Explora lociones, perfumes y opciones de cuidado personal para cada estilo y ocasión.</p>
-      <a class="primary-button public-hero__action" href="${appPath('/catalogo')}">Ver catálogo</a></div>
-    </section>
-    ${categories ? `<section class="public-categories" aria-labelledby="categories-title"><h2 id="categories-title">Categorías</h2><nav class="public-category-links" aria-label="Categorías">${categories}</nav></section>` : ''}
-    ${featured.length ? `<section class="public-section public-featured" aria-labelledby="featured-title"><div class="public-section__heading"><h2 id="featured-title">Productos destacados</h2><a href="${appPath('/catalogo')}">Ver catálogo <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div><div class="public-product-grid">${featured.map((product) => productCardView(product, true)).join('')}</div></section>` : ''}`;
+  const products = productsFromRows(rows); const featured = products.filter((product) => product.destacado); const categories = categoryLinks(rows);
+  return `<section class="public-hero" aria-labelledby="home-title"><div class="public-hero__content"><h1 id="home-title">Tu aroma, siempre contigo.</h1><p>Explora lociones, perfumes y opciones de cuidado personal para cada estilo y ocasión.</p><a class="primary-button public-hero__action" href="${appPath('/catalogo')}">Ver catálogo</a></div></section>${categories ? `<section class="public-categories" aria-labelledby="categories-title"><h2 id="categories-title">Categorías</h2><nav class="public-category-links" aria-label="Categorías">${categories}</nav></section>` : ''}${featured.length ? `<section class="public-section public-featured" aria-labelledby="featured-title"><div class="public-section__heading"><h2 id="featured-title">Productos destacados</h2><a href="${appPath('/catalogo')}">Ver catálogo</a></div><div class="public-product-grid">${featured.map((product) => productCardView(product, true)).join('')}</div></section>` : ''}`;
 }
 
-const filterChoices = {
-  generos: [['hombre', 'Hombre'], ['mujer', 'Mujer'], ['unisex', 'Unisex']],
-  clasificaciones: [['original', 'Original'], ['uno_a_uno', '1.1'], ['inspiracion', 'Inspiración']],
-};
+const filterChoices = { disponibilidades: [['en-stock', 'En stock'], ['bajo-pedido', 'Bajo pedido'], ['agotado', 'Agotado'], ['no-disponible', 'No disponible']], generos: [['hombre', 'Hombre'], ['mujer', 'Mujer'], ['unisex', 'Unisex']], clasificaciones: [['original', 'Original'], ['uno_a_uno', '1.1'], ['inspiracion', 'Inspiración']] };
+const fieldTitle = { disponibilidades: 'Disponibilidad', generos: 'Género', clasificaciones: 'Clasificación' };
 
-function filterCheckboxes(filters, field, title) {
-  return `<fieldset><legend>${title}</legend>${filterChoices[field].map(([value, label]) =>
-    `<label><input type="checkbox" name="${field}" value="${value}" ${filters[field].includes(value) ? 'checked' : ''}>${label}</label>`).join('')}</fieldset>`;
+function choicesView(filters, field) { return `<fieldset><legend>${fieldTitle[field]}</legend>${filterChoices[field].map(([value, label]) => `<label><input type="checkbox" name="${field}" value="${value}" ${filters[field].includes(value) ? 'checked' : ''}>${label}</label>`).join('')}</fieldset>`; }
+function filterTags(filters, categories) {
+  const tags = [];
+  if (filters.busqueda) tags.push(['busqueda', '', `Búsqueda: ${filters.busqueda}`]);
+  if (filters.categoria) tags.push(['categoria', '', `Categoría: ${categories.find((item) => item.id === filters.categoria)?.nombre || filters.categoria}`]);
+  ['disponibilidades', 'generos', 'clasificaciones'].forEach((field) => filters[field].forEach((value) => tags.push([field, value, `${fieldTitle[field]}: ${filterChoices[field].find(([key]) => key === value)?.[1] || value}`])));
+  if (filters.precioMinimo) tags.push(['precioMinimo', '', `Desde ${money(filters.precioMinimo)}`]);
+  if (filters.precioMaximo) tags.push(['precioMaximo', '', `Hasta ${money(filters.precioMaximo)}`]);
+  return tags.length ? `<ul class="catalog-filter-tags" aria-label="Filtros aplicados">${tags.map(([field, value, label]) => `<li>${escapeHtml(label)} <button type="button" data-filter-remove="${field}" data-filter-value="${value}" aria-label="Quitar filtro ${escapeHtml(label)}">×</button></li>`).join('')}</ul>` : '';
 }
-
 function catalogControls(categories, filters, state) {
-  const shortcuts = [['generos', 'hombre', 'Hombre'], ['generos', 'mujer', 'Mujer'], ['clasificaciones', 'original', 'Original'], ['clasificaciones', 'uno_a_uno', '1.1']];
-  return `<form class="catalog-filters" data-catalog-form role="search">
-    <label for="catalog-search">Buscar por nombre</label>
-    <div class="catalog-search-row"><input id="catalog-search" name="busqueda" type="search" value="${escapeHtml(filters.busqueda)}" autocomplete="off"><button class="secondary-button" type="submit">Buscar</button></div>
-    <div class="catalog-filter-row"><details class="catalog-filter-panel" data-filter-panel ${state.panelOpen ? 'open' : ''}><summary>Filtros</summary>
-      <div class="catalog-filter-panel__body"><label for="catalog-category">Categoría</label><select id="catalog-category" name="categoria"><option value="">Todas</option>${categories.map((category) => `<option value="${category.id}" ${category.id === filters.categoria ? 'selected' : ''}>${escapeHtml(category.nombre)}</option>`).join('')}</select>
-      ${filterCheckboxes(filters, 'generos', 'Género')}${filterCheckboxes(filters, 'clasificaciones', 'Clasificación')}
-      <div class="catalog-price-fields"><label>Precio mínimo (COP)<input name="precioMinimo" inputmode="numeric" type="text" value="${escapeHtml(filters.precioMinimo)}"></label><label>Precio máximo (COP)<input name="precioMaximo" inputmode="numeric" type="text" value="${escapeHtml(filters.precioMaximo)}"></label></div>
-      <button class="secondary-button" type="submit">Aplicar filtros</button></div></details>
-      <div class="catalog-quick-filters" aria-label="Filtros rápidos">${shortcuts.map(([field, value, label]) => `<button type="button" data-quick-field="${field}" data-quick-value="${value}" aria-pressed="${filters[field].includes(value)}">${label}</button>`).join('')}</div></div>
-    ${state.validation ? `<p class="message message--error" role="alert" id="catalog-filter-error">${escapeHtml(state.validation)}</p>` : ''}
-    ${hasCatalogFilters(filters) ? '<button type="button" class="catalog-clear" data-clear-filters>Limpiar filtros</button>' : ''}
-  </form>`;
+  const count = getCatalogFilterCount(filters);
+  return `<form class="catalog-filters" data-catalog-form role="search"><div class="catalog-toolbar"><label class="catalog-search"><span class="visually-hidden">Buscar por nombre</span><input id="catalog-search" name="busqueda" type="search" placeholder="Buscar por nombre" value="${escapeHtml(filters.busqueda)}" autocomplete="off"></label><button class="secondary-button catalog-filters-toggle" type="button" data-filter-toggle aria-expanded="${Boolean(state.panelOpen)}">Filtros${count ? ` (${count})` : ''}</button>${hasCatalogFilters(filters) ? '<button type="button" class="catalog-clear" data-clear-filters>Limpiar filtros</button>' : ''}<label class="catalog-order">Ordenar<select name="orden"><option value="destacados" ${filters.orden === 'destacados' ? 'selected' : ''}>Destacados</option><option value="precio-asc" ${filters.orden === 'precio-asc' ? 'selected' : ''}>Menor precio</option><option value="precio-desc" ${filters.orden === 'precio-desc' ? 'selected' : ''}>Mayor precio</option><option value="nombre" ${filters.orden === 'nombre' ? 'selected' : ''}>Nombre</option></select></label></div><section class="catalog-filter-panel ${state.panelOpen ? 'is-open' : ''}" data-filter-panel aria-label="Filtros de catálogo" ${state.panelOpen ? '' : 'hidden'}><div class="catalog-filter-panel__heading"><h2>Filtros</h2><button type="button" class="icon-button" data-filter-close aria-label="Cerrar filtros">×</button></div><div class="catalog-filter-panel__body"><label>Categoría<select name="categoria"><option value="">Todas</option>${categories.map((category) => `<option value="${category.id}" ${category.id === filters.categoria ? 'selected' : ''}>${escapeHtml(category.nombre)}</option>`).join('')}</select></label>${choicesView(filters, 'disponibilidades')}${choicesView(filters, 'generos')}${choicesView(filters, 'clasificaciones')}<div class="catalog-price-fields"><label>Precio mínimo<input name="precioMinimo" inputmode="numeric" value="${escapeHtml(filters.precioMinimo)}"></label><label>Precio máximo<input name="precioMaximo" inputmode="numeric" value="${escapeHtml(filters.precioMaximo)}"></label></div><div class="catalog-filter-panel__actions"><button class="primary-button" type="submit">Aplicar filtros</button><button class="secondary-button" type="button" data-clear-filters>Limpiar filtros</button></div></div></section>${state.validation ? `<p class="message message--error" role="alert">${escapeHtml(state.validation)}</p>` : ''}</form>${filterTags(filters, categories)}`;
 }
 
 export function catalogView(rows = [], filteredRows = rows, filters = parseCatalogFilters(''), state = {}) {
-  const products = productsFromRows(filteredRows);
-  const categories = categoriesFromRows(rows);
-  const controls = catalogControls(categories, filters, state);
-  const heading = '<div class="public-page-heading"><p class="eyebrow">ESENCIALES</p><h1>Catálogo</h1></div>';
+  filters = { disponibilidades: [], orden: 'destacados', ...filters }; const products = productsFromRows(filteredRows); const categories = categoriesFromRows(rows); const controls = catalogControls(categories, filters, state); const heading = '<div class="public-page-heading"><p class="eyebrow">ESENCIALES</p><h1>Catálogo</h1><p>Explora productos, precios y disponibilidad.</p></div>';
   if (state.loading) return `${heading}${controls}<p class="public-loading" role="status">Cargando resultados...</p>${loadingView('Cargando resultados...')}`;
   if (state.error) return `${heading}${controls}${errorView(state.error, '/catalogo')}`;
-  if (!productsFromRows(rows).length) return `${heading}${controls}<p class="public-empty">Aún no hay productos disponibles en el catálogo.</p>`;
-  if (!products.length) return `${heading}${controls}<section class="public-section"><h2>Sin resultados</h2><p>Ningún producto coincide con los filtros activos.</p><button type="button" class="secondary-button" data-clear-filters>Limpiar filtros</button></section>`;
-
-  const sections = categories.filter((category) => !hasCatalogFilters(filters) || products.some((product) => product.categoria_id === category.id)).map((category) => {
-    const categoryProducts = products.filter((product) => product.categoria_id === category.id);
-    return `<section class="public-section public-category-section" id="categoria-${category.id}" aria-labelledby="category-title-${category.id}">
-      <h2 id="category-title-${category.id}">${escapeHtml(category.nombre)}</h2>
-      ${categoryProducts.length
-        ? `<div class="public-product-grid">${categoryProducts.map(productCardView).join('')}</div>`
-        : '<p class="public-empty">Aún no hay productos disponibles en esta categoría.</p>'}
-    </section>`;
-  }).join('');
-
-  return `${heading}${controls}<p class="catalog-result-count" role="status">${products.length} ${products.length === 1 ? 'producto' : 'productos'}</p>${sections}`;
+  if (!productsFromRows(rows).length) return `${heading}${controls}<section class="public-empty-state"><h2>El catálogo está vacío</h2><p>Aún no hay productos publicables.</p></section>`;
+  if (!products.length) return `${heading}${controls}<section class="public-empty-state"><h2>Sin resultados</h2><p>Ningún producto coincide con los filtros activos.</p><button type="button" class="secondary-button" data-clear-filters>Limpiar filtros</button></section>`;
+  return `${heading}${controls}<p class="catalog-result-count" role="status">${products.length} ${products.length === 1 ? 'producto' : 'productos'}</p><div class="public-product-grid">${products.map(productCardView).join('')}</div>`;
 }
 
-function presentationPrice(presentation) {
-  const normal = money(presentation.precio_normal);
-  return presentation.precio_promocional
-    ? `<span class="presentation-price__current">${money(presentation.precio_promocional)}</span> <s class="presentation-price__normal">${normal}</s>`
-    : `<span class="presentation-price__current">${normal}</span>`;
-}
+function presentationPrice(presentation) { return presentation.precio_promocional ? `<span class="presentation-price__current">${money(presentation.precio_promocional)}</span> <s class="presentation-price__normal">${money(presentation.precio_normal)}</s>` : `<span class="presentation-price__current">${money(presentation.precio_normal)}</span>`; }
+function metadata(product) { const fields = [['Categoría', product.categoria_nombre], ['Marca', product.marca], ['Género', product.genero], ['Familia olfativa', product.familia_olfativa], ['Clasificación', product.clasificacion]].filter(([, value]) => value); return fields.length ? `<dl class="public-product-metadata">${fields.map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}</dl>` : ''; }
+export function productDetailView(product) { if (!product) return notFoundView(); const presentations = product.presentaciones || []; return `<a class="public-back-link" href="${appPath('/catalogo')}">Volver al catálogo</a><article class="public-product-detail">${imageView(product)}<div class="public-product-detail__content"><p class="eyebrow">${escapeHtml(product.categoria_nombre)}</p><h1>${escapeHtml(product.nombre)}</h1><p class="public-product-detail__description">${escapeHtml(product.descripcion)}</p>${metadata(product)}${presentations.length ? `<fieldset class="public-presentations"><legend>Presentaciones</legend>${presentations.map((presentation, index) => `<label class="public-presentation-option"><input type="radio" name="presentacion" value="${Number(presentation.id)}" ${index === 0 ? 'checked' : ''}><span class="public-presentation-option__content"><strong>${escapeHtml(presentation.etiqueta)}</strong><span class="presentation-price">${presentationPrice(presentation)}</span><span class="catalog-status catalog-status--${statusClass(presentation.estado)}">${escapeHtml(statusLabel(presentation.estado))}</span></span></label>`).join('')}</fieldset>` : '<p class="public-empty">No hay presentaciones disponibles.</p>'}</div></article>`; }
 
-function metadata(product) {
-  const fields = [
-    ['Categoría', product.categoria_nombre],
-    ['Marca', product.marca],
-    ['Género', product.genero],
-    ['Familia olfativa', product.familia_olfativa],
-    ['Clasificación', product.clasificacion],
-  ].filter(([, value]) => value);
-  if (!fields.length) return '';
-  return `<dl class="public-product-metadata">${fields.map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}</dl>`;
-}
+export function presentationSelectorView(product) { const available = (product.presentaciones || []).filter((item) => ['Disponible', 'Bajo pedido'].includes(item.estado)); return `<section class="public-selector" data-presentation-selector role="dialog" aria-modal="true" aria-labelledby="presentation-selector-title"><div class="public-selector__heading"><h2 id="presentation-selector-title">Elige una presentación</h2><button class="icon-button" type="button" data-presentation-close aria-label="Cerrar selector">×</button></div><p>${escapeHtml(product.nombre)}</p>${available.map((item) => `<button type="button" class="public-selector__option" data-presentation-add="${Number(item.id)}"><strong>${escapeHtml(item.etiqueta)}</strong><span>${presentationPrice(item)} · ${escapeHtml(statusLabel(item.estado))}</span></button>`).join('')}</section>`; }
 
-export function productDetailView(product) {
-  if (!product) return notFoundView();
-  const presentations = product.presentaciones || [];
-  const options = presentations.map((presentation, index) => `<label class="public-presentation-option">
-    <input type="radio" name="presentacion" value="${Number(presentation.id)}" ${index === 0 ? 'checked' : ''}>
-    <span class="public-presentation-option__content">
-      <strong>${escapeHtml(presentation.etiqueta)}</strong>
-      <span class="presentation-price">${presentationPrice(presentation)}</span>
-      <span class="catalog-status catalog-status--${statusClass(presentation.estado)}">${escapeHtml(presentation.estado)}</span>
-    </span>
-  </label>`).join('');
-
-  return `<a class="public-back-link" href="${appPath('/catalogo')}">Volver al catálogo</a>
-    <article class="public-product-detail">
-      ${imageView(product)}
-      <div class="public-product-detail__content">
-        <p class="eyebrow">${escapeHtml(product.categoria_nombre)}</p>
-        <h1>${escapeHtml(product.nombre)}</h1>
-        <p class="public-product-detail__description">${escapeHtml(product.descripcion)}</p>
-        ${metadata(product)}
-        ${presentations.length
-          ? `<fieldset class="public-presentations"><legend>Presentaciones</legend>${options}</fieldset>`
-          : '<p class="public-empty">No hay presentaciones disponibles.</p>'}
-      </div>
-    </article>`;
-}
-
-export function cartView() {
-  return `<section class="public-section public-cart-empty"><p class="eyebrow">ESENCIALES</p><h1>Carrito (0)</h1><p>La preparación de solicitudes se habilitará en el siguiente incremento.</p><a class="primary-button" href="${appPath('/catalogo')}">Seguir explorando</a></section>`;
-}
-
-export function notFoundView() {
-  return `<section class="public-section public-not-found"><h1>No encontrado</h1><p>Este producto no existe o dejó de publicarse.</p><a class="primary-button" href="${appPath('/catalogo')}">Volver al catálogo</a></section>`;
-}
-
-export function loadingView(label = 'Cargando catálogo...') {
-  return `<p class="public-loading" role="status">${escapeHtml(label)}</p><div class="public-skeleton" aria-hidden="true"><span></span><span></span><span></span></div>`;
-}
-
-export function errorView(message, retryRoute) {
-  return `<section class="public-section public-error"><p class="message message--error" role="alert">${escapeHtml(message)}</p><button class="secondary-button" type="button" data-public-retry="${escapeHtml(retryRoute)}">Reintentar</button></section>`;
-}
-
-export function renderPublicRoute(route, result = {}) {
-  if (route.name === 'cart') return cartView();
-  if (route.name === 'not-found') return notFoundView();
-  if (result.error) {
-    const retryRoute = route.name === 'product' ? `/producto/${route.productId}` : `/${route.name === 'catalog' ? 'catalogo' : ''}`;
-    return errorView(result.error, retryRoute);
-  }
-  if (route.name === 'product') return result.data ? productDetailView(result.data) : notFoundView();
-  if (route.name === 'catalog') return result.catalogState
-    ? catalogView(result.catalogState.baseRows, result.catalogState.filteredRows, result.catalogState.filters, result.catalogState)
-    : catalogView(result.data || []);
-  return homeView(result.data || []);
-}
+export function cartView(cart = { items: [] }) { if (!cart.items.length) return `<section class="public-section public-cart-empty"><p class="eyebrow">ESENCIALES</p><h1>Carrito (0)</h1><p>Tu carrito está vacío. Agrega presentaciones disponibles o bajo pedido desde el catálogo.</p><a class="primary-button" href="${appPath('/catalogo')}">Explorar catálogo</a></section>`; return `<section class="public-cart"><div class="public-page-heading"><p class="eyebrow">ESENCIALES</p><h1>Carrito</h1></div><ul class="public-cart__items">${cart.items.map((item) => `<li><div><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.label)} · ${escapeHtml(statusLabel(item.status))}</span><span>${money(item.price)} c/u</span></div><label>Cantidad<input type="number" min="1" max="99" value="${item.quantity}" data-cart-quantity="${item.presentationId}" aria-label="Cantidad de ${escapeHtml(item.name)}, ${escapeHtml(item.label)}"></label><strong>${money(item.price * item.quantity)}</strong><button class="secondary-button" type="button" data-cart-remove="${item.presentationId}" aria-label="Retirar ${escapeHtml(item.name)}">Retirar</button></li>`).join('')}</ul><div class="public-cart__summary"><p>Valor total de productos <strong>${money(getCartTotal(cart))}</strong></p><p>Domicilio o envío se confirma posteriormente con ESENCIALES.</p><a class="secondary-button" href="${appPath('/catalogo')}">Seguir comprando</a></div></section>`; }
+export function notFoundView() { return `<section class="public-section public-not-found"><h1>No encontrado</h1><p>Este producto no existe o dejó de publicarse.</p><a class="primary-button" href="${appPath('/catalogo')}">Volver al catálogo</a></section>`; }
+export function loadingView(label = 'Cargando catálogo...') { return `<p class="public-loading" role="status">${escapeHtml(label)}</p><div class="public-skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span></div>`; }
+export function errorView(message, retryRoute) { return `<section class="public-section public-error"><p class="message message--error" role="alert">${escapeHtml(message)}</p><button class="secondary-button" type="button" data-public-retry="${escapeHtml(retryRoute)}">Reintentar</button></section>`; }
+export function renderPublicRoute(route, result = {}) { if (route.name === 'cart') return cartView(result.cart); if (route.name === 'not-found') return notFoundView(); if (result.error) return errorView(result.error, route.name === 'product' ? `/producto/${route.productId}` : `/${route.name === 'catalog' ? 'catalogo' : ''}`); if (route.name === 'product') return result.data ? productDetailView(result.data) : notFoundView(); if (route.name === 'catalog') return result.catalogState ? catalogView(result.catalogState.baseRows, result.catalogState.filteredRows, result.catalogState.filters, result.catalogState) : catalogView(result.data || []); return homeView(result.data || []); }

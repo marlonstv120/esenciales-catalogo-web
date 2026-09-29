@@ -33,7 +33,7 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   const draw = () => {
     const content = state.editor
       ? `${state.productNotice ? `<p class="admin-toast" role="status">${state.productNotice}</p>` : ''}${productFormView({ product: state.editor, categories: state.categories, values: state.productValues, error: state.productError, saving: state.productBusy, dirty: state.productDirty })}${productManagement()}`
-      : `${inventoryDashboardView({ products: { all: state.products, filtered: filteredProducts() }, categories: state.categories, filters: state.filters, loading: state.loading, error: state.loadError, drawerOpen: state.filtersPanelOpen })}${categoriesPanel()}`;
+      : `${inventoryDashboardView({ products: { all: state.products, filtered: filteredProducts() }, categories: state.categories, filters: state.filters, loading: state.loading, error: state.loadError, drawerOpen: state.filtersPanelOpen }).replaceAll('Sin stock', 'Con presentación agotada')}${categoriesPanel()}`;
     outlet.innerHTML = `${!state.editor && state.productNotice ? `<p class="admin-toast" role="status">${state.productNotice}</p>` : ''}${content}`;
     bind();
   };

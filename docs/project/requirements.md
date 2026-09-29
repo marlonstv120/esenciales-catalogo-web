@@ -65,9 +65,9 @@ El estado `Aprobado por el equipo` no sustituye una validación académica poste
 | ID | Descripción | Prioridad | Estado | Fuente |
 | --- | --- | --- | --- | --- |
 | RF-28 | El visitante debe poder buscar productos por nombre. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
-| RF-29 | El visitante debe poder combinar filtros por categoría, género, clasificación y rango de precio; el rango coincide cuando al menos una presentación activa y solicitable tiene un precio efectivo dentro de él. La disponibilidad se muestra pero no se filtra. | MUST | Actualizado por el equipo | Sustituye el filtro de disponibilidad aprobado el 2026-09-03; revisión del 2026-09-28 |
+| RF-29 | El visitante debe poder combinar filtros por categoría, disponibilidad, género, clasificación y rango de precio; el rango coincide cuando al menos una presentación activa y solicitable tiene un precio efectivo dentro de él. | MUST | Actualizado por el equipo | Reincorpora disponibilidad como filtro; decisión del equipo, 2026-09-29 |
 | RF-30 | El visitante debería poder filtrar por marca. | SHOULD | Aprobado por el equipo | Parte no promovida de la validación del 2026-09-03; revisión del 2026-09-28 |
-| RF-31 | El visitante debería poder ordenar por fecha de creación, menor precio efectivo, mayor precio efectivo y nombre; el orden por precio utiliza el menor precio efectivo solicitable de cada producto. | SHOULD | Aprobado por el equipo | MVP V1 y validación del equipo, 2026-09-03 |
+| RF-31 | El visitante debería poder ordenar por destacados, menor precio efectivo, mayor precio efectivo y nombre; el orden por precio utiliza el menor precio efectivo solicitable de cada producto. | SHOULD | Actualizado por el equipo | Se implementa sin ampliar el contrato público con fecha de creación, 2026-09-29 |
 
 ### Carrito
 

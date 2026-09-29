@@ -32,3 +32,18 @@ export async function loadPublicProduct(client, productId) {
     error: error ? 'No fue posible cargar el producto.' : null,
   };
 }
+
+const publicStatus = { Disponible: 'en-stock', 'Bajo pedido': 'bajo-pedido', Agotado: 'agotado', 'No disponible': 'no-disponible' };
+
+export function refineCatalogRows(rows, filters) {
+  const matching = filters.disponibilidades.length
+    ? rows.filter((row) => filters.disponibilidades.includes(publicStatus[row.disponibilidad]))
+    : [...rows];
+  return matching.sort((left, right) => {
+    const name = String(left.nombre || '').localeCompare(String(right.nombre || ''), 'es');
+    if (filters.orden === 'precio-asc') return Number(left.precio_referencia) - Number(right.precio_referencia) || name;
+    if (filters.orden === 'precio-desc') return Number(right.precio_referencia) - Number(left.precio_referencia) || name;
+    if (filters.orden === 'nombre') return name;
+    return Number(Boolean(right.destacado)) - Number(Boolean(left.destacado)) || name;
+  });
+}

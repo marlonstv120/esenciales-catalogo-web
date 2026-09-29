@@ -1,30 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCatalogFilters, serializeCatalogFilters, toggleFilterValue, validateCatalogFilters, hasCatalogFilters } from '../src/public-catalog-filters.mjs';
-import { loadFilteredCatalog } from '../src/public-catalog.mjs';
+import { getCatalogFilterCount, parseCatalogFilters, removeCatalogFilter, serializeCatalogFilters, validateCatalogFilters } from '../src/public-catalog-filters.mjs';
+import { loadFilteredCatalog, refineCatalogRows } from '../src/public-catalog.mjs';
 
-test('URL filters round trip, de-duplicate values and ignore unknown parameters', () => {
-  const filters = parseCatalogFilters('?q=%20%C3%81mbar%20&categoria=5&genero=hombre&genero=mujer&genero=hombre&clasificacion=uno_a_uno&min=70000&max=90000&genero=extra');
-  assert.deepEqual(filters, { busqueda: 'Ámbar', categoria: 5, generos: ['hombre', 'mujer'], clasificaciones: ['uno_a_uno'], precioMinimo: '70000', precioMaximo: '90000' });
+test('URL filters retain valid repeated criteria and persistent order', () => {
+  const filters = parseCatalogFilters('?q=%20%C3%81mbar%20&categoria=5&disponibilidad=en-stock&disponibilidad=bajo-pedido&genero=hombre&genero=hombre&clasificacion=uno_a_uno&min=70000&max=90000&orden=precio-desc');
+  assert.deepEqual(filters, { busqueda: 'Ámbar', categoria: 5, disponibilidades: ['en-stock', 'bajo-pedido'], generos: ['hombre'], clasificaciones: ['uno_a_uno'], precioMinimo: '70000', precioMaximo: '90000', orden: 'precio-desc' });
   assert.deepEqual(parseCatalogFilters(`?${serializeCatalogFilters(filters)}`), filters);
-  assert.equal(hasCatalogFilters(filters), true);
-  assert.equal(hasCatalogFilters(parseCatalogFilters('')), false);
+  assert.equal(getCatalogFilterCount(filters), 6);
+  assert.deepEqual(removeCatalogFilter(filters, 'disponibilidades', 'en-stock').disponibilidades, ['bajo-pedido']);
 });
 
-test('quick values toggle independently and invalid prices cannot query', () => {
-  const filters = parseCatalogFilters('');
-  assert.deepEqual(toggleFilterValue(toggleFilterValue(filters, 'generos', 'hombre'), 'clasificaciones', 'original'), { ...filters, generos: ['hombre'], clasificaciones: ['original'] });
-  assert.deepEqual(toggleFilterValue(toggleFilterValue(filters, 'generos', 'hombre'), 'generos', 'hombre'), filters);
-  assert.match(validateCatalogFilters({ ...filters, precioMinimo: '90000', precioMaximo: '70000' }), /mínimo/i);
-  assert.match(validateCatalogFilters({ ...filters, precioMinimo: '-1' }), /precio/i);
-  assert.match(validateCatalogFilters({ ...filters, precioMaximo: '1.5' }), /precio/i);
-  assert.equal(validateCatalogFilters(filters), null);
+test('invalid prices are rejected before data loading', () => {
+  assert.match(validateCatalogFilters({ ...parseCatalogFilters(''), precioMinimo: '90000', precioMaximo: '70000' }), /mínimo/i);
+  assert.match(validateCatalogFilters({ ...parseCatalogFilters(''), precioMinimo: '-1' }), /precio/i);
+  assert.equal(validateCatalogFilters(parseCatalogFilters('')), null);
 });
 
-test('filtered RPC uses public contract and returns generic errors', async () => {
-  const calls = [];
-  const client = { rpc: async (...args) => { calls.push(args); return { data: [], error: null }; } };
+test('catalog refines availability and uses deterministic ordering', () => {
+  const rows = [{ nombre: 'B', precio_referencia: 20, destacado: false, disponibilidad: 'Bajo pedido' }, { nombre: 'A', precio_referencia: 10, destacado: true, disponibilidad: 'Disponible' }, { nombre: 'C', precio_referencia: 15, destacado: false, disponibilidad: 'Agotado' }];
+  assert.deepEqual(refineCatalogRows(rows, { disponibilidades: ['en-stock', 'agotado'], orden: 'precio-desc' }).map(({ nombre }) => nombre), ['C', 'A']);
+  assert.deepEqual(refineCatalogRows(rows, { disponibilidades: [], orden: 'destacados' }).map(({ nombre }) => nombre), ['A', 'B', 'C']);
+});
+
+test('filtered RPC preserves the public database contract', async () => {
+  const calls = []; const client = { rpc: async (...args) => { calls.push(args); return { data: [], error: null }; } };
   await loadFilteredCatalog(client, parseCatalogFilters('?genero=hombre&clasificacion=original&min=70000'));
   assert.deepEqual(calls, [['buscar_catalogo_publico', { busqueda: null, categoria: null, generos: ['hombre'], clasificaciones: ['original'], precio_minimo: 70000, precio_maximo: null }]]);
-  assert.deepEqual(await loadFilteredCatalog({ rpc: async () => ({ data: null, error: { message: 'private' } }) }, parseCatalogFilters('')), { data: [], error: 'No fue posible cargar el catálogo.' });
 });

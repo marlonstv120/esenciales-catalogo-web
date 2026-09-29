@@ -1,6 +1,6 @@
 # Contexto actual
 
-- **Fase:** Incremento 7 de búsqueda y filtros implementado localmente; la revisión manual visual del incremento 6 fue confirmada por el usuario el 28 de septiembre de 2026. Queda pendiente comprobar recuperación/invitación Auth en `/admin` y revisar manualmente los controles nuevos en distintos tamaños y con teclado.
+- **Fase:** catálogo público rediseñado localmente con cuadrícula unificada, filtros URL de categoría, disponibilidad, género, clasificación y precio, ordenamiento, tarjetas con selector bajo demanda y carrito local básico. Queda pendiente la validación manual visual, de teclado y responsive, además de las operaciones transaccionales de solicitudes.
 - **Último hito:** incremento 7 local con RPC de búsqueda por nombre y filtros combinables de categoría, género, clasificación y precio; disponibilidad visible sin filtro. `npm test` pasó con 151 pruebas pgTAP y 81 pruebas Node; `npm run build` pasó el 28 de septiembre de 2026. Migraciones aplicadas localmente sin reset ni envío remoto.
 - **Documento rector:** `docs/project/functional-scope.md`, complementado por requisitos, reglas de negocio y flujos en `docs/project/`.
 - **Decisiones vigentes:** MVP exclusivo para Esenciales; ocho macrofuncionalidades; solicitudes de compra sin pago; catálogo público; administración de inventario por presentación; WhatsApp como continuación voluntaria; PostgreSQL confirmado.
@@ -15,5 +15,5 @@
 - **Diseño técnico:** `docs/architecture/data-model.md` diferencia el núcleo de catálogo ya materializado del diseño pendiente de solicitudes, transacciones e inventario.
 - **Diseño visual:** `docs/project/DESIGN.md` registra la opción B aprobada, boutique oscura equilibrada con catálogo claro. El texto del hero está aprobado y hay imágenes ilustrativas para la portada y categorías en `public/assets/images/`; fotografías reales de inventario y fuentes web locales siguen pendientes.
 - **Pendientes técnicos:** validar visualmente portada, catálogo, detalle, carrito y acceso administrativo en 390 px, 768 px y escritorio; comprobar teclado, zoom, carga, error/reintento, reserva de imagen y enlaces directos; validar recuperación e invitación Auth bajo `/admin`.
-- **Trabajo siguiente recomendado:** revisar manualmente búsqueda, panel y filtros rápidos del Incremento 7 en móvil y escritorio; verificar Auth bajo `/admin` antes de cerrar validación integral. El equipo sustituyó el filtro de disponibilidad por género, clasificación y precio; disponibilidad sigue visible.
+- **Trabajo siguiente recomendado:** revisar manualmente el catálogo unificado, panel de filtros, selector de presentaciones y carrito en móvil y escritorio; verificar Auth bajo `/admin` antes de cerrar validación integral. Disponibilidad vuelve a ser filtro combinable y conserva sus cuatro estados públicos.
 - **Consultar:** `README.md`, `docs/README.md`, `docs/project/`, `docs/sources/`, `informe/`, `ia/` y `AGENTS.md`.

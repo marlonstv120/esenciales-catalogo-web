@@ -201,7 +201,7 @@ El catálogo usa normalmente separaciones de `--space-6` a `--space-16`; la admi
 - Las imágenes públicas de producto usan una caja `4 / 5`, adecuada para botellas y presentaciones verticales.
 - La imagen principal de detalle conserva `4 / 5` y puede crecer sin superar un ancho que desplace la información esencial.
 - Las miniaturas administrativas pueden usar `1 / 1` para mantener listados compactos.
-- Usar `object-fit: contain` y posición centrada para no recortar el producto.
+- En las tarjetas del catálogo usar `object-fit: cover` y posición centrada para mantener una cuadrícula compacta; el detalle puede conservar `contain` cuando evite ocultar información del producto.
 - Usar `--color-surface-subtle` o blanco como fondo. Evitar filtros, degradados o efectos que alteren el color real.
 - Reservar dimensiones antes de cargar para evitar saltos de layout.
 - Proporcionar texto alternativo que identifique el producto cuando la imagen sea informativa.

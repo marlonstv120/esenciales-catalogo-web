@@ -1226,7 +1226,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 
 @media (min-width: 64rem) {
   .admin-shell { grid-template-columns: 12rem minmax(0, 1fr); }
-  .admin-navigation { width: 12rem; gap: 1.25rem; padding: 1rem 0.75rem; }
+  .admin-navigation { align-self: start; width: 12rem; height: auto; gap: 1.25rem; padding: 1rem 0.75rem; }
   .admin-navigation__brand { padding-inline: 0.5rem; }
   .admin-navigation__brand img { max-width: 10rem; max-height: 2.5rem; }
   .admin-navigation nav a, .admin-shop-link, .admin-sign-out { min-height: 2.5rem; padding: 0.5rem; font-size: 0.875rem; }

@@ -1139,6 +1139,25 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
 .presentation-editor { background: var(--color-surface-warm); }
 .category-drawer { background: var(--color-surface-page); }
 .category-drawer__list li { border-color: var(--color-border); background: var(--color-surface-subtle); }
+
+/* One neutral focus border for every text control. */
+input:focus-visible, select:focus-visible, textarea:focus-visible,
+.inventory-search input:focus-visible {
+  outline: none;
+  outline-offset: 0;
+  border: 2px solid var(--color-border);
+}
+.category-search:focus-within {
+  outline: none;
+  border: 2px solid var(--color-border);
+}
+.product-editor-form .field > small,
+.presentation-editor .field > small { display: none; }
+
+@media (min-width: 64rem) {
+  .admin-shell { grid-template-columns: 12rem minmax(0, 1fr); }
+  .admin-navigation { width: 12rem; }
+}
 .category-search { border-color: var(--color-border); background: #fdfaf4; }
 .category-search input { border: 0; background: transparent; }
 .category-search:focus-within { outline: 3px solid var(--color-brand-gold); outline-offset: 1px; }

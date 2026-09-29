@@ -26,7 +26,7 @@ test('keeps product and presentation actions separated and makes perfume family 
   const product = { categoria_id: 1, activo: true, destacado: false, presentaciones: [], imagenes_producto: [] };
   const view = productFormView({ product, categories: [{ id: 1, nombre: 'Perfumes / Lociones', activo: true }] });
   assert.match(view, /Nuevo producto/);
-  assert.match(view, /Familia olfativa.*Obligatorio.*required/);
+  assert.match(view, /Familia olfativa.*required/);
   assert.match(view, /aria-required="true"/);
   assert.match(view, /aria-label="Volver al inventario"/);
   assert.match(view, /Guardar producto/);

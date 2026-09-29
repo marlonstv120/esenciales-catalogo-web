@@ -20,4 +20,7 @@ test('renders a compact inventory row with a single accessible manage action', (
   assert.doesNotMatch(html, /filter-count/);
   assert.match(html, />1\.1</);
   assert.match(html, /title="Sin precio válido">—/);
+  assert.match(html, /data-categories-open/);
+  assert.match(html, /data-inventory-drawer-open/);
+  assert.notEqual(html.indexOf('data-categories-open'), html.indexOf('data-inventory-drawer-open'));
 });

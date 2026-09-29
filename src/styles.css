@@ -6,12 +6,12 @@
   --color-ink: #17140f;
   --color-text-muted: #5f574c;
   --color-surface-page: #f8f3ea;
-  --color-surface: #ffffff;
-  --color-surface-subtle: #f3eee5;
+  --color-surface: #fbf7ef;
+  --color-surface-subtle: #f2ece1;
   --color-surface-dark: #0b0a08;
-  --color-surface-warm: #fff9ee;
-  --color-border: #ded6c9;
-  --color-border-strong: #71695f;
+  --color-surface-warm: #f7f0e4;
+  --color-border: #d4ccbe;
+  --color-border-strong: #b7ad9d;
   --color-success: #166534;
   --color-success-bg: #f0fdf4;
   --color-warning: #854d0e;
@@ -140,10 +140,10 @@ input {
   width: 100%;
   min-height: 2.875rem;
   padding: 0.625rem 0.75rem;
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-ink);
-  background: var(--color-surface);
+  background: #fdfaf4;
 }
 
 select,
@@ -151,17 +151,16 @@ textarea {
   width: 100%;
   min-height: 2.875rem;
   padding: 0.625rem 0.75rem;
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-ink);
-  background: var(--color-surface);
+  background: #fdfaf4;
 }
 
 textarea { min-height: 7rem; resize: vertical; }
 
-input:hover {
-  border-color: var(--color-ink);
-}
+input:hover, select:hover, textarea:hover { border-color: var(--color-border-strong); }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--color-brand-gold); outline-offset: 1px; border-color: var(--color-border); }
 
 .password-control {
   position: relative;
@@ -1098,6 +1097,54 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
 .inventory-page-button:disabled { opacity: 0.45; cursor: not-allowed; }
 .inventory-page-button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-offset: 2px; }
 
+/* Administrative consistency overrides */
+.admin-navigation nav a, .admin-shop-link, .admin-sign-out { width: 100%; min-height: 2.75rem; padding: 0.625rem 0.75rem; border: 0; border-radius: var(--radius-sm); box-shadow: none; }
+.admin-navigation nav a[aria-current="page"] { color: var(--color-brand-gold-light); background: #25231f; box-shadow: none; }
+.admin-navigation nav a:hover, .admin-shop-link:hover { color: var(--color-brand-gold-light); background: #25231f; }
+.admin-sign-out { color: #f3d5d5; background: transparent; }
+.admin-sign-out:hover { color: #fff; background: #3b1616; }
+.admin-navigation nav a svg, .admin-shop-link svg, .admin-sign-out svg { width: 1.125rem; height: 1.125rem; flex: 0 0 auto; }
+.icon-button { display: inline-grid; width: 2.75rem; min-width: 2.75rem; min-height: 2.75rem; padding: 0; place-items: center; border-color: var(--color-border); background: var(--color-surface); }
+.icon-button svg { display: block; width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; }
+.inventory-search { padding: 0; border: 0; }
+.inventory-search input { border: 1px solid var(--color-border); background: #fdfaf4; }
+.inventory-search input:focus-visible { outline: 3px solid var(--color-brand-gold); outline-offset: 1px; }
+.product-workspace { gap: 1rem; }
+.product-workspace__header { grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem; align-items: center; min-height: 2.75rem; padding-bottom: 0; border: 0; }
+.product-workspace__header h2 { overflow: hidden; font-size: clamp(1.25rem, 2vw, 1.65rem); text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.product-workspace__hint, .admin-toast { margin: 0; color: var(--color-text-muted); text-align: center; }
+.admin-toast { position: sticky; z-index: 5; top: 0.5rem; width: fit-content; margin-inline: auto; padding: 0.625rem 0.875rem; border: 1px solid var(--color-success); border-radius: var(--radius-md); color: var(--color-success); background: var(--color-success-bg); box-shadow: var(--shadow-elevated); }
+.product-editor-form, .image-editor, .presentations-section, .presentation-editor { padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-subtle); box-shadow: none; }
+.product-editor-section--side { padding: 0; background: transparent; }
+.product-editor-section header, .image-editor > header, .presentations-section > header { margin-bottom: 0.75rem; }
+.product-editor-section header h3, .image-editor header h3, .presentations-section h3 { margin: 0; }
+.product-editor-section header p, .image-editor header p { margin: 0.25rem 0 0; color: var(--color-text-muted); font-size: 0.875rem; }
+.field { align-content: start; }
+.field > small, .field small { color: var(--color-text-muted); font-size: 0.75rem; font-weight: 600; }
+.field > input, .field > select, .field > textarea { width: 100%; }
+.product-editor-form .form-grid { align-items: start; }
+.toggle-field { min-height: 2.875rem; padding: 0.5rem 0; border-bottom: 1px solid var(--color-border); }
+.toggle-field:last-of-type { border-bottom: 0; }
+.product-management-grid { align-items: start; }
+.image-editor__preview { display: grid; min-height: 13rem; place-items: center; overflow: hidden; border: 1px solid var(--color-border); background: #fdfaf4; }
+.image-placeholder[hidden] { display: none; }
+.image-editor__preview .image-placeholder { padding: 1rem; }
+.image-editor__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.image-editor__actions > button { flex: 1 1 10rem; }
+.image-file-field { margin: 0; }
+.image-file-field input { min-height: 2.75rem; padding: 0.375rem; }
+.presentation-list li { grid-template-columns: minmax(0, 1fr) auto; padding: 0.75rem; border-color: var(--color-border); background: #fdfaf4; }
+.presentation-list li small { color: var(--color-text-muted); }
+.presentation-list .icon-button { grid-column: 2; grid-row: 1; }
+.presentation-editor { background: var(--color-surface-warm); }
+.category-drawer { background: var(--color-surface-page); }
+.category-drawer__list li { border-color: var(--color-border); background: var(--color-surface-subtle); }
+.category-search { border-color: var(--color-border); background: #fdfaf4; }
+.category-search input { border: 0; background: transparent; }
+.category-search:focus-within { outline: 3px solid var(--color-brand-gold); outline-offset: 1px; }
+.category-drawer .icon-button { color: var(--color-ink); }
+.category-drawer .icon-button:hover { color: var(--color-brand-bronze); }
+
 /* Product editor and category drawer */
 .category-drawer-backdrop { position: fixed; z-index: 40; inset: 0; background: rgb(0 0 0 / 58%); }
 .category-drawer { position: fixed; z-index: 41; inset: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr); overflow: auto; color: var(--color-ink); background: var(--color-surface); box-shadow: var(--shadow-elevated); }
@@ -1149,6 +1196,12 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
   .product-management-grid { grid-template-columns: minmax(14rem, 0.8fr) minmax(0, 1.2fr); align-items: start; }
 }
 
+@media (max-width: 39.9375rem) {
+  .product-workspace__header { grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem; }
+  .product-editor-form, .image-editor, .presentations-section, .presentation-editor { padding: 0.875rem; }
+  .image-editor__actions > button { flex-basis: 100%; }
+}
+
 @media (min-width: 64rem) {
   .admin-shell { grid-template-columns: 13rem minmax(0, 1fr); }
   .admin-navigation { gap: 1.25rem; padding: 1rem 0.75rem; }
@@ -1178,3 +1231,13 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
   .inventory-card .inventory-manage-button { position: absolute; right: 0.75rem; bottom: 0.75rem; }
   .inventory-card__primary { padding-right: 2.75rem; font-size: 0.8125rem; }
 }
+
+/* Final editor surface hierarchy */
+.product-workspace__header { grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem; align-items: center; min-height: 2.75rem; padding-bottom: 0; border: 0; }
+.product-workspace__header h2 { overflow: hidden; font-size: clamp(1.25rem, 2vw, 1.65rem); text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.product-editor-form, .image-editor, .presentations-section, .presentation-editor { border-color: var(--color-border); background: var(--color-surface-subtle); box-shadow: none; }
+.product-editor-section--side { padding: 0; background: transparent; }
+.image-placeholder[hidden] { display: none; }
+.image-editor__preview { background: #fdfaf4; border-color: var(--color-border); }
+.category-drawer { background: var(--color-surface-page); }
+.category-drawer__list li { border-color: var(--color-border); background: var(--color-surface-subtle); }

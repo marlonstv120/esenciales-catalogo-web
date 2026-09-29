@@ -25,6 +25,8 @@ test('renders an accessible searchable category drawer with textual states', () 
   assert.match(view, /Activa/);
   assert.doesNotMatch(view, /Cremas/);
   assert.match(view, /data-category-drawer-close/);
+  assert.match(view, /viewBox="0 0 24 24"/);
+  assert.match(view, /stroke="currentColor"/);
 });
 
 test('renders category edit controls, state and destructive confirmation', () => {
@@ -33,6 +35,7 @@ test('renders category edit controls, state and destructive confirmation', () =>
   assert.match(view, /name="activo"/);
   assert.match(view, /Eliminar categoría/);
   assert.match(view, /¿Eliminar categoría/);
+  assert.match(view, /aria-label="Cerrar categorías"/);
 });
 
 test('renders activation for an inactive category', () => {

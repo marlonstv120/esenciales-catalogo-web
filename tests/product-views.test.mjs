@@ -26,7 +26,9 @@ test('keeps product and presentation actions separated and makes perfume family 
   const product = { categoria_id: 1, activo: true, destacado: false, presentaciones: [], imagenes_producto: [] };
   const view = productFormView({ product, categories: [{ id: 1, nombre: 'Perfumes / Lociones', activo: true }] });
   assert.match(view, /Nuevo producto/);
-  assert.match(view, /Familia olfativa.*required/);
+  assert.match(view, /Familia olfativa.*Obligatorio.*required/);
+  assert.match(view, /aria-required="true"/);
+  assert.match(view, /aria-label="Volver al inventario"/);
   assert.match(view, /Guardar producto/);
   const presentation = presentationFormView({ presentation: {} });
   assert.match(presentation, /Guardar presentación/);
@@ -51,25 +53,27 @@ test('shows a neutral product image editor with editable alternative text', () =
   assert.match(view, /Imagen no disponible/);
   assert.match(view, /name="texto_alternativo"/);
   assert.match(view, /value="Aroma"/);
+  assert.match(view, /Agregar imagen/);
 });
 
 test('keeps the fallback available when an existing image fails to load', () => {
   const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { url: 'https://example.test/aroma.jpg' } });
   assert.match(view, /data-image-placeholder hidden/);
+  assert.match(view, /Cambiar imagen/);
 });
 
 test('offers an explicit action to save an existing image alternative text', () => {
   const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { id: 3, url: 'https://example.test/aroma.jpg' } });
   assert.match(view, /data-image-alt-save/);
+  assert.match(view, /data-image-alt-save disabled/);
 });
 
-test('offers public product link only after saving a publishable product with a valid id', () => {
+test('offers public product link only for a visible product with a valid id', () => {
   const product = {
     id: 4, activo: true, categorias: { activo: true }, nombre: 'Aroma', descripcion: 'Descripción',
     imagenes_producto: [{ id: 1 }], presentaciones: [validPresentation],
   };
   const view = productSaveConfirmation(product);
-  assert.match(view, /Producto guardado correctamente/);
   assert.match(view, /href="\/producto\/4" target="_blank" rel="noopener noreferrer"/);
   assert.doesNotMatch(productSaveConfirmation({ ...product, imagenes_producto: [] }), /Ver producto en la tienda/);
   assert.doesNotMatch(productSaveConfirmation({ ...product, id: 'bad' }), /Ver producto en la tienda/);

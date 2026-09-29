@@ -62,6 +62,7 @@ Son imágenes ilustrativas, no fotografías de productos de la base de datos. No
 - Prioriza exploración rápida, comparación, edición y estado operativo.
 - En escritorio puede utilizar navegación lateral; en móvil, encabezado y panel de navegación.
 - Las tablas se conservan cuando facilitan comparar columnas y se transforman en listas estructuradas cuando el ancho no permite leerlas.
+- La navegación lateral de escritorio usa una única columna ajustada a sus acciones. Inventario, Ver catálogo y Cerrar sesión comparten ancho, relleno, alineación izquierda e iconos al mismo lado. La sección activa usa fondo gris carbón y texto dorado, sin líneas ni franjas laterales adicionales.
 
 ## 4. Logo y uso de marca
 
@@ -193,6 +194,7 @@ El catálogo usa normalmente separaciones de `--space-6` a `--space-16`; la admi
 - Sombra baja: `0 1px 3px rgb(23 20 15 / 8%)`.
 - Sombra elevada: `0 12px 30px rgb(23 20 15 / 14%)`, reservada para superposiciones.
 - No envolver cada sección en una tarjeta. Fondo, espacio, borde o encabezado pueden establecer jerarquía sin contenedor elevado.
+- Los formularios administrativos usan marfil muy claro, no blanco puro, para diferenciar sus campos de las superficies de sección. Los campos comparten un borde gris-beige neutro de `1px`; al recibir foco conservan ese color y pasan a `2px`, sin anillo, sombra ni segundo borde. Los buscadores siguen la misma regla y no incorporan bordes duplicados.
 
 ## 8. Fotografías e imágenes
 
@@ -279,6 +281,7 @@ El MVP necesita un conjunto pequeño:
 - Incluyen etiqueta visible, control, ayuda opcional y espacio estable para error.
 - Variantes: normal, foco, completado, error, deshabilitado y solo lectura.
 - Placeholder no reemplaza la etiqueta.
+- Las etiquetas no muestran texto adicional para indicar obligatoriedad. La validación obligatoria se conserva mediante los atributos nativos, el nombre accesible y los mensajes de error asociados.
 - Agrupar opciones relacionadas con `fieldset` y `legend` cuando corresponda.
 - Los campos de contraseña usan una acción nativa de botón integrada al extremo del control, con iconos SVG simples de ojo y ojo tachado según el estado. Debe reservarse espacio para que no cubra el texto, mantener un objetivo mínimo de `44 × 44px`, foco visible y nombre accesible dinámico `Mostrar contraseña` u `Ocultar contraseña`; el icono es decorativo para tecnologías de asistencia.
 
@@ -299,6 +302,7 @@ El MVP necesita un conjunto pequeño:
 - Variantes: información, éxito, advertencia y error.
 - Mensajes relacionados con un campo o sección aparecen cerca de ese contexto.
 - Una notificación temporal puede complementar, nunca sustituir, una confirmación importante.
+- Las confirmaciones exitosas de guardado, edición o eliminación administrativa se muestran como notificaciones flotantes temporales. No ocupan espacio dentro de un panel ni desplazan listas, buscadores o acciones; desaparecen después de un periodo breve.
 
 ### Diálogos y paneles
 

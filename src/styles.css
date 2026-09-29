@@ -1225,8 +1225,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 }
 
 @media (min-width: 64rem) {
-  .admin-shell { grid-template-columns: 13rem minmax(0, 1fr); }
-  .admin-navigation { gap: 1.25rem; padding: 1rem 0.75rem; }
+  .admin-shell { grid-template-columns: 12rem minmax(0, 1fr); }
+  .admin-navigation { width: 12rem; gap: 1.25rem; padding: 1rem 0.75rem; }
   .admin-navigation__brand { padding-inline: 0.5rem; }
   .admin-navigation__brand img { max-width: 10rem; max-height: 2.5rem; }
   .admin-navigation nav a, .admin-shop-link, .admin-sign-out { min-height: 2.5rem; padding: 0.5rem; font-size: 0.875rem; }
@@ -1263,3 +1263,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .image-editor__preview { background: #fdfaf4; border-color: var(--color-border); }
 .category-drawer { background: var(--color-surface-page); }
 .category-drawer__list li { border-color: var(--color-border); background: var(--color-surface-subtle); }
+
+/* Keep all navigation actions in one visual alignment. */
+.admin-shop-link { justify-content: flex-start; }
+.admin-navigation nav a, .admin-shop-link, .admin-sign-out { justify-content: flex-start; gap: 0.625rem; }

@@ -62,7 +62,7 @@ Son imágenes ilustrativas, no fotografías de productos de la base de datos. No
 - Prioriza exploración rápida, comparación, edición y estado operativo.
 - En escritorio puede utilizar navegación lateral; en móvil, encabezado y panel de navegación.
 - Las tablas se conservan cuando facilitan comparar columnas y se transforman en listas estructuradas cuando el ancho no permite leerlas.
-- La navegación lateral de escritorio usa una única columna ajustada a sus acciones y termina después de ellas, sin una franja oscura vacía a lo largo de la pantalla. Inventario, Ver catálogo y Cerrar sesión comparten ancho, relleno, alineación izquierda e iconos al mismo lado. La sección activa usa fondo gris carbón y texto dorado, sin líneas ni franjas laterales adicionales.
+- La navegación lateral de escritorio es compacta y su ancho incluye el relleno para que no deje una franja oscura adicional junto a las acciones. Inventario, Ver catálogo y Cerrar sesión comparten ancho, relleno, alineación izquierda e iconos al mismo lado. La sección activa usa fondo gris carbón y texto dorado, sin líneas ni franjas laterales adicionales.
 
 ## 4. Logo y uso de marca
 

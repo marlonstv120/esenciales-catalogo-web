@@ -24,7 +24,15 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   let active = true; let requestId = 0; let currentRoute = route; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null;
   const announce = (message) => { const region = app.querySelector('.public-live-region'); if (region) region.textContent = message; };
   const setMetadata = (nextRoute, product) => { const metadata = getDocumentMetadata(nextRoute, product); documentRef.title = metadata.title; documentRef.querySelector('meta[name="description"]')?.setAttribute('content', metadata.description); };
-  const renderShell = (content, routeName = currentRoute.name) => { app.innerHTML = publicShellView(content, routeName, cart); attachImageFallbacks(app); };
+  const renderShell = (content, routeName = currentRoute.name) => {
+    app.innerHTML = publicShellView(content, routeName, cart); attachImageFallbacks(app);
+    const menu = app.querySelector('.public-mobile-menu'); const trigger = menu?.querySelector('summary');
+    menu?.addEventListener('toggle', () => {
+      const open = menu.open;
+      trigger?.setAttribute('aria-expanded', String(open));
+      trigger?.setAttribute('aria-label', open ? 'Cerrar menú de navegación' : 'Abrir menú de navegación');
+    });
+  };
   const renderCatalog = (filters, state = {}) => {
     renderShell(renderPublicRoute({ name: 'catalog' }, { catalogState: { baseRows: baseRows || [], filteredRows: lastFilteredRows, filters, panelOpen: filterPanelOpen, ...state } }), 'catalog');
   };

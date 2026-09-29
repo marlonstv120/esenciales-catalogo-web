@@ -37,7 +37,6 @@
 }
 
 body {
-  min-width: 20rem;
   margin: 0;
 }
 
@@ -724,7 +723,7 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
 .public-cart-link { gap: 0.25rem; flex: 0 0 auto; position: relative; }
 .public-header__inner > .public-cart-link { margin-left: auto; }
 .public-cart-link__count { display: grid; place-items: center; min-width: 1.25rem; height: 1.25rem; padding-inline: 0.2rem; border-radius: 999px; color: var(--color-brand-black); background: var(--color-brand-gold); font-size: 0.75rem; line-height: 1; }
-.public-cart-link[aria-current="page"] { box-shadow: inset 0 -2px var(--color-brand-gold-light); }
+.public-cart-link[aria-current="page"]::after { content: ""; position: absolute; right: 0.625rem; bottom: 0.3rem; left: 0.625rem; height: 2px; background: var(--color-brand-gold-light); }
 .public-footer { border-top: 1px solid #4c4230; background: var(--color-surface-dark); }
 .public-footer__inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; width: min(100% - 2rem, 75rem); margin: auto; padding-block: 1.5rem; color: #fff; font-size: 0.875rem; }
 .public-footer a { color: var(--color-brand-gold-light); }
@@ -804,7 +803,8 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
 .public-featured .public-product-card__action { position: absolute; right: 0.75rem; bottom: 0.75rem; margin: 0; text-decoration: none; }
 .public-featured .public-product-card__action svg { display: block; }
 .public-featured .public-product-card__link:hover .public-product-card__action { color: var(--color-brand-bronze); }
-.public-page-heading { margin-bottom: 2rem; }
+.public-page-heading { margin-bottom: 1.5rem; }
+.public-page-heading > p { margin: 0.4rem 0 0; color: var(--color-text-muted); }
 .catalog-filters { display: grid; gap: 0.75rem; margin-bottom: 1.5rem; }
 .catalog-filters > label, .catalog-filter-panel label, .catalog-filter-panel legend { font-weight: 600; }
 .catalog-search-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -891,14 +891,18 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
 /* Unified public catalog: compact controls, single grid, and non-nested actions. */
 .catalog-toolbar { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem; align-items: end; }
 .catalog-search { min-width: 0; }
-.catalog-search input, .catalog-order select { width: 100%; min-height: 2.75rem; padding: 0.5rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-ink); }
-.catalog-filters-toggle { min-height: 2.75rem; }
+.catalog-search input, .catalog-order select, .catalog-filters-toggle { min-height: 2.75rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); font-size: 1rem; line-height: 1.25; }
+.catalog-search input, .catalog-order select { width: 100%; padding: 0.625rem 0.75rem; background: var(--color-surface); color: var(--color-ink); }
+.catalog-filters-toggle { padding: 0.625rem 0.875rem; background: var(--color-surface); }
+.catalog-search input:hover, .catalog-order select:hover, .catalog-filters-toggle:hover { border-color: var(--color-text-muted); }
+.catalog-search input:focus-visible, .catalog-order select:focus-visible, .catalog-filters-toggle:focus-visible { outline: 2px solid var(--color-brand-bronze); outline-offset: 2px; box-shadow: none; }
+.catalog-search input:active, .catalog-order select:active, .catalog-filters-toggle:active { border-color: var(--color-brand-bronze); }
 .catalog-clear { grid-column: 1 / -1; }
 .catalog-order { display: grid; grid-column: 1 / -1; gap: 0.25rem; color: var(--color-text-muted); font-size: 0.875rem; font-weight: 600; }
 .catalog-filter-panel { z-index: 4; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-page); box-shadow: 0 12px 30px rgb(23 20 15 / 14%); }
 .catalog-filter-panel__heading { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-border); }
 .catalog-filter-panel__heading h2 { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.5rem; }
-.catalog-filter-panel__body { display: grid; gap: 0.9rem; padding: 1rem; }
+.catalog-filter-panel__body { display: grid; gap: 0.75rem; padding: 0.875rem; }
 .catalog-filter-panel label { display: grid; gap: 0.3rem; font-weight: 600; }
 .catalog-filter-panel fieldset { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; margin: 0; padding: 0.75rem; border: 1px solid var(--color-border); }
 .catalog-filter-panel fieldset legend { padding-inline: 0.25rem; font-weight: 700; }
@@ -922,8 +926,9 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
 .public-product-card__footer { display: flex; align-items: end; justify-content: space-between; gap: 0.5rem; margin-top: 0.35rem; }
 .public-product-card__price { margin: 0; font-size: 1rem; line-height: 1.2; }
 .public-product-card__normal-price { display: block; color: var(--color-text-muted); font-size: 0.875rem; font-weight: 400; }
-.public-add-button { display: grid; flex: 0 0 auto; width: 2.75rem; height: 2.75rem; place-items: center; padding: 0; border: 1px solid var(--color-border-strong); border-radius: 50%; background: var(--color-brand-black); color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer; }
+.public-add-button { display: grid; flex: 0 0 auto; width: 2.75rem; height: 2.75rem; place-items: center; padding: 0 0 0.08rem; border: 1px solid var(--color-border-strong); border-radius: 50%; background: var(--color-brand-black); color: #fff; font-size: 1.4rem; font-weight: 400; line-height: 1; cursor: pointer; }
 .public-add-button:hover { background: var(--color-brand-bronze); }
+.public-add-button:active { transform: scale(0.96); background: var(--color-ink); }
 .public-add-button:disabled { cursor: not-allowed; opacity: 0.55; }
 .public-empty-state { max-width: 38rem; padding: clamp(1.5rem, 5vw, 3rem); border: 1px solid var(--color-border); background: var(--color-surface); text-align: center; }
 .public-empty-state h2 { margin-top: 0; font-family: "Cormorant Garamond", Georgia, serif; }
@@ -949,6 +954,12 @@ button:focus-visible { outline: 3px solid var(--color-brand-bronze); outline-off
   .catalog-order { grid-column: auto; min-width: 9rem; }
   .public-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
   .public-cart__items li { grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; }
+}
+
+@media (max-width: 22rem) {
+  .public-product-grid { grid-template-columns: minmax(0, 1fr); }
+  .catalog-filter-panel__body { padding: 0.75rem; }
+  .catalog-filter-panel__actions { gap: 0.375rem; }
 }
 
 @media (min-width: 64rem) {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { presentationFormView, presentationRowView, productSaveConfirmation, publicationSummary } from '../src/product-views.mjs';
+import { presentationFormView, presentationRowView, productFormView, productSaveConfirmation, publicationSummary } from '../src/product-views.mjs';
 import { productImageEditorView } from '../src/product-image-views.mjs';
 
 const validPresentation = {
@@ -20,6 +20,17 @@ test('marks a product without an image as not publishable', () => {
   });
   assert.match(summary, /No publicable/);
   assert.match(summary, /Imagen pendiente/);
+});
+
+test('keeps product and presentation actions separated and makes perfume family required', () => {
+  const product = { categoria_id: 1, activo: true, destacado: false, presentaciones: [], imagenes_producto: [] };
+  const view = productFormView({ product, categories: [{ id: 1, nombre: 'Perfumes / Lociones', activo: true }] });
+  assert.match(view, /Nuevo producto/);
+  assert.match(view, /Familia olfativa.*required/);
+  assert.match(view, /Guardar producto/);
+  const presentation = presentationFormView({ presentation: {} });
+  assert.match(presentation, /Guardar presentación/);
+  assert.match(presentation, /Cancelar edición/);
 });
 
 test('shows agotado from immediate-sale stock zero', () => {

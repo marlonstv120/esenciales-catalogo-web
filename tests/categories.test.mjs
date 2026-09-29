@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createCategory,
+  deleteCategory,
   listCategories,
   updateCategory,
 } from '../src/categories.js';
@@ -44,6 +45,10 @@ function fakeClient() {
           calls.push({ method: 'update', payload });
           return query;
         },
+        delete() {
+          calls.push({ method: 'delete' });
+          return query;
+        },
       };
     },
   };
@@ -59,6 +64,16 @@ test('lists every category alphabetically', () => {
     { method: 'from', table: 'categorias' },
     { method: 'select', columns: 'id, nombre, activo' },
     { method: 'order', column: 'nombre', options: { ascending: true } },
+  ]);
+});
+
+test('targets a category identifier when deleting it', () => {
+  const client = fakeClient();
+  deleteCategory(client, 7);
+  assert.deepEqual(client.calls, [
+    { method: 'from', table: 'categorias' },
+    { method: 'delete' },
+    { method: 'eq', column: 'id', value: 7 },
   ]);
 });
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { effectivePrice, normalizePresentation, normalizeProduct } from '../src/products.js';
+import { classificationLabel, effectivePrice, normalizePresentation, normalizeProduct } from '../src/products.js';
 import { productFormView } from '../src/product-views.mjs';
 
 test('normalizes aromatic family and excludes legacy product reference from writes', () => {
@@ -25,4 +25,9 @@ test('forces stock zero for bajo pedido', () => {
 test('uses a valid promotion as the effective price', () => {
   assert.equal(effectivePrice({ precio_normal: 50000, precio_promocional: 42000 }), 42000);
   assert.equal(effectivePrice({ precio_normal: 50000, precio_promocional: 60000 }), 50000);
+});
+
+test('uses the established commercial classification labels', () => {
+  assert.equal(classificationLabel('uno_a_uno'), '1.1');
+  assert.equal(classificationLabel('inspiracion'), 'Inspiración');
 });

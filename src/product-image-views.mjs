@@ -3,7 +3,7 @@ function escapeHtml(value = '') {
 }
 
 export function productImageEditorView({ product, image, altText = '', busy = false, error = '', cleanupPath = '' } = {}) {
-  if (!product?.id) return '';
+  if (!product?.id) return `<section class="image-editor image-editor--pending"><h3>Imagen</h3><p>Podrás cargar la imagen después de guardar el producto por primera vez, cuando el sistema tenga su identificador.</p></section>`;
 
   const alternative = altText || image?.texto_alternativo || product.nombre || '';
   const placeholder = '<p class="image-placeholder" data-image-placeholder><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM7 16l3-3 2 2 3-4 2 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>Imagen no disponible</p>';

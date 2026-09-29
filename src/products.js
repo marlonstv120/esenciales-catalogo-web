@@ -1,4 +1,9 @@
 export const LOW_STOCK_THRESHOLD = 3;
+export const CLASSIFICATION_LABELS = { original: 'Original', uno_a_uno: '1.1', inspiracion: 'Inspiración' };
+
+export function classificationLabel(value) {
+  return CLASSIFICATION_LABELS[value] || '—';
+}
 
 const productColumns = 'id, categoria_id, nombre, descripcion, marca, genero, familia_olfativa, clasificacion, destacado, activo, creado_en';
 const presentationColumns = 'id, producto_id, etiqueta, precio_normal, precio_promocional, stock, modo_disponibilidad, activo';

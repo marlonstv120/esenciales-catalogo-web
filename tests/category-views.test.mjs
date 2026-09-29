@@ -4,6 +4,7 @@ import {
   categoriesView,
   categoryFormView,
   deactivationDialogView,
+  categoryDrawerView,
 } from '../src/category-views.mjs';
 
 test('renders category name, textual status, and available action', () => {
@@ -13,6 +14,25 @@ test('renders category name, textual status, and available action', () => {
   assert.match(view, /Activa/);
   assert.match(view, /Desactivar/);
   assert.match(view, /data-category-edit="1"/);
+});
+
+test('renders an accessible searchable category drawer with textual states', () => {
+  const view = categoryDrawerView({ categories: [{ id: 1, nombre: 'Splash', activo: true }, { id: 2, nombre: 'Cremas', activo: false }], query: 'spl' });
+  assert.match(view, /role="dialog"/);
+  assert.match(view, /aria-modal="true"/);
+  assert.match(view, /Buscar categoría/);
+  assert.match(view, /Splash/);
+  assert.match(view, /Activa/);
+  assert.doesNotMatch(view, /Cremas/);
+  assert.match(view, /data-category-drawer-close/);
+});
+
+test('renders category edit controls, state and destructive confirmation', () => {
+  const view = categoryDrawerView({ mode: 'edit', selected: { id: 2, nombre: 'Cremas', activo: false }, confirmDelete: true });
+  assert.match(view, /Volver a todas las categorías/);
+  assert.match(view, /name="activo"/);
+  assert.match(view, /Eliminar categoría/);
+  assert.match(view, /¿Eliminar categoría/);
 });
 
 test('renders activation for an inactive category', () => {

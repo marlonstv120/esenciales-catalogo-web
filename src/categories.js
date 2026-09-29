@@ -20,3 +20,7 @@ export function updateCategory(client, id, changes) {
 
   return client.from('categorias').update(values).eq('id', id).select(categoryColumns).single();
 }
+
+export function deleteCategory(client, id) {
+  return client.from('categorias').delete().eq('id', id);
+}

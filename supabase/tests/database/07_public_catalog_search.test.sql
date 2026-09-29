@@ -1,4 +1,5 @@
 begin;
+set local search_path = public, extensions;
 select plan(13);
 select has_function('public', 'buscar_catalogo_publico', array['text','integer','text[]','text[]','integer','integer'], 'RPC filtrada existe');
 select ok(has_function_privilege('anon', 'public.buscar_catalogo_publico(text,integer,text[],text[],integer,integer)', 'EXECUTE'), 'anon ejecuta búsqueda');

@@ -3,25 +3,45 @@ import { listCategories } from './categories.js';
 import { productImageEditorView } from './product-image-views.mjs';
 import { productFormView, productSaveConfirmation, productsView, presentationFormView } from './product-views.mjs';
 import { listProducts, savePresentation, saveProduct } from './products.js';
+import { filterInventory, sortInventory } from './inventory-utils.mjs';
+import { inventoryDashboardView } from './inventory-views.mjs';
 import { supabase } from './supabase.js';
 
 let state = {
   products: [], categories: [], editor: null, presentation: null, values: {}, error: '', loading: true, saved: false,
   query: '', category: '', status: '', image: null, imageAlt: '', imageBusy: false, imageError: '', cleanupPath: '',
+  filters: { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: '', page: 1 }, drawerOpen: false, expandedId: null,
 };
 
 const formValues = (form) => Object.fromEntries(new FormData(form));
-const databaseError = (error) => error?.code === '23505' ? 'La referencia ya esta registrada.' : error?.code === '23514' ? 'Verifica precio, promocion, stock y disponibilidad.' : 'No fue posible guardar. Intentalo de nuevo.';
+const databaseError = (error) => error?.code === '23514' ? 'Verifica la familia olfativa para perfumes, el precio, la promoción, el stock y la disponibilidad.' : 'No fue posible guardar. Inténtalo de nuevo.';
 const currentImage = (product) => product?.imagenes_producto?.find((image) => image.posicion === 0) || null;
 
 export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
+  const filterKeys = ['query', 'category', 'brand', 'gender', 'classification', 'family', 'status', 'availability', 'minPrice', 'maxPrice', 'order', 'page'];
+  const filtersFromHash = () => {
+    const query = window.location.hash.split('?')[1] || '';
+    const params = new URLSearchParams(query);
+    return filterKeys.reduce((filters, key) => ({ ...filters, [key]: key === 'page' ? Math.max(1, Number(params.get(key)) || 1) : params.get(key) || '' }), { ...state.filters, featured: params.get('featured') === 'true' });
+  };
+  const syncFiltersToHash = () => {
+    const params = new URLSearchParams();
+    filterKeys.forEach((key) => { if (state.filters[key] && !(key === 'page' && state.filters[key] === 1)) params.set(key, state.filters[key]); });
+    if (state.filters.featured) params.set('featured', 'true');
+    const nextHash = `#inventario${params.size ? `?${params}` : ''}`;
+    if (window.location.hash !== nextHash) window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}${nextHash}`);
+  };
+  if (!state.inventoryInitialized) state = { ...state, filters: filtersFromHash(), inventoryInitialized: true };
+  const resetPage = (nextFilters) => ({ ...nextFilters, page: 1 });
+  const filteredProducts = () => sortInventory(filterInventory(state.products, state.filters), state.filters.order);
   const draw = () => {
     outlet.innerHTML = state.editor
       ? productFormView({ product: state.editor, categories: state.categories, values: state.values, error: state.error })
         + (state.saved ? productSaveConfirmation(state.editor) : '')
         + productImageEditorView({ product: state.editor, image: state.image, altText: state.imageAlt, busy: state.imageBusy, error: state.imageError, cleanupPath: state.cleanupPath })
         + (state.presentation ? presentationFormView({ presentation: state.presentation, values: state.values, error: state.error }) : '')
-      : `<section class="admin-page"><div class="page-toolbar"><div class="field"><label for="product-search">Buscar por nombre</label><input id="product-search" value="${state.query}"></div><div class="field"><label for="product-category-filter">Categoria</label><select id="product-category-filter"><option value="">Todas</option>${state.categories.map((category) => `<option value="${category.id}" ${state.category === String(category.id) ? 'selected' : ''}>${category.nombre}</option>`).join('')}</select></div><div class="field"><label for="product-status-filter">Estado</label><select id="product-status-filter"><option value="">Todos</option><option value="true" ${state.status === 'true' ? 'selected' : ''}>Activos</option><option value="false" ${state.status === 'false' ? 'selected' : ''}>Inactivos</option></select></div><button class="primary-button" type="button" data-product-create>Nuevo producto</button></div>${productsView(state.products, state)}</section>`;
+      : inventoryDashboardView({ products: { all: state.products, filtered: filteredProducts() }, categories: state.categories, filters: state.filters, expandedId: state.expandedId, loading: state.loading, error: state.error, drawerOpen: state.drawerOpen });
+    if (!state.editor) syncFiltersToHash();
     bind();
   };
 
@@ -36,6 +56,12 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
 
   async function saveCurrent(form) {
     const values = { ...formValues(form), destacado: form.elements.destacado.checked, activo: form.elements.activo.checked };
+    const category = state.categories.find((item) => String(item.id) === String(values.categoria_id));
+    if (category?.nombre.toLowerCase() === 'perfumes / lociones' && !values.familia_olfativa?.trim()) {
+      state = { ...state, values, error: 'Ingresa la familia olfativa para Perfumes / Lociones.', saved: false };
+      draw();
+      return;
+    }
     const { data, error } = await saveProduct(supabase, state.editor?.id, values);
     if (error) {
       state = { ...state, values, error: databaseError(error), saved: false };
@@ -140,7 +166,19 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     outlet.querySelector('[data-image-remove]')?.addEventListener('click', deleteImage);
     outlet.querySelector('[data-image-cleanup]')?.addEventListener('click', cleanUpImage);
     outlet.querySelector('[data-image-preview]')?.addEventListener('error', (event) => { event.currentTarget.hidden = true; outlet.querySelector('[data-image-placeholder]')?.removeAttribute('hidden'); });
-    ['product-search', 'product-category-filter', 'product-status-filter'].forEach((id) => outlet.querySelector(`#${id}`)?.addEventListener('input', (event) => { state = { ...state, [id === 'product-search' ? 'query' : id === 'product-category-filter' ? 'category' : 'status']: event.target.value }; draw(); }));
+    outlet.querySelector('[data-categories-open]')?.addEventListener('click', () => { window.location.hash = '#categorias'; });
+    outlet.querySelector('[data-inventory-retry]')?.addEventListener('click', load);
+    outlet.querySelector('#inventory-search')?.addEventListener('input', (event) => { state = { ...state, filters: resetPage({ ...state.filters, query: event.target.value }) }; draw(); });
+    outlet.querySelector('[data-inventory-drawer-open]')?.addEventListener('click', () => { state = { ...state, drawerOpen: true }; draw(); outlet.querySelector('[data-inventory-drawer-close]')?.focus(); });
+    outlet.querySelectorAll('[data-inventory-drawer-close]').forEach((button) => button.addEventListener('click', () => { state = { ...state, drawerOpen: false }; draw(); outlet.querySelector('[data-inventory-drawer-open]')?.focus(); }));
+    outlet.querySelector('#inventory-filter-form')?.addEventListener('submit', (event) => { event.preventDefault(); const values = Object.fromEntries(new FormData(event.currentTarget)); state = { ...state, filters: resetPage({ ...state.filters, ...values, featured: event.currentTarget.elements.featured.checked }), drawerOpen: false }; draw(); outlet.querySelector('[data-inventory-drawer-open]')?.focus(); });
+    outlet.querySelector('#inventory-filter-form')?.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.preventDefault(); state = { ...state, drawerOpen: false }; draw(); outlet.querySelector('[data-inventory-drawer-open]')?.focus(); } if (event.key === 'Tab') { const focusable = [...event.currentTarget.querySelectorAll('button, input, select')].filter((element) => !element.disabled); const first = focusable[0]; const last = focusable.at(-1); if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); } } });
+    outlet.querySelectorAll('[data-inventory-availability]').forEach((button) => button.addEventListener('click', () => { const availability = state.filters.availability === button.dataset.inventoryAvailability ? '' : button.dataset.inventoryAvailability; state = { ...state, filters: resetPage({ ...state.filters, availability }) }; draw(); }));
+    outlet.querySelectorAll('[data-inventory-status]').forEach((button) => button.addEventListener('click', () => { const status = state.filters.status === button.dataset.inventoryStatus ? '' : button.dataset.inventoryStatus; state = { ...state, filters: resetPage({ ...state.filters, status }) }; draw(); }));
+    outlet.querySelector('[data-inventory-featured]')?.addEventListener('click', () => { state = { ...state, filters: resetPage({ ...state.filters, featured: !state.filters.featured }) }; draw(); });
+    outlet.querySelectorAll('[data-inventory-filter-clear], [data-inventory-show-all]').forEach((button) => button.addEventListener('click', () => { state = { ...state, filters: { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: '', page: 1 }, drawerOpen: false }; draw(); }));
+    outlet.querySelectorAll('[data-inventory-page]').forEach((button) => button.addEventListener('click', () => { state = { ...state, filters: { ...state.filters, page: Number(button.dataset.inventoryPage) } }; draw(); }));
+    outlet.querySelectorAll('[data-product-expand]').forEach((button) => button.addEventListener('click', () => { state = { ...state, expandedId: String(state.expandedId) === button.dataset.productExpand ? null : button.dataset.productExpand }; draw(); }));
   }
 
   await load();

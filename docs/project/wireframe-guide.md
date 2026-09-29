@@ -58,13 +58,13 @@ En móvil, `Inicio` y `Catálogo` pueden estar en un menú desplegable. El acces
 
 El propietario accede mediante inicio de sesión. La administración debe diferenciarse visualmente del sitio público.
 
-Navegación administrativa base:
+Navegación administrativa base del catálogo:
 
 ```text
-Resumen (SHOULD) | Categorías | Productos | Inventario | Solicitudes | Cerrar sesión
+Resumen (SHOULD) | Inventario | Solicitudes | Cerrar sesión
 ```
 
-En escritorio se recomienda una barra lateral. En móvil puede utilizarse un encabezado con menú. Si no se implementa el resumen administrativo, el acceso puede llevar directamente a `Solicitudes` o `Productos`.
+En escritorio se recomienda una barra lateral. En móvil puede utilizarse un encabezado con menú. Categorías queda como acción secundaria dentro de Inventario; si no se implementa el resumen administrativo, el acceso puede llevar directamente a `Solicitudes` o `Inventario`.
 
 ## 4. Mapa general de pantallas
 
@@ -96,10 +96,9 @@ P-01 Inicio
 ADMINISTRACIÓN
 A-01 Inicio de sesión
   └─ A-02 Resumen administrativo (SHOULD)
-       ├─ A-03 Categorías
-       ├─ A-04 Productos
-       │    └─ A-05 Crear o editar producto
-       ├─ A-06 Inventario y disponibilidad
+        ├─ A-06 Inventario y gestión de productos
+        │    ├─ Crear o editar producto
+        │    └─ Categorías
        └─ A-07 Solicitudes
             └─ A-08 Detalle y gestión de solicitud
 ```
@@ -188,7 +187,7 @@ El acceso general a WhatsApp y los textos de entrega o envío permanecen pendien
 
 - Ruta para volver al catálogo.
 - Imagen principal; galería solo si se implementan varias imágenes.
-- Nombre, descripción, categoría, marca, género, referencia o clasificación cuando correspondan.
+- Nombre, descripción, categoría, marca, género y clasificación cuando correspondan; familia olfativa obligatoria para Perfumes / Lociones.
 - Selector de presentación.
 - Precio normal de la presentación seleccionada.
 - Precio promocional junto al normal solo si se implementan promociones.
@@ -331,7 +330,7 @@ El formulario puede representarse como modal, panel lateral o bloque dentro de l
 
 **Estados:** cargando, listado cargado, sin categorías, error, guardando, validación, guardado exitoso y confirmación de desactivación.
 
-### A-04 - Gestión de productos
+### A-04 - Gestión de productos (integrada en Inventario)
 
 **Contenido MUST:**
 
@@ -390,15 +389,15 @@ Cuando se seleccione `Bajo pedido`, el stock vendible debe ser cero. `Agotado` n
 
 El producto no debe presentarse como publicable hasta que cumpla nombre, descripción, categoría activa, imagen y al menos una presentación activa válida con precio. Esta guía no define si se podrán guardar registros incompletos; esa decisión deberá concretarse durante la implementación sin debilitar las condiciones de publicación.
 
-### A-06 - Inventario y disponibilidad
+### A-06 - Inventario y gestión de productos
 
-**Objetivo:** actualizar rápidamente stock, precio y disponibilidad por presentación sin entrar a editar cada producto completo.
+**Objetivo:** consultar y gestionar productos, presentaciones, stock, precio y disponibilidad desde una sola sección. La edición completa del producto abre dentro de Inventario y la edición rápida de una presentación exige un formulario explícito.
 
 **Contenido MUST:**
 
-- Tabla o lista con producto, presentación, precio, stock, modo y estado visible.
-- Acción `Editar` en cada presentación.
-- Campos de edición para precio normal, stock y modo.
+- Tabla o lista con producto, categoría, presentaciones, precio, stock total y estado visible; el detalle muestra presentación, precio, stock, modo y estado.
+- Acciones `Gestionar` para abrir el formulario del producto y `Editar presentación` desde el detalle.
+- Campos de edición para precio normal, stock y modo dentro del formulario explícito.
 - Identificación textual de `Stock bajo` cuando sea venta inmediata con 1 a 3 unidades.
 
 **Ayudas de navegación recomendadas:** búsqueda por producto y filtros por categoría, modo o estado.

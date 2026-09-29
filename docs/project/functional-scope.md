@@ -119,7 +119,7 @@ Un producto puede contener:
 - Marca opcional.
 - Género opcional.
 - Familia olfativa opcional.
-- Referencia opcional.
+- Familia olfativa obligatoria para Perfumes / Lociones y opcional para otras categorías.
 - Clasificación comercial opcional.
 - Indicador manual de producto destacado.
 - Estado activo o inactivo.
@@ -130,7 +130,7 @@ Para publicarse, el producto debe estar activo y tener como mínimo nombre, desc
 
 Las clasificaciones comerciales disponibles serán `Original`, `1.1` e `Inspiración`, únicamente cuando correspondan al producto. Sus definiciones públicas están pendientes de validación con el encargado de Esenciales.
 
-La familia olfativa será opcional. Las notas de salida, corazón y fondo no forman parte del MVP confirmado.
+La familia olfativa es obligatoria para Perfumes / Lociones y opcional para otras categorías. Las notas de salida, corazón y fondo no forman parte del MVP confirmado.
 
 #### Presentaciones
 

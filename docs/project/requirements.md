@@ -35,7 +35,7 @@ El estado `Aprobado por el equipo` no sustituye una validación académica poste
 | ID | Descripción | Prioridad | Estado | Fuente |
 | --- | --- | --- | --- | --- |
 | RF-08 | El administrador debe poder crear, consultar, editar, activar y desactivar productos. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
-| RF-09 | El producto debe admitir nombre, descripción, categoría, marca, género, referencia y las clasificaciones opcionales `Original`, `1.1` e `Inspiración` cuando correspondan. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
+| RF-09 | El producto debe admitir nombre, descripción, categoría, marca, género y las clasificaciones opcionales `Original`, `1.1` e `Inspiración` cuando correspondan. La familia olfativa es obligatoria para Perfumes / Lociones. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03; ajustado por el equipo el 2026-09-28 |
 | RF-10 | El producto debería admitir familia olfativa opcional cuando corresponda. | SHOULD | Aprobado por el equipo | Validación del equipo, 2026-09-03 |
 | RF-11 | El administrador debe poder asociar múltiples presentaciones a un producto y activar o desactivar cada una sin eliminar su historial. | MUST | Aprobado por el equipo | MVP V1 y validación del equipo, 2026-09-03 |
 | RF-12 | Cada presentación debe admitir una etiqueta libre no vacía, precio normal entero en COP mayor que cero, stock local vendible entero no negativo y modo `Venta inmediata`, `Bajo pedido` o `No disponible`. | MUST | Aprobado por el equipo | Validación del equipo, 2026-09-03 |

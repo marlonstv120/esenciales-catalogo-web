@@ -1,6 +1,7 @@
 begin;
+set local search_path = public, extensions;
 
-select plan(27);
+select plan(28);
 
 insert into public.categorias (nombre) values ('Prueba');
 
@@ -84,23 +85,29 @@ select throws_ok(
 );
 
 select lives_ok(
-  $$insert into public.productos (categoria_id, nombre, descripcion, referencia)
+  $$insert into public.productos (categoria_id, nombre, descripcion)
     values (
       (select id from public.categorias where nombre = 'Prueba'),
-      'Producto con referencia', 'Descripcion', 'REF-1'
+      'Producto sin familia', 'Descripcion'
     )$$,
-  'Acepta referencia unica'
+  'Otras categorias admiten familia olfativa ausente'
 );
 
 select throws_ok(
-  $$insert into public.productos (categoria_id, nombre, descripcion, referencia)
+  $$insert into public.productos (categoria_id, nombre, descripcion)
     values (
-      (select id from public.categorias where nombre = 'Prueba'),
-      'Producto duplicado', 'Descripcion', 'REF-1'
+      (select id from public.categorias where nombre = 'Perfumes / Lociones'),
+      'Perfume incompleto', 'Descripcion'
     )$$,
-  '23505',
+  '23514',
   null,
-  'Rechaza referencia duplicada'
+  'Perfumes requieren familia olfativa'
+);
+
+select throws_ok(
+  $$update public.productos set categoria_id = (select id from public.categorias where nombre = 'Perfumes / Lociones') where nombre = 'Producto sin familia'$$,
+  '23514', null,
+  'Impide mover un producto sin familia olfativa a perfumes'
 );
 
 select throws_ok(

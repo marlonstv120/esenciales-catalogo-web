@@ -1,6 +1,7 @@
 begin;
+set local search_path = public, extensions;
 
-select plan(25);
+select plan(26);
 
 select ok((select relrowsecurity from pg_class where oid = 'public.categorias'::regclass), 'RLS sigue activo en categorias');
 select ok((select relrowsecurity from pg_class where oid = 'public.productos'::regclass), 'RLS sigue activo en productos');
@@ -120,6 +121,10 @@ select ok(
   not (public.obtener_producto_publico(current_setting('test.public_product_id')::integer) ? 'stock')
     and not ((public.obtener_producto_publico(current_setting('test.public_product_id')::integer)->'presentaciones'->0) ? 'stock'),
   'no expone el stock numerico del producto ni de sus presentaciones'
+);
+select ok(
+  not (public.obtener_producto_publico(current_setting('test.public_product_id')::integer) ? 'referencia'),
+  'el detalle publico no devuelve referencia interna'
 );
 
 select * from finish();

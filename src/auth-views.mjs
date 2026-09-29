@@ -1,4 +1,6 @@
-const logoUrl = '/assets/brand/esenciales-logo-completo.png';
+import { appPath } from './app-paths.mjs';
+
+const logoUrl = appPath('/assets/brand/esenciales-logo-completo.png');
 
 export function getPasswordToggleState(passwordVisible) {
   return passwordVisible
@@ -48,7 +50,7 @@ export function authCard(content) {
         <p class="eyebrow">Área privada</p>
         <h1 id="auth-title">Administración</h1>
         ${content}
-        <a class="auth-back-link" href="/">Volver a la tienda</a>
+        <a class="auth-back-link" href="${appPath('/')}">Volver a la tienda</a>
       </div>
     </section>`;
 }

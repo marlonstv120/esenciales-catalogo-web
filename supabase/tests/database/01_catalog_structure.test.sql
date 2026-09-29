@@ -1,6 +1,7 @@
 begin;
+set local search_path = public, extensions;
 
-select plan(46);
+select plan(47);
 
 select has_table('public', 'usuarios_administrativos', 'Debe existir usuarios_administrativos');
 select has_table('public', 'categorias', 'Debe existir categorias');
@@ -33,7 +34,8 @@ select has_column('public', 'productos', 'genero', 'Producto tiene genero opcion
 select has_column('public', 'productos', 'clasificacion', 'Producto tiene clasificacion opcional');
 select has_column('public', 'productos', 'destacado', 'Producto tiene indicador destacado');
 select has_index('public', 'productos', 'productos_categoria_id_idx', 'FK de producto tiene indice');
-select has_index('public', 'productos', 'productos_referencia_unica', 'Referencia tiene indice unico');
+select has_column('public', 'productos', 'familia_olfativa', 'Producto conserva familia olfativa');
+select hasnt_column('public', 'productos', 'referencia', 'Producto no almacena referencia interna');
 select has_trigger('public', 'productos', 'productos_actualizar_fecha', 'Producto actualiza su marca de tiempo');
 
 select col_type_is('public', 'presentaciones', 'id', 'integer', 'Id de presentacion usa integer');

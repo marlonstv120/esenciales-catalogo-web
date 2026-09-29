@@ -26,7 +26,7 @@ No sustituye las reglas de negocio en [business-rules.md](../project/business-ru
 - Supabase Auth gestiona el envío del enlace y el flujo de recuperación de contraseña administrativa.
 - `usuarios_administrativos` autoriza qué usuarios de Supabase Auth pueden administrar el sistema.
 - `genero` admite `hombre`, `mujer`, `unisex` o valor nulo.
-- `referencia` es opcional y única cuando existe.
+- `familia_olfativa` es obligatoria en Perfumes / Lociones y opcional en las demás categorías.
 - Los detalles de una solicitud muestran el nombre actual del producto y la etiqueta actual de la presentación.
 - El precio unitario efectivo aplicado se conserva como dato histórico.
 - El sistema conserva el estado actual de la solicitud y sus fechas relevantes, sin una tabla de auditoría de transiciones.
@@ -81,8 +81,7 @@ La instalación inicial incluirá Perfumes / Lociones, Splash, Cremas, Humidific
 | `descripcion` | texto | Obligatoria y no vacía. |
 | `marca` | texto | Opcional. |
 | `genero` | texto controlado | `hombre`, `mujer`, `unisex` o nulo. |
-| `familia_olfativa` | texto | Opcional; funcionalidad SHOULD. |
-| `referencia` | texto | Opcional; única cuando existe. |
+| `familia_olfativa` | texto | Obligatoria para Perfumes / Lociones; opcional en otras categorías. |
 | `clasificacion` | texto controlado | `original`, `uno_a_uno`, `inspiracion` o nulo. |
 | `destacado` | booleano | Obligatorio; valor inicial `false`. |
 | `activo` | booleano | Obligatorio; valor inicial `true`. |
@@ -189,7 +188,8 @@ El valor total de productos se calculará sumando los subtotales de sus detalles
 - Stock y cantidades descontadas no negativos.
 - Cantidades entre uno y 99.
 - Stock igual a cero para presentaciones bajo pedido.
-- Unicidad de código de solicitud, referencia existente y posición de imagen por producto.
+- Unicidad de código de solicitud y posición de imagen por producto.
+- Familia olfativa obligatoria para los productos de Perfumes / Lociones.
 - Unicidad de presentación por detalle de solicitud.
 - Versiones de términos y política no vacías y fecha de aceptación obligatoria en cada solicitud.
 - Cálculo consistente del subtotal.

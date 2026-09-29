@@ -1,5 +1,25 @@
 # Bitácora del proyecto
 
+## 2026-09-28
+
+### Contexto
+
+El equipo requiere una URL estable para revisar el avance desde dispositivos móviles y un entorno compartido que no dependa de iniciar Supabase local en cada equipo.
+
+### Decisiones / cambios
+
+- Se aprueba GitHub Pages como despliegue continuo académico del frontend desde la rama `main`.
+- Se adapta Vite, rutas internas, recursos y retornos de Supabase Auth a la subruta del repositorio.
+- Se habilita el proyecto remoto de Supabase como entorno compartido de desarrollo y demostración.
+- Se aplican al proyecto remoto las migraciones de catálogo, Auth, Storage, RPC, búsqueda, familia olfativa y soporte pgTAP; el `seed` inicial se ejecuta de forma controlada.
+- Se verifican 154 pruebas pgTAP contra Supabase remoto.
+- Se simplifica el flujo diario: Vite consume Supabase remoto y Docker local deja de ser obligatorio.
+
+### Referencias
+
+- [ADR-009: Despliegue continuo con GitHub Pages](../architecture/decisions/ADR-009-despliegue-continuo-con-github-pages.md).
+- [Flujo de trabajo](../development/workflow.md).
+
 ## 2026-08-29
 
 ### Contexto

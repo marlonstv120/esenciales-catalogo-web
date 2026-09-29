@@ -256,7 +256,7 @@ Orden: encabezado oscuro, hero editorial, accesos de categorías disponibles, `P
 
 ### Administrativa
 
-- Base: `Categorías`, `Productos`, `Inventario`, `Solicitudes` y `Cerrar sesión`.
+- Base actual del catálogo: `Inventario`, con `Categorías` como acción secundaria dentro de esa sección, y `Cerrar sesión`. Inventario reúne la consulta y edición de productos, presentaciones, precios y existencias.
 - `Resumen` se añade únicamente si se implementa su prioridad SHOULD.
 - Escritorio: navegación lateral y encabezado contextual.
 - Móvil: menú accesible que conserva el título y las acciones relevantes.

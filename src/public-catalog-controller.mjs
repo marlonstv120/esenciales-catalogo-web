@@ -1,6 +1,7 @@
 import { loadFilteredCatalog, loadPublicCatalog, loadPublicProduct } from './public-catalog.mjs';
 import { hasCatalogFilters, parseCatalogFilters, serializeCatalogFilters, toggleFilterValue, validateCatalogFilters } from './public-catalog-filters.mjs';
 import { getPublicRoute } from './public-routes.mjs';
+import { appPath } from './app-paths.mjs';
 import {
   loadingView,
   publicShellView,
@@ -83,7 +84,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const error = validateCatalogFilters(filters);
     if (error) { renderCatalog(filters, { validation: error }); return; }
     const query = serializeCatalogFilters(filters);
-    windowRef.history.pushState({}, '', `/catalogo${query ? `?${query}` : ''}`);
+    windowRef.history.pushState({}, '', appPath(`/catalogo${query ? `?${query}` : ''}`));
     loadCatalog(filters);
   };
 

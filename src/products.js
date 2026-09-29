@@ -1,17 +1,27 @@
-const productColumns = 'id, categoria_id, nombre, descripcion, marca, genero, referencia, clasificacion, destacado, activo';
+export const LOW_STOCK_THRESHOLD = 3;
+
+const productColumns = 'id, categoria_id, nombre, descripcion, marca, genero, familia_olfativa, clasificacion, destacado, activo, creado_en';
 const presentationColumns = 'id, producto_id, etiqueta, precio_normal, precio_promocional, stock, modo_disponibilidad, activo';
 
 const trimOrNull = (value) => value?.trim() || null;
 
+export function effectivePrice(presentation) {
+  const normal = Number(presentation?.precio_normal);
+  const promotion = Number(presentation?.precio_promocional);
+  return Number.isInteger(promotion) && promotion > 0 && promotion < normal ? promotion : normal;
+}
+
 export function normalizeProduct(values) {
   return {
-    ...values,
+    categoria_id: Number(values.categoria_id),
     nombre: values.nombre?.trim(),
     descripcion: values.descripcion?.trim(),
     marca: trimOrNull(values.marca),
-    referencia: trimOrNull(values.referencia),
+    familia_olfativa: trimOrNull(values.familia_olfativa),
     genero: values.genero || null,
     clasificacion: values.clasificacion || null,
+    destacado: values.destacado ?? false,
+    activo: values.activo ?? true,
   };
 }
 

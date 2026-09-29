@@ -1,10 +1,12 @@
 import { getPasswordSetupFlow } from './auth-flow.mjs';
+import { APP_BASE_PATH, getAppPathname } from './app-paths.mjs';
 
-export function getPublicRoute(pathname) {
+export function getPublicRoute(pathname, basePath = APP_BASE_PATH) {
+  pathname = getAppPathname(pathname, basePath);
   if (pathname === '/') return { name: 'home' };
   if (pathname === '/catalogo') return { name: 'catalog' };
   if (pathname === '/carrito') return { name: 'cart' };
-  if (pathname === '/admin') return { name: 'admin' };
+  if (pathname === '/admin' || /^\/admin\/(productos?|inventario)$/.test(pathname)) return { name: 'admin' };
 
   const match = pathname.match(/^\/producto\/(\d+)$/);
   if (!match) return { name: 'not-found' };
@@ -15,7 +17,8 @@ export function getPublicRoute(pathname) {
     : { name: 'not-found' };
 }
 
-export function getApplicationArea({ pathname, href }) {
+export function getApplicationArea({ pathname, href }, basePath = APP_BASE_PATH) {
   if (getPasswordSetupFlow(href)) return 'admin-auth';
-  return pathname === '/admin' ? 'admin' : 'public';
+  pathname = getAppPathname(pathname, basePath);
+  return pathname === '/admin' || /^\/admin\/(productos?|inventario)$/.test(pathname) ? 'admin' : 'public';
 }

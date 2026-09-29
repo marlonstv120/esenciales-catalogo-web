@@ -18,8 +18,12 @@ La autenticación administrativa utilizará Supabase Auth. Las políticas RLS y 
 
 Las imágenes de productos se almacenarán en Supabase Storage; PostgreSQL conservará su ruta, URL pública cuando aplique y metadatos necesarios. Consulte [ADR-006](decisions/ADR-006-almacenamiento-externo-de-imagenes.md) y ADR-007.
 
-## Pendiente de definición
+## Despliegue confirmado
+
+El frontend se publica automáticamente en GitHub Pages mediante GitHub Actions después de cada `push` a `main`. Vite compila con la base `/esenciales-catalogo-web/` y la aplicación normaliza esa base en rutas, recursos y retornos de Supabase Auth. Supabase alojado es el backend compartido para desarrollo y demostración; el flujo habitual no depende de Docker local. Consulte [ADR-009](decisions/ADR-009-despliegue-continuo-con-github-pages.md).
+
+## Pendiente de implementación
 
 Las migraciones `20260924000100_create_catalog_core.sql`, `20260924000200_add_admin_auth_policies.sql`, `20260926000100_add_product_images_storage.sql`, `20260926000200_add_public_catalog_rpc.sql` y `20260927000100_add_public_reference_normal_price.sql` materializan localmente el núcleo de catálogo, su acceso administrativo, almacenamiento de imágenes y dos RPC de lectura pública. El [modelo lógico de datos](data-model.md) conserva como diseño pendiente las solicitudes, sus transacciones y sus funciones RPC.
 
-Siguen pendientes las operaciones de solicitudes, su validación transaccional, la validación técnica del teléfono, la estructura restante del cliente y el proveedor de despliegue del frontend. Las políticas RLS administrativas y la lectura pública mediante RPC están implementadas localmente. Cualquier cambio a las decisiones aceptadas deberá justificarse y aprobarse como una decisión técnica relevante.
+Siguen pendientes las operaciones de solicitudes, su validación transaccional, la validación técnica del teléfono y la estructura restante del cliente. Cualquier cambio a las decisiones aceptadas deberá justificarse y aprobarse como una decisión técnica relevante.

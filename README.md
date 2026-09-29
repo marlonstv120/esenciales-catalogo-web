@@ -2,7 +2,7 @@
 
 Aplicación web Full Stack para la **gestión y publicación del catálogo de productos de Esenciales**, desarrollada como proyecto integrador del Curso de Opción de Grado en Desarrollo Web Full Stack.
 
-> **Estado actual:** el MVP usa Supabase para los servicios de backend. El catálogo público, la búsqueda y los filtros, el acceso administrativo y la gestión del catálogo están implementados localmente. El carrito funcional y las solicitudes siguen pendientes; falta la revisión manual de los nuevos filtros.
+> **Estado actual:** el MVP usa Supabase alojado para los servicios de backend y GitHub Pages para publicar automáticamente el frontend desde `main`. El catálogo público, la búsqueda y los filtros, el acceso administrativo y la gestión del catálogo están implementados. El carrito funcional y las solicitudes siguen pendientes; falta la revisión manual de los nuevos filtros.
 
 ## Sobre el proyecto
 
@@ -77,7 +77,7 @@ El prototipo inicial con Node.js y Express fue sustituido por una base de fronte
 
  La arquitectura, estructura del código y decisiones técnicas se incorporarán progresivamente a partir del [alcance funcional MVP V1](docs/project/functional-scope.md).
 
-## Ejecución local
+## Desarrollo
 
 Instale las dependencias:
 
@@ -85,34 +85,45 @@ Instale las dependencias:
 npm install
 ```
 
-Para ejecutar el cliente en desarrollo:
+Copie `.env.example` como `.env.local` y complete las dos variables públicas del proyecto compartido de Supabase. Las claves secretas o de servicio nunca deben utilizar el prefijo `VITE_` ni incluirse en el frontend.
+
+Ejecute el cliente:
 
 ```bash
-npm run supabase:start
 npm run dev
 ```
 
-Supabase Studio estará disponible en `http://127.0.0.1:55323`. Vite mostrará la URL del cliente en la terminal, normalmente `http://localhost:5173`.
+Vite mostrará la URL local del cliente, normalmente `http://localhost:5173`; los datos, Auth y Storage provienen del proyecto remoto de Supabase.
 
-Para detener los servicios locales de Supabase:
-
-```bash
-npm run supabase:stop
-```
-
-Para comprobar la compilación de producción:
+Compruebe las pruebas y la compilación:
 
 ```bash
+npm test
 npm run build
 ```
 
-Para previsualizar la compilación:
+Los cambios de base de datos siempre se crean como migraciones versionadas. Antes de aplicarlos al proyecto remoto:
+
+```bash
+npm run supabase:push:dry
+npm run supabase:push
+```
+
+Coordine los cambios de esquema con el equipo y no modifique manualmente en el Dashboard objetos que deban permanecer reproducibles.
+
+## Despliegue
+
+Cada `push` a `main` ejecuta pruebas, compila el frontend y lo publica mediante GitHub Actions en:
+
+`https://marlonstv120.github.io/esenciales-catalogo-web/`
+
+GitHub Actions utiliza las variables públicas `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`. La clave `service_role` y cualquier secreto administrativo están prohibidos en el frontend y en esas variables.
+
+Para previsualizar manualmente una compilación:
 
 ```bash
 npm run preview
 ```
-
-Copie `.env.example` como `.env.local` y complete las variables públicas de Supabase cuando configure un entorno nuevo. `.env.local` no se versiona. Las claves secretas o de servicio nunca deben utilizar el prefijo `VITE_` ni incluirse en el frontend.
 
 ---
 

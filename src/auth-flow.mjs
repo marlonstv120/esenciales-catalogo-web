@@ -1,7 +1,9 @@
+import { appPath } from './app-paths.mjs';
+
 const PASSWORD_SETUP_FLOWS = new Set(['invite', 'recovery']);
 
-export function getAdminAuthReturnUrl(origin) {
-  return `${origin.replace(/\/$/, '')}/admin`;
+export function getAdminAuthReturnUrl(origin, basePath = '/') {
+  return `${origin.replace(/\/$/, '')}${appPath('/admin', basePath)}`;
 }
 
 export function getPasswordSetupFlow(url) {

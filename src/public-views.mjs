@@ -1,11 +1,14 @@
-const logoUrl = '/assets/brand/esenciales-logo-horizontal.png';
+import { appPath } from './app-paths.mjs';
+import { hasCatalogFilters, parseCatalogFilters } from './public-catalog-filters.mjs';
+
+const logoUrl = appPath('/assets/brand/esenciales-logo-horizontal.png');
 const categoryImages = {
-  perfumeslociones: '/assets/images/categories/categoria-perfumes-lociones.png',
-  splash: '/assets/images/categories/categoria-splash.png',
-  cremas: '/assets/images/categories/categoria-cremas-corporales.png',
-  cremascorporales: '/assets/images/categories/categoria-cremas-corporales.png',
-  humidificadores: '/assets/images/categories/categoria-humidificadores.png',
-  otrosproductos: '/assets/images/categories/categoria-otros-productos.png',
+  perfumeslociones: appPath('/assets/images/categories/categoria-perfumes-lociones.png'),
+  splash: appPath('/assets/images/categories/categoria-splash.png'),
+  cremas: appPath('/assets/images/categories/categoria-cremas-corporales.png'),
+  cremascorporales: appPath('/assets/images/categories/categoria-cremas-corporales.png'),
+  humidificadores: appPath('/assets/images/categories/categoria-humidificadores.png'),
+  otrosproductos: appPath('/assets/images/categories/categoria-otros-productos.png'),
 };
 
 function escapeHtml(value = '') {
@@ -16,8 +19,6 @@ function escapeHtml(value = '') {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 }
-
-import { hasCatalogFilters, parseCatalogFilters } from './public-catalog-filters.mjs';
 
 function money(value) {
   return new Intl.NumberFormat('es-CO', {
@@ -65,7 +66,7 @@ function productCardView(product, featured = false) {
     ? `<s class="public-product-card__normal-price">${money(product.precio_normal_referencia)}</s>`
     : '';
   return `<article class="public-product-card${featured ? ' public-product-card--featured' : ''}">
-    <a class="public-product-card__link" href="/producto/${Number(product.producto_id)}">
+    <a class="public-product-card__link" href="${appPath(`/producto/${Number(product.producto_id)}`)}">
       ${imageView(product)}
       <p class="public-product-card__category">${escapeHtml(product.categoria_nombre)}</p>
       <h3>${escapeHtml(product.nombre)}</h3>
@@ -83,7 +84,7 @@ function categoryLinks(rows) {
     .map((category) => {
       const key = category.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
       const image = categoryImages[key];
-      return `<a href="/catalogo#categoria-${category.id}">${image ? `<img data-category-image src="${image}" alt="" loading="lazy" width="320" height="240">` : ''}<span>${escapeHtml(category.nombre)}</span></a>`;
+      return `<a href="${appPath(`/catalogo#categoria-${category.id}`)}">${image ? `<img data-category-image src="${image}" alt="" loading="lazy" width="320" height="240">` : ''}<span>${escapeHtml(category.nombre)}</span></a>`;
     })
     .join('');
 }
@@ -92,15 +93,15 @@ export function publicShellView(content, currentRoute = 'home') {
   const active = (route) => currentRoute === route ? ' aria-current="page"' : '';
   return `<a class="skip-link" href="#main-content">Saltar al contenido</a>
     <header class="public-header">
-      <div class="public-header__inner"><details class="public-mobile-menu"><summary aria-label="Abrir menú de navegación"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary><nav aria-label="Navegación móvil"><a href="/"${active('home')}>Inicio</a><a href="/catalogo"${active('catalog')}>Catálogo</a><a href="/admin">Administración</a></nav></details><a class="public-brand" href="/"><img src="${escapeHtml(logoUrl)}" alt="ESENCIALES"></a>
+      <div class="public-header__inner"><details class="public-mobile-menu"><summary aria-label="Abrir menú de navegación"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary><nav aria-label="Navegación móvil"><a href="${appPath('/')}"${active('home')}>Inicio</a><a href="${appPath('/catalogo')}"${active('catalog')}>Catálogo</a><a href="${appPath('/admin')}">Administración</a></nav></details><a class="public-brand" href="${appPath('/')}"><img src="${escapeHtml(logoUrl)}" alt="ESENCIALES"></a>
       <nav class="public-navigation" aria-label="Principal">
-        <a href="/"${active('home')}>Inicio</a>
-        <a href="/catalogo"${active('catalog')}>Catálogo</a>
+        <a href="${appPath('/')}"${active('home')}>Inicio</a>
+        <a href="${appPath('/catalogo')}"${active('catalog')}>Catálogo</a>
       </nav>
-      <a class="public-cart-link" href="/carrito" aria-label="Carrito (0)"${active('cart')}><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l2.4 12h13l2-9H5"/></svg><span class="public-cart-link__count" aria-hidden="true">0</span></a></div>
+      <a class="public-cart-link" href="${appPath('/carrito')}" aria-label="Carrito (0)"${active('cart')}><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l2.4 12h13l2-9H5"/></svg><span class="public-cart-link__count" aria-hidden="true">0</span></a></div>
     </header>
     <main class="public-main" id="main-content">${content}</main>
-    <footer class="public-footer"><div class="public-footer__inner"><span>ESENCIALES</span><a href="/admin">Administración</a></div></footer>`;
+    <footer class="public-footer"><div class="public-footer__inner"><span>ESENCIALES</span><a href="${appPath('/admin')}">Administración</a></div></footer>`;
 }
 
 export function homeView(rows = []) {
@@ -112,10 +113,10 @@ export function homeView(rows = []) {
       <div class="public-hero__content">
       <h1 id="home-title">Tu aroma, siempre contigo.</h1>
       <p>Explora lociones, perfumes y opciones de cuidado personal para cada estilo y ocasión.</p>
-      <a class="primary-button public-hero__action" href="/catalogo">Ver catálogo</a></div>
+      <a class="primary-button public-hero__action" href="${appPath('/catalogo')}">Ver catálogo</a></div>
     </section>
     ${categories ? `<section class="public-categories" aria-labelledby="categories-title"><h2 id="categories-title">Categorías</h2><nav class="public-category-links" aria-label="Categorías">${categories}</nav></section>` : ''}
-    ${featured.length ? `<section class="public-section public-featured" aria-labelledby="featured-title"><div class="public-section__heading"><h2 id="featured-title">Productos destacados</h2><a href="/catalogo">Ver catálogo <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div><div class="public-product-grid">${featured.map((product) => productCardView(product, true)).join('')}</div></section>` : ''}`;
+    ${featured.length ? `<section class="public-section public-featured" aria-labelledby="featured-title"><div class="public-section__heading"><h2 id="featured-title">Productos destacados</h2><a href="${appPath('/catalogo')}">Ver catálogo <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div><div class="public-product-grid">${featured.map((product) => productCardView(product, true)).join('')}</div></section>` : ''}`;
 }
 
 const filterChoices = {
@@ -180,7 +181,6 @@ function metadata(product) {
     ['Marca', product.marca],
     ['Género', product.genero],
     ['Familia olfativa', product.familia_olfativa],
-    ['Referencia', product.referencia],
     ['Clasificación', product.clasificacion],
   ].filter(([, value]) => value);
   if (!fields.length) return '';
@@ -199,7 +199,7 @@ export function productDetailView(product) {
     </span>
   </label>`).join('');
 
-  return `<a class="public-back-link" href="/catalogo">Volver al catálogo</a>
+  return `<a class="public-back-link" href="${appPath('/catalogo')}">Volver al catálogo</a>
     <article class="public-product-detail">
       ${imageView(product)}
       <div class="public-product-detail__content">
@@ -215,11 +215,11 @@ export function productDetailView(product) {
 }
 
 export function cartView() {
-  return `<section class="public-section public-cart-empty"><p class="eyebrow">ESENCIALES</p><h1>Carrito (0)</h1><p>La preparación de solicitudes se habilitará en el siguiente incremento.</p><a class="primary-button" href="/catalogo">Seguir explorando</a></section>`;
+  return `<section class="public-section public-cart-empty"><p class="eyebrow">ESENCIALES</p><h1>Carrito (0)</h1><p>La preparación de solicitudes se habilitará en el siguiente incremento.</p><a class="primary-button" href="${appPath('/catalogo')}">Seguir explorando</a></section>`;
 }
 
 export function notFoundView() {
-  return '<section class="public-section public-not-found"><h1>No encontrado</h1><p>Este producto no existe o dejó de publicarse.</p><a class="primary-button" href="/catalogo">Volver al catálogo</a></section>';
+  return `<section class="public-section public-not-found"><h1>No encontrado</h1><p>Este producto no existe o dejó de publicarse.</p><a class="primary-button" href="${appPath('/catalogo')}">Volver al catálogo</a></section>`;
 }
 
 export function loadingView(label = 'Cargando catálogo...') {

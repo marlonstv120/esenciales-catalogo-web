@@ -8,14 +8,21 @@ test('resolves legacy product hashes and unknown hashes to inventory', () => {
   assert.equal(getAdminRoute('#otra-ruta'), 'inventario');
 });
 
-test('offers inventory as the only primary section and a safe catalog link', () => {
+test('offers inventory and requests sections with a safe catalog link', () => {
   const html = shellView('inventario');
   assert.match(html, /esenciales-logo-horizontal\.png/);
   assert.match(html, /<h1>Inventario<\/h1>/);
   assert.match(html, /href="#inventario" aria-current="page"/);
+  assert.match(html, /href="#solicitudes"/);
   assert.doesNotMatch(html, />Productos</);
   assert.match(html, /<details class="admin-mobile-menu">/);
   assert.equal((html.match(/href="\/" target="_blank" rel="noopener noreferrer"/g) || []).length, 2);
   assert.equal((html.match(/data-sign-out/g) || []).length, 2);
   assert.match(html, /admin-shop-link[^>]*><svg[^>]*>.*?<\/svg>Ver catálogo/);
+});
+
+test('resolves the requests route and marks it as current', () => {
+  assert.equal(getAdminRoute('#solicitudes'), 'solicitudes');
+  assert.match(shellView('solicitudes'), /<h1>Solicitudes<\/h1>/);
+  assert.match(shellView('solicitudes'), /href="#solicitudes" aria-current="page"/);
 });

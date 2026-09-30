@@ -58,9 +58,9 @@ Ya existen `auth.users → usuarios_administrativos`, `categorias → productos 
 
 ## Bloque 5 — Gestión administrativa de solicitudes
 
-**Trabajo:** sección «Solicitudes» en shell; listado por fecha/estado y detalle con cliente, líneas, precios históricos, totales y marcas de tiempo. RPC de edición de Nueva bloquea la cabecera y valida datos y cantidades; admite solo corregir cliente/ciudad/observaciones, modificar cantidades y retirar líneas existentes, jamás agregar, duplicar, cambiar presentación o precio ni dejar la solicitud vacía. Recalcular subtotales/total a partir del precio histórico. Proteger operaciones y mensajes de error.
+**Implementado localmente:** el shell administrativo incluye «Solicitudes». Su listado ordena por fecha, permite buscar por código, cliente o teléfono y filtrar por estado; el detalle muestra cliente, líneas, precios históricos, subtotales, total y marcas de tiempo. Solo una solicitud Nueva presenta formulario de edición; Confirmada, Entregada y Cancelada son de solo lectura. La migración `20261001000100_add_admin_purchase_request_edit_rpc.sql`, aplicada local y remotamente, añade `actualizar_solicitud_nueva(...)`: bloquea la cabecera, exige administrador activo y estado Nueva, normaliza datos, valida teléfono, cantidades 1–99 y stock de venta inmediata. Recibe exclusivamente `detalle_id` y cantidad, por lo que rechaza líneas nuevas, ajenas o duplicadas; conserva el precio histórico, recalcula subtotal, permite retirar líneas y rechaza dejar la solicitud vacía. No modifica estado, `cantidad_descontada` ni inventario.
 
-**Salida:** Nuevas editables bajo reglas; Confirmadas/Entregadas/Canceladas de solo lectura; pruebas de acceso y de todas las prohibiciones, estados de carga/vacío/error en pantalla.
+**Salida alcanzada:** 14 pruebas pgTAP específicas remotas y locales validan permisos, edición válida, precios históricos, subtotal, retiro, stock, solicitud vacía, duplicados, línea ajena, inmutabilidad posterior y ausencia de descuento. 115 pruebas Node cubren servicio, vistas y navegación. Falta validar manualmente el recorrido administrativo responsive y publicar el frontend.
 
 ## Bloque 6 — Estados e inventario transaccional
 

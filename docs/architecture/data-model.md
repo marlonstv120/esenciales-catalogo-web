@@ -2,7 +2,7 @@
 
 ## Estado
 
-Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo fue materializado en `20260924000100_create_catalog_core.sql`; las políticas administrativas, Storage y las RPC de lectura pública se implementaron en migraciones posteriores. Las migraciones `20260930000100_create_purchase_request_schema.sql` y `20260930000200_add_purchase_request_registration_rpc.sql` materializan las tablas, restricciones, RLS y el registro transaccional de solicitudes. El cliente consulta el catálogo mediante `obtener_catalogo_publico()` y `obtener_producto_publico(integer)`, manteniendo las tablas cerradas a `anon`.
+Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo fue materializado en `20260924000100_create_catalog_core.sql`; las políticas administrativas, Storage y las RPC de lectura pública se implementaron en migraciones posteriores. Las migraciones `20260930000100_create_purchase_request_schema.sql`, `20260930000200_add_purchase_request_registration_rpc.sql` y `20261001000100_add_admin_purchase_request_edit_rpc.sql` materializan las tablas, restricciones, RLS, el registro transaccional y la edición administrativa limitada de solicitudes Nuevas. El cliente consulta el catálogo mediante `obtener_catalogo_publico()` y `obtener_producto_publico(integer)`, manteniendo las tablas cerradas a `anon`.
 
 ## Propósito
 
@@ -280,4 +280,4 @@ La operación no podrá crear detalles, cambiar presentaciones ni actualizar pre
 - Definir las políticas RLS permitidas y los permisos de funciones para visitantes y administradores autenticados. Las cinco tablas del núcleo ya tienen RLS habilitado sin políticas permisivas.
 - Precisar la validación técnica de teléfonos sin excluir números legítimos.
 - Revisar el diseño con los datos reales iniciales de Esenciales.
-- Implementar y probar las funciones RPC de edición, confirmación, entrega y cancelación antes de conectar esos flujos al cliente web.
+- Implementar y probar las funciones RPC de confirmación, entrega y cancelación antes de conectar esos flujos al cliente web.

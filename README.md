@@ -2,7 +2,7 @@
 
 Aplicación web Full Stack para la **gestión y publicación del catálogo de productos de Esenciales**, desarrollada como proyecto integrador del Curso de Opción de Grado en Desarrollo Web Full Stack.
 
-> **Estado actual:** el MVP usa Supabase alojado para los servicios de backend y GitHub Pages para publicar automáticamente el frontend desde `main`. El catálogo público, la búsqueda y los filtros, el acceso administrativo, la gestión del catálogo, el carrito y el registro público de solicitudes están implementados. Falta la validación manual integral y la gestión administrativa de solicitudes e inventario transaccional.
+> **Estado actual:** el MVP usa Supabase alojado para los servicios de backend y GitHub Pages para publicar automáticamente el frontend desde `main`. El catálogo público, la búsqueda y los filtros, el acceso administrativo, la gestión del catálogo, el carrito y el registro público de solicitudes están implementados. La gestión administrativa de solicitudes está implementada localmente: permite consultar solicitudes y corregir solo las Nuevas. Falta publicar esa interfaz, la validación manual integral y las transacciones de inventario.
 
 ## Sobre el proyecto
 

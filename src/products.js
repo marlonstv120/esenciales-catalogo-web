@@ -1,3 +1,5 @@
+import { copDigits } from './cop-input.mjs';
+
 export const LOW_STOCK_THRESHOLD = 3;
 export const CLASSIFICATION_LABELS = { original: 'Original', uno_a_uno: '1.1', inspiracion: 'Inspiración' };
 
@@ -35,8 +37,8 @@ export function normalizePresentation(values) {
   return {
     ...values,
     etiqueta: values.etiqueta?.trim(),
-    precio_normal: Number(values.precio_normal),
-    precio_promocional: values.precio_promocional === '' ? null : Number(values.precio_promocional),
+    precio_normal: Number(copDigits(values.precio_normal)),
+    precio_promocional: copDigits(values.precio_promocional) === '' ? null : Number(copDigits(values.precio_promocional)),
     stock: modo_disponibilidad === 'bajo_pedido' ? 0 : Number(values.stock),
   };
 }

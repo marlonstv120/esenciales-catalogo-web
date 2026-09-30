@@ -22,6 +22,16 @@ test('forces stock zero for bajo pedido', () => {
   assert.equal(normalizePresentation({ stock: 8, modo_disponibilidad: 'bajo_pedido' }).stock, 0);
 });
 
+test('normalizes formatted COP presentation prices before persistence', () => {
+  assert.deepEqual(normalizePresentation({ precio_normal: '$90.000', precio_promocional: '$75.000', stock: 2, modo_disponibilidad: 'venta_inmediata' }), {
+    precio_normal: 90000,
+    precio_promocional: 75000,
+    stock: 2,
+    modo_disponibilidad: 'venta_inmediata',
+    etiqueta: undefined,
+  });
+});
+
 test('uses a valid promotion as the effective price', () => {
   assert.equal(effectivePrice({ precio_normal: 50000, precio_promocional: 42000 }), 42000);
   assert.equal(effectivePrice({ precio_normal: 50000, precio_promocional: 60000 }), 50000);

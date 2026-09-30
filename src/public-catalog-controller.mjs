@@ -3,6 +3,7 @@ import { addCartItem, emptyCart, loadCart, removeCartItem, saveCart, updateCartI
 import { hasCatalogFilters, parseCatalogFilters, removeCatalogFilter, serializeCatalogFilters, validateCatalogFilters } from './public-catalog-filters.mjs';
 import { getPublicRoute } from './public-routes.mjs';
 import { appPath } from './app-paths.mjs';
+import { copDigits, formatCopInput, formatCopInputElement } from './cop-input.mjs';
 import { loadingView, presentationSelectorView, publicShellView, renderPublicRoute } from './public-views.mjs';
 
 export function getDocumentMetadata(route, product = null) {
@@ -25,7 +26,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   const announce = (message) => { const region = app.querySelector('.public-live-region'); if (region) region.textContent = message; };
   const setMetadata = (nextRoute, product) => { const metadata = getDocumentMetadata(nextRoute, product); documentRef.title = metadata.title; documentRef.querySelector('meta[name="description"]')?.setAttribute('content', metadata.description); };
   const renderShell = (content, routeName = currentRoute.name) => {
-    app.innerHTML = publicShellView(content, routeName, cart); attachImageFallbacks(app);
+    app.innerHTML = publicShellView(content, routeName, cart); attachImageFallbacks(app); app.querySelectorAll('[name="precioMinimo"], [name="precioMaximo"]').forEach(formatCopInputElement);
     const menu = app.querySelector('.public-mobile-menu'); const trigger = menu?.querySelector('summary');
     menu?.addEventListener('toggle', () => {
       const open = menu.open;
@@ -63,7 +64,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   };
   const readFormFilters = () => {
     const data = new FormData(app.querySelector('[data-catalog-form]'));
-    return { busqueda: String(data.get('busqueda') || '').trim(), categoria: data.get('categoria') ? Number(data.get('categoria')) : null, disponibilidades: data.getAll('disponibilidades'), generos: data.getAll('generos'), clasificaciones: data.getAll('clasificaciones'), precioMinimo: String(data.get('precioMinimo') || '').trim(), precioMaximo: String(data.get('precioMaximo') || '').trim(), orden: 'destacados' };
+    return { busqueda: String(data.get('busqueda') || '').trim(), categoria: data.get('categoria') ? Number(data.get('categoria')) : null, disponibilidades: data.getAll('disponibilidades'), generos: data.getAll('generos'), clasificaciones: data.getAll('clasificaciones'), precioMinimo: copDigits(data.get('precioMinimo')), precioMaximo: copDigits(data.get('precioMaximo')), orden: 'destacados' };
   };
   const addPresentation = (product, presentationId) => {
     const presentation = product.presentaciones?.find((item) => Number(item.id) === Number(presentationId)); const next = addCartItem(cart, product, presentation);
@@ -102,9 +103,10 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     event.preventDefault(); windowRef.history.pushState({}, '', `${target.pathname}${target.search}`); renderRoute(nextRoute);
   };
   const onSubmit = (event) => { if (!event.target.matches?.('[data-catalog-form]')) return; event.preventDefault(); filterPanelOpen = false; updateFilters(readFormFilters()); };
+  const onInput = (event) => { if (event.target.matches?.('[name="precioMinimo"], [name="precioMaximo"]')) event.target.value = formatCopInput(event.target.value); };
   const onChange = (event) => { if (event.target.matches?.('[data-cart-quantity]')) { cart = updateCartItemQuantity(cart, event.target.dataset.cartQuantity, event.target.value); persistCart(); renderRoute(currentRoute); announce('Cantidad actualizada.'); } };
   const onKeyDown = (event) => { if (event.key === 'Escape' && (selectorProduct || filterPanelOpen)) { event.preventDefault(); closeOverlay(); } else trapFocus(event); };
   const onPopState = () => renderRoute(getPublicRoute(windowRef.location.pathname));
-  app.addEventListener('click', onClick); app.addEventListener('submit', onSubmit); app.addEventListener('change', onChange); documentRef.addEventListener?.('keydown', onKeyDown); windowRef.addEventListener('popstate', onPopState); renderRoute(route);
-  return () => { active = false; requestId += 1; app.removeEventListener('click', onClick); app.removeEventListener('submit', onSubmit); app.removeEventListener('change', onChange); documentRef.removeEventListener?.('keydown', onKeyDown); windowRef.removeEventListener('popstate', onPopState); };
+  app.addEventListener('click', onClick); app.addEventListener('submit', onSubmit); app.addEventListener('input', onInput); app.addEventListener('change', onChange); documentRef.addEventListener?.('keydown', onKeyDown); windowRef.addEventListener('popstate', onPopState); renderRoute(route);
+  return () => { active = false; requestId += 1; app.removeEventListener('click', onClick); app.removeEventListener('submit', onSubmit); app.removeEventListener('input', onInput); app.removeEventListener('change', onChange); documentRef.removeEventListener?.('keydown', onKeyDown); windowRef.removeEventListener('popstate', onPopState); };
 }

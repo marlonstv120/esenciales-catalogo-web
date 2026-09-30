@@ -17,7 +17,7 @@ Esta carpeta es la fuente permanente de contexto del proyecto. Las fuentes origi
 - [Desarrollo](development/workflow.md): flujo de trabajo, [convenciones](development/conventions.md) y [herramientas recomendadas](development/tooling.md).
 - [Plan de rediseño del catálogo](development/catalog-redesign-plan.md): plan técnico del catálogo unificado, filtros persistentes, tarjetas y carrito local básico.
 - [Plan de cierre del MVP](development/mvp-completion-plan.md): bloques pendientes de solicitudes, inventario transaccional, validación y producción.
-- [Borrador de términos y condiciones](project/terms-and-conditions-draft.md) y [borrador de política de datos](project/personal-data-policy-draft.md): textos propuestos, pendientes de aprobación antes de publicar.
+- [Términos y condiciones](project/terms-and-conditions-draft.md) y [política de datos](project/personal-data-policy-draft.md): versiones vigentes `terminos-v1` y `politica-datos-v1` desde el 30 de septiembre de 2026.
 - [Académico](academic/README.md): contexto del curso e informe en construcción.
 - [Historial](history/project-log.md): trazabilidad e hitos relevantes.
 - [Entregables del informe](../informe/README.md): briefing, requisitos, diseno, arquitectura y evidencias organizados para los hitos academicos.

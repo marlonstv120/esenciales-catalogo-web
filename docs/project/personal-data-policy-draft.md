@@ -1,8 +1,8 @@
-# Política de tratamiento de datos personales — borrador
+# Política de tratamiento de datos personales
 
-**Estado:** propuesta para revisión y aprobación expresa de ESENCIALES. **No es una política vigente ni debe solicitarse su aceptación en producción todavía.**
+**Estado:** versión vigente aprobada para el formulario de solicitudes de ESENCIALES.
 
-**Versión propuesta:** `politica-datos-v1` (asignar fecha de vigencia solo tras aprobación).
+**Versión:** `politica-datos-v1`. **Vigencia:** 30 de septiembre de 2026.
 
 ## 1. Responsable y contacto
 
@@ -32,6 +32,4 @@ El titular podrá consultar, actualizar y rectificar sus datos; solicitar inform
 
 Los datos se conservarán mientras sean necesarios para atender la solicitud, gestionar el historial administrativo del pedido, responder consultas o reclamos y cumplir obligaciones legales, contractuales o administrativas aplicables. Cuando los datos ya no sean necesarios para esas finalidades y no exista una obligación de conservación, ESENCIALES podrá eliminarlos, anonimizarlos o restringir su uso. Si esta política cambia, se publicará una nueva versión con su fecha de vigencia. Cada solicitud guardará la versión que se aceptó en el momento de su registro.
 
-## Antes de aprobar y publicar
-
-- Revisar el texto conforme a la normativa colombiana aplicable y a la operación real, aprobar versión y fecha; publicar URL estable y conservar copia inmutable de cada versión aceptada.
+La copia pública e inmutable de esta versión está disponible en [`/legal/politica-datos-v1.html`](../../public/legal/politica-datos-v1.html).

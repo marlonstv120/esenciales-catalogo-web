@@ -2,7 +2,7 @@
 
 Aplicación web Full Stack para la **gestión y publicación del catálogo de productos de Esenciales**, desarrollada como proyecto integrador del Curso de Opción de Grado en Desarrollo Web Full Stack.
 
-> **Estado actual:** el MVP usa Supabase alojado para los servicios de backend y GitHub Pages para publicar automáticamente el frontend desde `main`. El catálogo público, la búsqueda y los filtros, el acceso administrativo y la gestión del catálogo están implementados. El carrito funcional y las solicitudes siguen pendientes; falta la revisión manual de los nuevos filtros.
+> **Estado actual:** el MVP usa Supabase alojado para los servicios de backend y GitHub Pages para publicar automáticamente el frontend desde `main`. El catálogo público, la búsqueda y los filtros, el acceso administrativo, la gestión del catálogo, el carrito y el registro público de solicitudes están implementados. Falta la validación manual integral y la gestión administrativa de solicitudes e inventario transaccional.
 
 ## Sobre el proyecto
 
@@ -73,7 +73,7 @@ La IA actúa como asistente de desarrollo. Las decisiones importantes del proyec
 
 ## Estado de implementación
 
-El prototipo inicial con Node.js y Express fue sustituido por una base de frontend con Vite, HTML5, CSS3 y JavaScript sin framework. Supabase está vinculado al proyecto remoto y el entorno local cuenta con migraciones validadas para el catálogo, su administración, Storage, lectura pública y búsqueda filtrada mediante RPC. Carrito funcional y solicitudes siguen pendientes.
+El prototipo inicial con Node.js y Express fue sustituido por una base de frontend con Vite, HTML5, CSS3 y JavaScript sin framework. Supabase está vinculado al proyecto remoto y el entorno local cuenta con migraciones validadas para el catálogo, su administración, Storage, lectura pública, búsqueda filtrada y registro idempotente de solicitudes mediante RPC.
 
  La arquitectura, estructura del código y decisiones técnicas se incorporarán progresivamente a partir del [alcance funcional MVP V1](docs/project/functional-scope.md).
 

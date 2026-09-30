@@ -52,9 +52,9 @@ Ya existen `auth.users → usuarios_administrativos`, `categorias → productos 
 
 ## Bloque 4 — Registro público, confirmación y WhatsApp
 
-**Trabajo:** formulario en `/carrito` con nombre/teléfono, ciudad y observaciones opcionales, enlaces a versiones vigentes y casilla desmarcada; resumen, carga, errores de validación y reintento idempotente. Si cambia precio, mostrar diferencia y exigir acción explícita de revisión antes de nuevo envío; si cambia stock/disponibilidad, permitir corregir líneas. Tras respuesta exitosa mostrar código, resumen devuelto por servidor y valor total de productos; solo entonces retirar el carrito (guardar confirmación temporal para evitar pérdida por recarga accidental). Botón optativo «Continuar por WhatsApp» con `https://wa.me/573174645670?text=...`; construir texto codificado desde datos confirmados, sin envío automático ni acceso a datos de terceros. Si no abre WhatsApp, la solicitud sigue registrada. Mostrar costo de envío por confirmar.
+**Implementado:** `/carrito` incorpora nombre, teléfono, ciudad y observaciones, casillas inicialmente desmarcadas y enlaces a `terminos-v1` y `politica-datos-v1` mediante diálogo responsive con cierre y URL pública de respaldo. El formulario conserva el identificador de intento mientras se reintenta, muestra validación, evita duplicados y revalida el carrito tras rechazo de disponibilidad. Ante un precio cambiado muestra las diferencias y exige confirmar el nuevo resumen antes de registrar. Tras éxito guarda una confirmación temporal sin datos personales, vacía el carrito y ofrece WhatsApp voluntario con código, líneas y total confirmado.
 
-**Salida:** recorrido manual en móvil y escritorio, sin doble envío, no vaciar carrito ante error, aceptación bloqueante y enlace a documentos correctos; comprobar URL y mensaje, ausencia de pagos e importes de envío inventados.
+**Pendiente de salida:** recorrido manual en móvil y escritorio, sin doble envío, no vaciar carrito ante error, aceptación bloqueante y enlace a documentos correctos; comprobar URL y mensaje, ausencia de pagos e importes de envío inventados.
 
 ## Bloque 5 — Gestión administrativa de solicitudes
 

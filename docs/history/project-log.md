@@ -10,6 +10,7 @@
 - El carrito reconsulta el detalle público al abrirse y comunica cambios de disponibilidad, límite y precio. Las líneas no se eliminan ni reducen automáticamente; una línea agotada o con cantidad excesiva queda señalada para corrección y bloqueará el avance hacia la futura solicitud.
 - Se aplica `20260930000100_create_purchase_request_schema.sql` en local y Supabase remoto: agrega `solicitudes`, `detalles_solicitud`, la secuencia de códigos, restricciones, relaciones y RLS de lectura administrativa. Las 24 pruebas específicas pasaron en remoto; las RPC transaccionales quedan para el siguiente bloque.
 - Se aplica `20260930000200_add_purchase_request_registration_rpc.sql` en local y Supabase remoto: registra solicitudes públicas de forma atómica e idempotente, conserva precios y versiones legales, y no descuenta inventario en estado Nueva. Cada línea comunica su precio esperado; una diferencia devuelve el resumen vigente para revisión sin crear solicitud. Pasaron 204 pruebas pgTAP locales, 23 pruebas específicas remotas, 101 pruebas Node y la compilación de producción.
+- Se integra el formulario de solicitud en `/carrito`: valida datos de cliente y aceptaciones, conserva el intento durante reintentos, muestra conflictos de precio, revalida disponibilidad, guarda una confirmación temporal no personal y ofrece WhatsApp solo después de registrar. Se publican `terminos-v1` y `politica-datos-v1`, vigentes desde el 30 de septiembre de 2026, dentro de un diálogo responsive y con URL pública de respaldo.
 
 ## 2026-09-29
 

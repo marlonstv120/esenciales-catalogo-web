@@ -1,8 +1,8 @@
-# Términos y condiciones de uso y solicitudes de compra — borrador
+# Términos y condiciones de uso y solicitudes de compra
 
-**Estado:** propuesta para revisión y aprobación expresa de ESENCIALES. **No es una versión vigente ni debe mostrarse como aceptable en producción todavía.**
+**Estado:** versión vigente aprobada para el formulario de solicitudes de ESENCIALES.
 
-**Versión propuesta:** `terminos-v1` (asignar fecha de vigencia solo tras aprobación).
+**Versión:** `terminos-v1`. **Vigencia:** 30 de septiembre de 2026.
 
 ## 1. Responsable y alcance
 
@@ -32,6 +32,4 @@ El usuario no debe enviar datos falsos ni realizar usos que impidan el funcionam
 
 Los datos enviados en la solicitud se tratan conforme a la [Política de tratamiento de datos personales](personal-data-policy-draft.md), que debe estar disponible antes de aceptar. ESENCIALES podrá actualizar estos términos para solicitudes futuras; cada solicitud conservará la versión que el visitante aceptó y la fecha y hora de aceptación. Una actualización no sustituye retroactivamente la versión registrada.
 
-## Antes de aprobar y publicar
-
-- Aprobar texto final, versión y fecha de vigencia; publicar la versión íntegra en una URL estable y conservar copia inmutable de cada versión aceptada.
+La copia pública e inmutable de esta versión está disponible en [`/legal/terminos-v1.html`](../../public/legal/terminos-v1.html).

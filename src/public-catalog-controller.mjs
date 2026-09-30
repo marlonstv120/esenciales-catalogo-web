@@ -93,6 +93,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const add = event.target.closest?.('[data-product-add]'); if (add) { openPresentationSelector(Number(add.dataset.productAdd), add); return; }
     const selected = event.target.closest?.('[data-presentation-add]'); if (selected && selectorProduct) { addPresentation(selectorProduct, selected.dataset.presentationAdd); return; }
     const remove = event.target.closest?.('[data-filter-remove]'); if (remove) { updateFilters(removeCatalogFilter(parseCatalogFilters(windowRef.location.search), remove.dataset.filterRemove, remove.dataset.filterValue)); return; }
+    if (event.target.closest?.('[data-clear-search]')) { updateFilters({ ...parseCatalogFilters(windowRef.location.search), busqueda: '' }); return; }
     if (event.target.closest?.('[data-clear-filters]')) { filterPanelOpen = false; updateFilters(parseCatalogFilters('')); return; }
     const cartRemove = event.target.closest?.('[data-cart-remove]'); if (cartRemove) { cart = removeCartItem(cart, cartRemove.dataset.cartRemove); persistCart(); renderRoute(currentRoute); announce('Producto retirado del carrito.'); return; }
     const retry = event.target.closest?.('[data-public-retry]'); if (retry) { event.preventDefault(); if (currentRoute.name === 'catalog') loadCatalog(parseCatalogFilters(windowRef.location.search), { refreshBase: true }); else renderRoute(currentRoute); return; }

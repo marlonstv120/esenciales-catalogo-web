@@ -10,6 +10,11 @@ function safeMaximum(value) {
   return Number.isInteger(maximum) && maximum >= 1 && maximum <= 99 ? maximum : null;
 }
 
+function effectivePrice(presentation) {
+  const price = Number(presentation?.precio_promocional || presentation?.precio_normal);
+  return Number.isInteger(price) && price > 0 ? price : null;
+}
+
 export function emptyCart() { return { version: 2, items: [] }; }
 
 export function loadCart(storage = globalThis.localStorage) {
@@ -27,7 +32,7 @@ export function saveCart(cart, storage = globalThis.localStorage) {
 
 export function addCartItem(cart, product, presentation, quantity = 1) {
   if (!presentation || !['Disponible', 'Bajo pedido'].includes(presentation.estado)) return cart;
-  const price = Number(presentation.precio_promocional || presentation.precio_normal);
+  const price = effectivePrice(presentation);
   const maximum = safeMaximum(presentation.maximo_solicitable);
   const requested = safeQuantity(quantity);
   if (!Number.isInteger(price) || price <= 0 || !maximum || !requested) return cart;
@@ -61,3 +66,47 @@ export function updateCartItemQuantity(cart, presentationId, quantity) {
 export function removeCartItem(cart, presentationId) { return { version: 2, items: cart.items.filter((item) => item.presentationId !== Number(presentationId)) }; }
 export function getCartCount(cart) { return cart.items.reduce((total, item) => total + item.quantity, 0); }
 export function getCartTotal(cart) { return cart.items.reduce((total, item) => total + item.price * item.quantity, 0); }
+
+export function revalidateCart(cart, productsById) {
+  const items = cart.items.map((item) => {
+    const product = productsById.get(Number(item.productId));
+    const presentation = product?.presentaciones?.find((current) => Number(current.id) === Number(item.presentationId));
+    if (!presentation) return {
+      ...item,
+      validation: { state: 'blocked', message: product ? 'Esta presentación ya no está disponible.' : 'Este producto ya no está disponible.', quantityEditable: false },
+    };
+
+    const maximum = Number(presentation.maximo_solicitable);
+    const requestable = Number.isInteger(maximum) && maximum >= 1 && maximum <= 99;
+    const price = effectivePrice(presentation);
+    if (!requestable || !price) return {
+      ...item,
+      name: product.nombre || item.name,
+      label: presentation.etiqueta || item.label,
+      status: presentation.estado || item.status,
+      maxQuantity: 0,
+      validation: { state: 'blocked', message: 'Esta presentación ya no está disponible.', quantityEditable: false },
+    };
+
+    const messages = [];
+    if (presentation.estado !== item.status) messages.push(presentation.estado === 'Bajo pedido' ? 'Ahora está disponible bajo pedido.' : `Ahora está ${presentation.estado === 'Disponible' ? 'en stock' : presentation.estado.toLowerCase()}.`);
+    if (price !== item.price) messages.push('El precio se actualizó.');
+    if (item.quantity > maximum) messages.push(`Solo hay ${maximum} ${maximum === 1 ? 'unidad disponible' : 'unidades disponibles'}. Tienes ${item.quantity} en el carrito.`);
+
+    return {
+      ...item,
+      name: product.nombre || item.name,
+      label: presentation.etiqueta || item.label,
+      status: presentation.estado,
+      price,
+      normalPrice: Number(presentation.precio_normal),
+      maxQuantity: maximum,
+      validation: {
+        state: item.quantity > maximum ? 'blocked' : messages.length ? 'changed' : 'valid',
+        message: messages.join(' '),
+        quantityEditable: true,
+      },
+    };
+  });
+  return { cart: { version: 2, items }, ready: items.every((item) => item.validation.state !== 'blocked') };
+}

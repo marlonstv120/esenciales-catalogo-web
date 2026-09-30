@@ -305,7 +305,8 @@ El selector compacto tendrá título con el nombre del producto, opciones con et
 
 - Si `localStorage` falla, mantener el carrito en memoria durante la sesión y anunciar que no pudo conservarse para visitas posteriores.
 - Al cargar, validar forma, tipos, cantidades y precios antes de renderizar.
-- No confiar en el carrito como fuente definitiva de precio o disponibilidad para una solicitud futura.
+- Al abrir el carrito, revalidar cada producto mediante `obtener_producto_publico` y reflejar disponibilidad, límite y precio actuales sin retirar o reducir automáticamente las líneas. Si no puede verificarse, informar el error y bloquear la continuación futura hasta reintentar.
+- No confiar en el carrito como fuente definitiva de precio o disponibilidad para una solicitud futura; la RPC de registro vuelve a validar todas las líneas.
 - La futura RPC de registro deberá revalidar todas las líneas.
 
 ## 10. Cambios por archivo

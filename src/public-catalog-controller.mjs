@@ -1,5 +1,5 @@
 import { loadFilteredCatalog, loadPublicCatalog, loadPublicProduct, refineCatalogRows } from './public-catalog.mjs';
-import { addCartItem, emptyCart, loadCart, removeCartItem, saveCart, updateCartItemQuantity } from './public-cart.mjs';
+import { addCartItem, emptyCart, loadCart, removeCartItem, revalidateCart, saveCart, updateCartItemQuantity } from './public-cart.mjs';
 import { hasCatalogFilters, parseCatalogFilters, removeCatalogFilter, serializeCatalogFilters, validateCatalogFilters } from './public-catalog-filters.mjs';
 import { getPublicRoute } from './public-routes.mjs';
 import { appPath } from './app-paths.mjs';
@@ -83,7 +83,17 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   const renderRoute = async (nextRoute) => {
     currentRoute = nextRoute; const currentRequest = ++requestId; setMetadata(nextRoute);
     if (nextRoute.name === 'catalog') { loadCatalog(parseCatalogFilters(windowRef.location.search)); return; }
-    if (nextRoute.name === 'cart' || nextRoute.name === 'not-found') { currentProduct = null; renderShell(renderPublicRoute(nextRoute, { cart }), nextRoute.name); return; }
+    if (nextRoute.name === 'cart') {
+      currentProduct = null;
+      if (!cart.items.length) { renderShell(renderPublicRoute(nextRoute, { cart }), nextRoute.name); return; }
+      renderShell(renderPublicRoute(nextRoute, { cart, cartState: { loading: true, ready: false } }), nextRoute.name);
+      const checks = await Promise.all([...new Set(cart.items.map((item) => Number(item.productId)))].map(async (productId) => ({ productId, result: await loadPublicProduct(client, productId) })));
+      if (!active || currentRequest !== requestId) return;
+      if (checks.some(({ result }) => result.error)) { renderShell(renderPublicRoute(nextRoute, { cart, cartState: { error: 'No pudimos verificar la disponibilidad actual. Inténtalo de nuevo.', ready: false } }), nextRoute.name); return; }
+      const revalidated = revalidateCart(cart, new Map(checks.map(({ productId, result }) => [productId, result.data])));
+      cart = revalidated.cart; persistCart(); renderShell(renderPublicRoute(nextRoute, { cart, cartState: revalidated }), nextRoute.name); return;
+    }
+    if (nextRoute.name === 'not-found') { currentProduct = null; renderShell(renderPublicRoute(nextRoute, { cart }), nextRoute.name); return; }
     renderShell(loadingView(loadingLabel(nextRoute)), nextRoute.name); const result = nextRoute.name === 'product' ? await loadPublicProduct(client, nextRoute.productId) : await loadPublicCatalog(client);
     if (!active || currentRequest !== requestId) return; currentProduct = nextRoute.name === 'product' ? result.data : null; renderShell(renderPublicRoute(nextRoute, result), nextRoute.name); if (nextRoute.name === 'product' && result.data) setMetadata(nextRoute, result.data);
   };

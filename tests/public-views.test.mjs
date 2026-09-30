@@ -33,4 +33,15 @@ test('product detail selects a requestable presentation and uses its public limi
   assert.match(view, /max="3"[^>]*data-detail-quantity/);
   assert.match(view, /data-product-detail-add/);
 });
+test('cart shows current availability warnings and blocks continuation while a line is invalid', () => {
+  const view = cartView({ version: 2, items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Agotado', price: 50000, maxQuantity: 0, quantity: 5, validation: { state: 'blocked', message: 'Esta presentación ya no está disponible.', quantityEditable: false } }] }, { ready: false });
+  assert.match(view, /Esta presentación ya no está disponible/);
+  assert.match(view, /data-cart-quantity="2"[^>]*disabled/);
+  assert.match(view, /Corrige las líneas señaladas antes de continuar con la solicitud/);
+});
+test('cart exposes a retry action when current availability cannot be verified', () => {
+  const view = cartView({ version: 2, items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, maxQuantity: 3, quantity: 1 }] }, { error: 'No pudimos verificar la disponibilidad actual.', ready: false });
+  assert.match(view, /data-public-retry/);
+  assert.match(view, /No pudimos verificar la disponibilidad actual/);
+});
 test('public shell exposes the live cart counter and collapsed mobile-menu state', () => { const view = publicShellView('<h1>Inicio</h1>', 'home', { items: [{ quantity: 2 }] }); assert.match(view, /aria-label="Carrito \(2\)"/); assert.match(view, /aria-label="Abrir menú de navegación" aria-expanded="false"/); assert.match(view, /href="#main-content"/); });

@@ -63,7 +63,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   };
   const readFormFilters = () => {
     const data = new FormData(app.querySelector('[data-catalog-form]'));
-    return { busqueda: String(data.get('busqueda') || '').trim(), categoria: data.get('categoria') ? Number(data.get('categoria')) : null, disponibilidades: data.getAll('disponibilidades'), generos: data.getAll('generos'), clasificaciones: data.getAll('clasificaciones'), precioMinimo: String(data.get('precioMinimo') || '').trim(), precioMaximo: String(data.get('precioMaximo') || '').trim(), orden: String(data.get('orden') || 'destacados') };
+    return { busqueda: String(data.get('busqueda') || '').trim(), categoria: data.get('categoria') ? Number(data.get('categoria')) : null, disponibilidades: data.getAll('disponibilidades'), generos: data.getAll('generos'), clasificaciones: data.getAll('clasificaciones'), precioMinimo: String(data.get('precioMinimo') || '').trim(), precioMaximo: String(data.get('precioMaximo') || '').trim(), orden: 'destacados' };
   };
   const addPresentation = (product, presentationId) => {
     const presentation = product.presentaciones?.find((item) => Number(item.id) === Number(presentationId)); const next = addCartItem(cart, product, presentation);
@@ -102,7 +102,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     event.preventDefault(); windowRef.history.pushState({}, '', `${target.pathname}${target.search}`); renderRoute(nextRoute);
   };
   const onSubmit = (event) => { if (!event.target.matches?.('[data-catalog-form]')) return; event.preventDefault(); filterPanelOpen = false; updateFilters(readFormFilters()); };
-  const onChange = (event) => { if (event.target.matches?.('[name="orden"]')) updateFilters(readFormFilters()); if (event.target.matches?.('[data-cart-quantity]')) { cart = updateCartItemQuantity(cart, event.target.dataset.cartQuantity, event.target.value); persistCart(); renderRoute(currentRoute); announce('Cantidad actualizada.'); } };
+  const onChange = (event) => { if (event.target.matches?.('[data-cart-quantity]')) { cart = updateCartItemQuantity(cart, event.target.dataset.cartQuantity, event.target.value); persistCart(); renderRoute(currentRoute); announce('Cantidad actualizada.'); } };
   const onKeyDown = (event) => { if (event.key === 'Escape' && (selectorProduct || filterPanelOpen)) { event.preventDefault(); closeOverlay(); } else trapFocus(event); };
   const onPopState = () => renderRoute(getPublicRoute(windowRef.location.pathname));
   app.addEventListener('click', onClick); app.addEventListener('submit', onSubmit); app.addEventListener('change', onChange); documentRef.addEventListener?.('keydown', onKeyDown); windowRef.addEventListener('popstate', onPopState); renderRoute(route);

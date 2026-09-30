@@ -81,7 +81,7 @@ function catalogControls(categories, filters, state) {
 }
 
 export function catalogView(rows = [], filteredRows = rows, filters = parseCatalogFilters(''), state = {}) {
-  filters = { disponibilidades: [], orden: 'destacados', ...filters }; const products = productsFromRows(filteredRows); const categories = categoriesFromRows(rows); const controls = catalogControls(categories, filters, state); const heading = '<div class="public-page-heading"><h1>Catálogo</h1><p>Explora productos, precios y disponibilidad.</p></div>';
+  filters = { disponibilidades: [], orden: 'destacados', ...filters }; const products = productsFromRows(filteredRows); const categories = categoriesFromRows(rows); const controls = catalogControls(categories, filters, state).replace(/<label class="catalog-order">[\s\S]*?<\/label><\/div><section/, '</div><section'); const heading = '<div class="public-page-heading"><h1>Catálogo</h1><p>Explora productos, precios y disponibilidad.</p></div>';
   if (state.loading) return `${heading}${controls}<p class="public-loading" role="status">Cargando resultados...</p>${loadingView('Cargando resultados...')}`;
   if (state.error) return `${heading}${controls}${errorView(state.error, '/catalogo')}`;
   if (!productsFromRows(rows).length) return `${heading}${controls}<section class="public-empty-state"><h2>El catálogo está vacío</h2><p>Aún no hay productos publicables.</p></section>`;

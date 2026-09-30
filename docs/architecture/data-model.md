@@ -2,7 +2,7 @@
 
 ## Estado
 
-Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo fue materializado en `20260924000100_create_catalog_core.sql`; las políticas administrativas, Storage y las RPC de lectura pública se implementaron en migraciones posteriores. El cliente consulta el catálogo mediante `obtener_catalogo_publico()` y `obtener_producto_publico(integer)`, manteniendo las tablas cerradas a `anon`. Las tablas de solicitudes y sus RPC transaccionales siguen pendientes.
+Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo fue materializado en `20260924000100_create_catalog_core.sql`; las políticas administrativas, Storage y las RPC de lectura pública se implementaron en migraciones posteriores. Las migraciones `20260930000100_create_purchase_request_schema.sql` y `20260930000200_add_purchase_request_registration_rpc.sql` materializan las tablas, restricciones, RLS y el registro transaccional de solicitudes. El cliente consulta el catálogo mediante `obtener_catalogo_publico()` y `obtener_producto_publico(integer)`, manteniendo las tablas cerradas a `anon`.
 
 ## Propósito
 
@@ -199,7 +199,7 @@ El valor total de productos se calculará sumando los subtotales de sus detalles
 
 - El cliente valida la experiencia de formulario, pero no constituye una barrera de seguridad.
 - Las funciones RPC validan y normalizan entradas de solicitudes, aplican reglas de publicación, disponibilidad, precios, transiciones y edición permitida.
-- La función RPC de registro exige la aceptación y asigna desde configuración controlada las versiones vigentes y la fecha de aceptación; no confía en versiones arbitrarias enviadas por el navegador.
+- La función RPC de registro exige la aceptación, recibe por línea el precio efectivo que el visitante revisó y, si cambió, devuelve el resumen vigente sin crear la solicitud. Asigna desde configuración controlada las versiones vigentes y la fecha de aceptación; no confía en versiones arbitrarias enviadas por el navegador.
 - Supabase Auth identifica al administrador y las políticas RLS, permisos y funciones autorizan cada operación administrativa.
 - `obtener_catalogo_publico()` y `obtener_producto_publico(integer)` exponen solo el catálogo publicable; las tablas relacionadas permanecen cerradas a lectura anónima directa. Las RPC no aceptan escrituras.
 - Las reglas de Storage validan la autorización de carga, modificación y eliminación de imágenes; el cliente también validará tipo y tamaño antes de cargarlas.
@@ -213,8 +213,9 @@ La función RPC de registro inicia y finaliza estas operaciones dentro de la tra
 ```text
 BEGIN
 Validar datos del cliente, aceptación expresa y carrito no vacío
-Consultar productos y presentaciones actuales
-Revalidar actividad, precio, modo y stock aplicable
+Bloquear y consultar productos, presentaciones y categorías actuales
+Revalidar actividad, precio esperado, modo y stock aplicable
+Devolver el resumen vigente sin insertar si cambió un precio
 Generar código con la secuencia de PostgreSQL
 Insertar solicitud en estado Nueva con versiones vigentes y fecha de aceptación
 Insertar detalles con precio unitario histórico y cantidad_descontada en cero
@@ -279,4 +280,4 @@ La operación no podrá crear detalles, cambiar presentaciones ni actualizar pre
 - Definir las políticas RLS permitidas y los permisos de funciones para visitantes y administradores autenticados. Las cinco tablas del núcleo ya tienen RLS habilitado sin políticas permisivas.
 - Precisar la validación técnica de teléfonos sin excluir números legítimos.
 - Revisar el diseño con los datos reales iniciales de Esenciales.
-- Materializar y probar las tablas, restricciones y funciones RPC de solicitudes e inventario en el entorno local antes de conectar esos flujos al cliente web.
+- Implementar y probar las funciones RPC de edición, confirmación, entrega y cancelación antes de conectar esos flujos al cliente web.

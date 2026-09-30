@@ -40,15 +40,15 @@ Ya existen `auth.users → usuarios_administrativos`, `categorias → productos 
 
 ## Bloque 2 — Esquema y seguridad
 
-**Trabajo:** migración versionada con tablas, secuencia, restricciones, FK/índices, timestamps, RLS y permisos mínimos. Prohibir mutaciones directas del detalle y transiciones directas de estado incluso para usuarios administrativos; canalizar mutaciones por funciones. La lectura administrativa puede realizarse por RLS o por RPC autorizada. Conceder solo `EXECUTE` necesario a cada actor, fijar `search_path` y evitar exposición accidental por privilegios predeterminados.
+**Implementado:** la migración `20260930000100_create_purchase_request_schema.sql` crea las tablas, secuencia, restricciones, FK, índices, timestamps, RLS y permisos mínimos. Administradores activos pueden leer solicitudes y detalles; ningún actor público o autenticado tiene permisos directos de escritura. Las futuras mutaciones y transiciones se canalizarán por RPC.
 
-**Salida:** pruebas pgTAP con administrador activo, usuario autenticado no autorizado y anónimo; datos personales inaccesibles para visitantes, filas históricas conservadas, checks y FK efectivos. Aplicar localmente sin borrar datos; inspeccionar migración antes de sincronizar el remoto.
+**Salida alcanzada:** 181 pruebas pgTAP locales y 24 pruebas específicas contra Supabase remoto validan estructura, restricciones, subtotal calculado, RLS y acceso de administrador activo frente a visitante o usuario autenticado no autorizado. Las tablas están aplicadas en ambos entornos.
 
 ## Bloque 3 — Registro atómico e idempotente
 
-**Trabajo:** RPC pública con límites de tamaño, normalización y autorización explícita; rechazar carrito vacío, IDs/cantidades duplicados o inválidos, presentación/producto/categoría no activos o no publicables y modo no solicitable. Bloquear o serializar las filas relevantes para revalidar coherentemente precios y stock (sin reservarlo); calcular precio efectivo en PostgreSQL, código y subtotal/total; insertar solicitud Nueva y líneas con `cantidad_descontada = 0` en una transacción. Implementar idempotencia y rechazo de reutilización del token con contenido distinto. Asegurar que una diferencia de precios devuelva el resumen actual para pedir nueva confirmación **sin crear solicitud en ese primer intento**.
+**Implementado:** `20260930000200_add_purchase_request_registration_rpc.sql` expone `registrar_solicitud_compra(...)` solo para `anon` y `authenticated`; valida datos, aceptaciones, líneas, actividad, imagen, modo, stock y duplicados. Bloquea las filas de catálogo durante la revalidación, conserva precios históricos y versiones legales, y registra cabecera y detalles en una sola transacción sin descontar inventario. Cada línea incorpora `precio_esperado`; si difiere del vigente, devuelve `requiere_revision_precio` con el resumen actual sin crear solicitud. Reintentos con el mismo contenido devuelven el mismo resultado y la reutilización con contenido distinto se rechaza.
 
-**Salida:** casos positivos inmediatos, bajo pedido y mixtos; tests de stock/cambio de precio, aceptación y permisos; rollback sin cabecera huérfana; reintentos y concurrencia no duplican solicitudes ni consumen dos códigos por el mismo registro exitoso (los huecos de secuencia se permiten). No hay descuento en Nueva.
+**Salida alcanzada:** 204 pruebas pgTAP locales y 23 pruebas específicas remotas cubren permisos, solicitud inmediata, bajo pedido y mixta, revisión de precio, aceptación, teléfono, carrito vacío, duplicados, stock, disponibilidad, idempotencia, precio histórico y ausencia de descuento en Nueva. No hay descuento ni reserva de inventario en este estado.
 
 ## Bloque 4 — Registro público, confirmación y WhatsApp
 

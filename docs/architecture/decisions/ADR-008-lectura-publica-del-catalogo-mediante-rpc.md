@@ -14,7 +14,7 @@ La lectura pública se implementa con dos funciones PostgreSQL de solo lectura y
 - `public.obtener_catalogo_publico()` devuelve categorías activas y solamente sus productos publicables, con precio efectivo y normal de referencia y disponibilidad calculados en PostgreSQL.
 - `public.obtener_producto_publico(producto_id integer)` devuelve como JSONB un producto publicable y sus presentaciones activas, o `NULL` si el producto no está disponible públicamente.
 
-Ambas funciones fijan un `search_path` vacío, califican los objetos con su esquema y conceden ejecución únicamente a `anon` y `authenticated`. Las tablas de catálogo mantienen sus privilegios cerrados para `anon`; las funciones no realizan escrituras ni exponen el stock numérico.
+Ambas funciones fijan un `search_path` vacío, califican los objetos con su esquema y conceden ejecución únicamente a `anon` y `authenticated`. Las tablas de catálogo mantienen sus privilegios cerrados para `anon` y las funciones no realizan escrituras. El detalle expone `maximo_solicitable` por presentación: entre 0 y 99, equivalente al stock vendible limitado a 99 para venta inmediata, 99 para bajo pedido y 0 para estados no solicitables. No expone la columna `stock` ni concede lectura directa de presentaciones.
 
 ## Motivos
 
@@ -32,4 +32,5 @@ Ambas funciones fijan un `search_path` vacío, califican los objetos con su esqu
 
 - Las respuestas SQL constituyen un contrato público versionado que debe probarse con las migraciones.
 - Los cambios de reglas de publicación o disponibilidad deben actualizar las funciones y sus pruebas.
+- El límite público permite restringir cantidades en el detalle y carrito, pero la futura RPC de solicitud debe revalidar siempre stock, precio y disponibilidad actuales.
 - Las tablas siguen sin acceso anónimo directo; cualquier lectura pública nueva requiere una revisión explícita del contrato.

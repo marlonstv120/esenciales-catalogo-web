@@ -1,7 +1,7 @@
 begin;
 set local search_path = public, extensions;
 
-select plan(26);
+select plan(29);
 
 select ok((select relrowsecurity from pg_class where oid = 'public.categorias'::regclass), 'RLS sigue activo en categorias');
 select ok((select relrowsecurity from pg_class where oid = 'public.productos'::regclass), 'RLS sigue activo en productos');
@@ -120,7 +120,34 @@ select results_eq(
 select ok(
   not (public.obtener_producto_publico(current_setting('test.public_product_id')::integer) ? 'stock')
     and not ((public.obtener_producto_publico(current_setting('test.public_product_id')::integer)->'presentaciones'->0) ? 'stock'),
-  'no expone el stock numerico del producto ni de sus presentaciones'
+  'el detalle no expone un campo de stock del producto ni de sus presentaciones'
+);
+select is(
+  (
+    select (presentacion->>'maximo_solicitable')::integer
+    from jsonb_array_elements(public.obtener_producto_publico(current_setting('test.public_product_id')::integer)->'presentaciones') presentacion
+    where presentacion->>'etiqueta' = '100 ml disponible'
+  ),
+  3,
+  'el detalle expone el limite solicitable de venta inmediata'
+);
+select is(
+  (
+    select (presentacion->>'maximo_solicitable')::integer
+    from jsonb_array_elements(public.obtener_producto_publico(current_setting('test.public_product_id')::integer)->'presentaciones') presentacion
+    where presentacion->>'etiqueta' = '50 ml pedido'
+  ),
+  99,
+  'el detalle limita bajo pedido a la cantidad maxima del MVP'
+);
+select is(
+  (
+    select (presentacion->>'maximo_solicitable')::integer
+    from jsonb_array_elements(public.obtener_producto_publico(current_setting('test.public_product_id')::integer)->'presentaciones') presentacion
+    where presentacion->>'etiqueta' = '30 ml agotado'
+  ),
+  0,
+  'el detalle no permite solicitar una presentacion agotada'
 );
 select ok(
   not (public.obtener_producto_publico(current_setting('test.public_product_id')::integer) ? 'referencia'),

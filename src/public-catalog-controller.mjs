@@ -22,7 +22,7 @@ const loadingLabel = (route) => route.name === 'product' ? 'Cargando producto...
 const focusable = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled])';
 
 export function startPublicCatalog({ app, client, route, windowRef = window, documentRef = document }) {
-  let active = true; let requestId = 0; let currentRoute = route; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null;
+  let active = true; let requestId = 0; let currentRoute = route; let currentProduct = null; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null;
   const announce = (message) => { const region = app.querySelector('.public-live-region'); if (region) region.textContent = message; };
   const setMetadata = (nextRoute, product) => { const metadata = getDocumentMetadata(nextRoute, product); documentRef.title = metadata.title; documentRef.querySelector('meta[name="description"]')?.setAttribute('content', metadata.description); };
   const renderShell = (content, routeName = currentRoute.name) => {
@@ -66,9 +66,9 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const data = new FormData(app.querySelector('[data-catalog-form]'));
     return { busqueda: String(data.get('busqueda') || '').trim(), categoria: data.get('categoria') ? Number(data.get('categoria')) : null, disponibilidades: data.getAll('disponibilidades'), generos: data.getAll('generos'), clasificaciones: data.getAll('clasificaciones'), precioMinimo: copDigits(data.get('precioMinimo')), precioMaximo: copDigits(data.get('precioMaximo')), orden: 'destacados' };
   };
-  const addPresentation = (product, presentationId) => {
-    const presentation = product.presentaciones?.find((item) => Number(item.id) === Number(presentationId)); const next = addCartItem(cart, product, presentation);
-    if (next === cart) { announce('Esta presentación ya no está disponible para agregar.'); return; }
+  const addPresentation = (product, presentationId, quantity = 1) => {
+    const presentation = product.presentaciones?.find((item) => Number(item.id) === Number(presentationId)); const next = addCartItem(cart, product, presentation, quantity);
+    if (next === cart) { announce('La cantidad seleccionada ya no está disponible para agregar.'); return; }
     cart = next; persistCart(); closeOverlay(); announce(`${product.nombre} fue añadido al carrito.`);
   };
   const openPresentationSelector = async (productId, trigger) => {
@@ -83,9 +83,9 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   const renderRoute = async (nextRoute) => {
     currentRoute = nextRoute; const currentRequest = ++requestId; setMetadata(nextRoute);
     if (nextRoute.name === 'catalog') { loadCatalog(parseCatalogFilters(windowRef.location.search)); return; }
-    if (nextRoute.name === 'cart' || nextRoute.name === 'not-found') { renderShell(renderPublicRoute(nextRoute, { cart }), nextRoute.name); return; }
+    if (nextRoute.name === 'cart' || nextRoute.name === 'not-found') { currentProduct = null; renderShell(renderPublicRoute(nextRoute, { cart }), nextRoute.name); return; }
     renderShell(loadingView(loadingLabel(nextRoute)), nextRoute.name); const result = nextRoute.name === 'product' ? await loadPublicProduct(client, nextRoute.productId) : await loadPublicCatalog(client);
-    if (!active || currentRequest !== requestId) return; renderShell(renderPublicRoute(nextRoute, result), nextRoute.name); if (nextRoute.name === 'product' && result.data) setMetadata(nextRoute, result.data);
+    if (!active || currentRequest !== requestId) return; currentProduct = nextRoute.name === 'product' ? result.data : null; renderShell(renderPublicRoute(nextRoute, result), nextRoute.name); if (nextRoute.name === 'product' && result.data) setMetadata(nextRoute, result.data);
   };
   const onClick = (event) => {
     if ((selectorProduct || filterPanelOpen) && !event.target.closest?.('[data-presentation-selector], [data-filter-panel], [data-filter-toggle]')) { closeOverlay(); return; }
@@ -102,9 +102,24 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     if (target.origin !== windowRef.location.origin || target.pathname === windowRef.location.pathname && target.hash) return; const nextRoute = getPublicRoute(target.pathname); if (nextRoute.name === 'admin' || nextRoute.name === 'not-found') return;
     event.preventDefault(); windowRef.history.pushState({}, '', `${target.pathname}${target.search}`); renderRoute(nextRoute);
   };
-  const onSubmit = (event) => { if (!event.target.matches?.('[data-catalog-form]')) return; event.preventDefault(); filterPanelOpen = false; updateFilters(readFormFilters()); };
+  const onSubmit = (event) => {
+    if (event.target.matches?.('[data-catalog-form]')) { event.preventDefault(); filterPanelOpen = false; updateFilters(readFormFilters()); return; }
+    if (!event.target.matches?.('[data-product-detail-form]')) return;
+    event.preventDefault();
+    const presentation = event.target.querySelector('[data-detail-presentation]:checked');
+    const quantity = event.target.querySelector('[data-detail-quantity]');
+    if (!currentProduct || !presentation || !quantity) { announce('Selecciona una presentación disponible.'); return; }
+    addPresentation(currentProduct, presentation.dataset.detailPresentation, quantity.value);
+  };
   const onInput = (event) => { if (event.target.matches?.('[name="precioMinimo"], [name="precioMaximo"]')) event.target.value = formatCopInput(event.target.value); };
-  const onChange = (event) => { if (event.target.matches?.('[data-cart-quantity]')) { cart = updateCartItemQuantity(cart, event.target.dataset.cartQuantity, event.target.value); persistCart(); renderRoute(currentRoute); announce('Cantidad actualizada.'); } };
+  const onChange = (event) => {
+    if (event.target.matches?.('[data-detail-presentation]')) {
+      const quantity = app.querySelector('[data-detail-quantity]'); const maximum = Number(event.target.dataset.presentationMaximum);
+      if (quantity) { quantity.max = String(maximum); if (Number(quantity.value) > maximum) quantity.value = String(maximum); }
+      return;
+    }
+    if (event.target.matches?.('[data-cart-quantity]')) { const next = updateCartItemQuantity(cart, event.target.dataset.cartQuantity, event.target.value); if (next === cart) { announce('La cantidad debe respetar la disponibilidad actual de esta presentación.'); return; } cart = next; persistCart(); renderRoute(currentRoute); announce('Cantidad actualizada.'); }
+  };
   const onKeyDown = (event) => { if (event.key === 'Escape' && (selectorProduct || filterPanelOpen)) { event.preventDefault(); closeOverlay(); } else trapFocus(event); };
   const onPopState = () => renderRoute(getPublicRoute(windowRef.location.pathname));
   app.addEventListener('click', onClick); app.addEventListener('submit', onSubmit); app.addEventListener('input', onInput); app.addEventListener('change', onChange); documentRef.addEventListener?.('keydown', onKeyDown); windowRef.addEventListener('popstate', onPopState); renderRoute(route);

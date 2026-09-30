@@ -80,13 +80,13 @@ Reglas:
 - Agregar la misma presentación incrementará su cantidad.
 - La cantidad será un entero entre 1 y 99.
 - `Bajo pedido` podrá agregarse hasta 99.
-- Venta inmediata deberá respetar el stock disponible. Si el RPC público no entrega stock numérico, el incremento se limitará a agregar una unidad por acción y el carrito marcará la necesidad de revalidación posterior; no se inventará un máximo.
+- Venta inmediata respeta `maximo_solicitable`, expuesto por el detalle público como capacidad de compra entre 0 y 99; este valor equivale al stock vendible limitado a 99 y no habilita lectura directa de la tabla. Bajo pedido expone máximo 99. La futura RPC de solicitud vuelve a validar todo.
 - `Agotado` y `No disponible` nunca se agregarán.
 - Los datos corruptos o con versión desconocida en `localStorage` se descartarán de forma segura.
 - La persistencia usará una clave versionada, por ejemplo `esenciales.cart.v1`.
 - El carrito no reservará ni descontará inventario.
 
-Antes de implementar edición libre de cantidades, se debe confirmar si `obtener_producto_publico` entrega stock numérico. Si no lo entrega, este incremento mantendrá cantidad por adiciones unitarias y dejará la validación completa de stock para el contrato seguro del flujo de solicitudes.
+`obtener_producto_publico` entrega `maximo_solicitable` para limitar la edición de cantidades. El valor no sustituye la validación completa de stock, precio y disponibilidad en el futuro flujo seguro de solicitudes.
 
 ## 5. Diseño funcional del catálogo
 
@@ -573,7 +573,7 @@ El incremento estará completo únicamente cuando:
 
 ## 16. Riesgos y límites
 
-- **Stock numérico público:** el contrato actual parece ocultarlo deliberadamente. No se debe exponer solo para simplificar el carrito. La edición de cantidades quedará limitada hasta disponer de una validación segura.
+- **Límite público de cantidad:** el detalle expone `maximo_solicitable` entre 0 y 99 para permitir edición segura en cliente. Es una capacidad de compra inferible, no acceso a la columna ni a la tabla de inventario; el registro de solicitud debe revalidarla en PostgreSQL.
 - **Categoría por slug:** no existe un slug persistido. Usar ID evita enlaces inestables y cambios de esquema innecesarios.
 - **Disponibilidad en cliente:** es válida mientras el catálogo completo filtrado se cargue en una sola respuesta. Si se incorpora paginación remota, deberá trasladarse a la RPC.
 - **Carrito no transaccional:** la persistencia local no garantiza precio, stock ni disponibilidad. El futuro registro de solicitud deberá revalidar todo en PostgreSQL.

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cartView, catalogView, homeView, publicShellView } from '../src/public-views.mjs';
+import { cartView, catalogView, homeView, productDetailView, publicShellView } from '../src/public-views.mjs';
 
 const row = { categoria_id: 1, categoria_nombre: 'Splash', producto_id: 4, nombre: 'Brisa', descripcion: 'Aroma fresco', imagen_url: 'https://example.test/brisa.webp', texto_alternativo: 'Brisa', precio_referencia: 50000, precio_normal_referencia: 60000, precio_desde: true, disponibilidad: 'Disponible', destacado: true };
 test('catalog has one grid, an independent add action, price and textual availability', () => { const view = catalogView([row]); assert.match(view, /<h1>Catálogo<\/h1>/); assert.doesNotMatch(view, /<p class="eyebrow">ESENCIALES/); assert.doesNotMatch(view, /id="categoria-1"/); assert.match(view, /Desde/); assert.match(view, /En stock/); assert.match(view, /data-product-add="4"/); assert.match(view, /aria-label="Agregar Brisa al carrito"/); });
@@ -21,5 +21,16 @@ test('home presents the editorial category filters and required brand sections',
   assert.match(view, /Encuentra la fragancia que habla de ti/);
   assert.match(view, /data-product-add="4"[^>]*><svg/);
 });
-test('cart renders persisted lines without purchase or payment claims', () => { const view = cartView({ version: 1, items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, quantity: 2 }] }); assert.match(view, /Valor total de productos/); assert.match(view, /100\.000/); assert.match(view, /data-cart-quantity="2"/); assert.doesNotMatch(view, /Pagar|Compra realizada/); });
+test('cart renders persisted lines without purchase or payment claims', () => { const view = cartView({ version: 2, items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, maxQuantity: 3, quantity: 2 }] }); assert.match(view, /Valor total de productos/); assert.match(view, /100\.000/); assert.match(view, /max="3"[^>]*data-cart-quantity="2"/); assert.doesNotMatch(view, /Pagar|Compra realizada/); });
+test('product detail selects a requestable presentation and uses its public limit for quantity', () => {
+  const view = productDetailView({ ...row, presentaciones: [
+    { id: 2, etiqueta: '100 ml', estado: 'Disponible', precio_normal: 50000, maximo_solicitable: 3 },
+    { id: 3, etiqueta: '50 ml', estado: 'Agotado', precio_normal: 40000, maximo_solicitable: 0 },
+  ] });
+  assert.match(view, /data-product-detail-form/);
+  assert.match(view, /data-detail-presentation="2"[^>]*checked/);
+  assert.match(view, /data-detail-presentation="3"[^>]*disabled/);
+  assert.match(view, /max="3"[^>]*data-detail-quantity/);
+  assert.match(view, /data-product-detail-add/);
+});
 test('public shell exposes the live cart counter and collapsed mobile-menu state', () => { const view = publicShellView('<h1>Inicio</h1>', 'home', { items: [{ quantity: 2 }] }); assert.match(view, /aria-label="Carrito \(2\)"/); assert.match(view, /aria-label="Abrir menú de navegación" aria-expanded="false"/); assert.match(view, /href="#main-content"/); });

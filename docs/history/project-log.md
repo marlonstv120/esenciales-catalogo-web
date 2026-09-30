@@ -1,5 +1,13 @@
 # Bitácora del proyecto
 
+## 2026-09-30
+
+### Decisiones / cambios
+
+- Se aprueba exponer en el detalle público `maximo_solicitable` entre 0 y 99 por presentación, para limitar cantidades en detalle y carrito sin conceder lectura directa de las tablas de inventario. Para venta inmediata representa el stock vendible limitado a 99; bajo pedido permite hasta 99; agotado y no disponible devuelven cero.
+- Se implementa localmente la selección de presentación, cantidad y agregado desde el detalle, y el carrito conserva y respeta ese límite.
+- La migración `20260929000100_add_public_requestable_quantity_limit.sql` se aplicó al Supabase remoto y la simulación posterior confirmó que está actualizado. Docker Desktop estaba detenido, por lo que pgTAP no pudo ejecutarse. Las 97 pruebas Node y la compilación pasaron.
+
 ## 2026-09-29
 
 ### Decisiones / cambios

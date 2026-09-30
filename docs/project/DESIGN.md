@@ -36,18 +36,19 @@ Ambas áreas comparten colores, tipografía, espaciado, controles, estados y com
 
 ### Activos de portada y categorías
 
-Las imágenes de composición aprobadas están disponibles en `public/assets/images/`:
+Las imágenes de composición aprobadas están disponibles en `public/assets/home/` y `public/assets/categories/`:
 
 | Recurso web | Uso |
 | --- | --- |
-| `/assets/images/home/hero-esenciales-boutique-oscura.png` | Imagen del hero con texto y CTA superpuestos en HTML |
-| `/assets/images/categories/categoria-perfumes-lociones.png` | Perfumes / Lociones |
-| `/assets/images/categories/categoria-splash.png` | Splash |
-| `/assets/images/categories/categoria-cremas-corporales.png` | Cremas |
-| `/assets/images/categories/categoria-humidificadores.png` | Humidificadores, ilustración que no confirma inventario |
-| `/assets/images/categories/categoria-otros-productos.png` | Otros productos |
+| `/assets/home/hero-esenciales.png` | Imagen del hero con texto y CTA superpuestos en HTML |
+| `/assets/categories/femenino.jpg` | Acceso editorial Femeninas, filtrado por género mujer |
+| `/assets/categories/masculino.jpg` | Acceso editorial Masculinas, filtrado por género hombre |
+| `/assets/categories/unisex.jpg` | Acceso editorial Unisex, filtrado por género unisex |
+| `/assets/categories/inspirados.jpg` | Acceso editorial Inspirados, filtrado por clasificación inspiración |
+| `/assets/home/identidad-esenciales.png` | Imagen editorial de la sección Sobre ESENCIALES |
+| `/assets/home/cta-piedra-oscura.png` | Fondo del CTA final |
 
-Son imágenes ilustrativas, no fotografías de productos de la base de datos. No incorporar dentro de ellas el logo ni presentar su contenido como existencias reales. Solo mostrar accesos de categorías activas que lleguen en los datos.
+Son imágenes ilustrativas, no fotografías de productos de la base de datos. No incorporar dentro de ellas el logo ni presentar su contenido como existencias reales. Los cuatro accesos editoriales usan los filtros públicos confirmados de género y clasificación.
 
 ### Catálogo público
 
@@ -246,14 +247,14 @@ Estos valores pueden ajustarse durante la verificación renderizada si el conten
 
 ### Portada pública
 
-Orden: encabezado oscuro, hero editorial, accesos de categorías disponibles, `Productos destacados` si existen y pie oscuro con entrada discreta a Administración.
+Orden: encabezado oscuro, hero editorial, cuatro accesos editoriales, `Productos destacados` si existen, calidad y transparencia, presentación de ESENCIALES, proceso simple, CTA final y pie oscuro con entrada discreta a Administración.
 
-- El hero usa `/assets/images/home/hero-esenciales-boutique-oscura.png`: producto visual a la derecha y espacio oscuro para texto HTML a la izquierda. No se incrustan textos ni logos en la imagen.
+- El hero usa `/assets/home/hero-esenciales.png`: producto visual a la derecha y espacio oscuro para texto HTML a la izquierda. No se incrustan textos ni logos en la imagen.
 - Título aprobado: `Tu aroma, siempre contigo.`
 - Texto aprobado: `Explora lociones, perfumes y opciones de cuidado personal para cada estilo y ocasión.`
 - CTA exacto: `Ver catálogo`.
 - En móvil el mensaje y el CTA preceden al producto visual; ajustar el encuadre sin recortar información esencial. Un overlay solo si el contraste renderizado lo requiere.
-- Mostrar únicamente categorías presentes en la consulta; usar su imagen representativa cuando exista, y enlace textual si no existe mapeo. Una imagen ilustrativa no demuestra inventario.
+- Los accesos editoriales son Femeninas, Masculinas, Unisex e Inspirados; enlazan a los filtros públicos correspondientes. Una imagen ilustrativa no demuestra inventario.
 - Los destacados usan la tarjeta del catálogo; si no hay destacados, no se muestra la sección.
 
 ### Administrativa

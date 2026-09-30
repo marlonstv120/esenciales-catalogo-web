@@ -70,7 +70,6 @@ Esta agrupación es una decisión de organización del equipo. El supuesto máxi
 
 - Límite académico de ocho funcionalidades.
 - Necesidad de un segundo rol autenticado.
-- Definiciones públicas de `Original`, `1.1` e `Inspiración`.
 - Datos públicos de WhatsApp, entrega y envío.
 - Decisiones técnicas todavía listadas en la [especificación funcional](functional-scope.md#11-pendientes-de-validación).
 

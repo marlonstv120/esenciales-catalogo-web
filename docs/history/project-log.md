@@ -9,6 +9,7 @@
 - Se incorpora ordenamiento por destacados, precio y nombre sin ampliar el contrato público con fecha de creación.
 - Se planifica e implementa un carrito local básico sin reserva de inventario, pagos, solicitudes ni WhatsApp.
 - El filtro administrativo de agotamiento debe comunicar `Con presentación agotada` para no confundir un producto mixto con un producto totalmente agotado.
+- El propietario de ESENCIALES valida las descripciones públicas de Originales, Calidad 1.1 e Inspirados, incluidas la concentración, fijación y relación calidad-precio comunicadas en la portada.
 
 ## 2026-09-28
 

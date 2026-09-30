@@ -119,7 +119,7 @@ No se utilizarán rankings, reseñas o estudios externos para presentarlos como 
 
 ### RN-22 - Clasificaciones comerciales
 
-Los valores disponibles son `Original`, `1.1` e `Inspiración`, pero solo se asignan cuando correspondan. Sus descripciones públicas no pueden inventarse y deben esperar validación expresa de Esenciales.
+Los valores disponibles son `Original`, `1.1` e `Inspiración`, pero solo se asignan cuando correspondan. El propietario de ESENCIALES validó las descripciones públicas usadas en la portada: `Originales` comunica autenticidad, presentación y experiencia de marca; `Calidad 1.1` comunica similitud aromática, buena fijación y alta calidad, con los beneficios `40% de concentración · Alta fijación · Excelente relación calidad-precio`; e `Inspirados` comunica variedad de estilos y familias olfativas a un precio accesible.
 
 ### RN-23 - Presentación válida
 

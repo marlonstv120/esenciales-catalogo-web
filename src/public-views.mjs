@@ -3,13 +3,22 @@ import { getCartCount, getCartTotal } from './public-cart.mjs';
 import { getCatalogFilterCount, hasCatalogFilters, parseCatalogFilters } from './public-catalog-filters.mjs';
 
 const logoUrl = appPath('/assets/brand/esenciales-logo-horizontal.png');
-const categoryImages = { perfumeslociones: appPath('/assets/images/categories/categoria-perfumes-lociones.png'), splash: appPath('/assets/images/categories/categoria-splash.png'), cremas: appPath('/assets/images/categories/categoria-cremas-corporales.png'), cremascorporales: appPath('/assets/images/categories/categoria-cremas-corporales.png'), humidificadores: appPath('/assets/images/categories/categoria-humidificadores.png'), otrosproductos: appPath('/assets/images/categories/categoria-otros-productos.png') };
+const homeAssets = {
+  hero: appPath('/assets/home/hero-esenciales.png'),
+  identity: appPath('/assets/home/identidad-esenciales.png'),
+  cta: appPath('/assets/home/cta-piedra-oscura.png'),
+};
 const escapeHtml = (value = '') => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 const money = (value) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value).replace(/\s|COP/g, '');
 const productsFromRows = (rows = []) => rows.filter((row) => row.producto_id != null);
 const categoriesFromRows = (rows = []) => [...new Map(rows.map((row) => [row.categoria_id, { id: row.categoria_id, nombre: row.categoria_nombre }])).values()];
 const statusClass = (status = '') => ({ Disponible: 'available', 'Bajo pedido': 'under-order', Agotado: 'sold-out', 'No disponible': 'unavailable' }[status] || 'neutral');
 const statusLabel = (status = '') => status === 'Disponible' ? 'En stock' : status;
+const arrowIcon = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const plusIcon = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>';
+const leafIcon = '<svg aria-hidden="true" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M27 5C15 5 6 11 6 22c0 3 2 5 5 5C22 27 27 17 27 5Z"/><path d="M5 28c4-6 9-10 17-14"/></svg>';
+const diamondIcon = '<svg aria-hidden="true" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m5 12 5-6h12l5 6-11 15L5 12Z"/><path d="M5 12h22M10 6l6 21M22 6l-6 21"/></svg>';
+const sparklesIcon = '<svg aria-hidden="true" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m16 4 1.8 6.2L24 12l-6.2 1.8L16 20l-1.8-6.2L8 12l6.2-1.8L16 4ZM25 19l.9 3.1L29 23l-3.1.9L25 27l-.9-3.1L21 23l3.1-.9L25 19ZM7 20l.7 2.3L10 23l-2.3.7L7 26l-.7-2.3L4 23l2.3-.7L7 20Z"/></svg>';
 
 function imageView(product) {
   const fallback = '<p class="public-image-fallback" data-public-image-fallback>Imagen no disponible</p>';
@@ -22,16 +31,18 @@ function productCardView(product, featured = false) {
   const unavailable = ['Agotado', 'No disponible'].includes(product.disponibilidad);
   return `<article class="public-product-card${featured ? ' public-product-card--featured' : ''}">
     <a class="public-product-card__image-link" href="${appPath(`/producto/${Number(product.producto_id)}`)}">${imageView(product)}<span class="catalog-status catalog-status--${statusClass(product.disponibilidad)}">${escapeHtml(statusLabel(product.disponibilidad))}</span></a>
-    <div class="public-product-card__content"><p class="public-product-card__category">${escapeHtml(product.categoria_nombre)}</p><h3><a href="${appPath(`/producto/${Number(product.producto_id)}`)}">${escapeHtml(product.nombre)}</a></h3><p class="public-product-card__description">${escapeHtml(product.descripcion || '')}</p><div class="public-product-card__footer"><p class="public-product-card__price">${price} ${normal}</p><button class="public-add-button" type="button" data-product-add="${Number(product.producto_id)}" aria-label="Agregar ${escapeHtml(product.nombre)} al carrito" ${unavailable ? 'disabled aria-describedby="product-unavailable"' : ''}>+</button></div>${unavailable ? '<span id="product-unavailable" class="visually-hidden">Producto no disponible para agregar al carrito.</span>' : ''}</div>
+    <div class="public-product-card__content"><p class="public-product-card__category">${escapeHtml(product.categoria_nombre)}</p><h3><a href="${appPath(`/producto/${Number(product.producto_id)}`)}">${escapeHtml(product.nombre)}</a></h3><p class="public-product-card__description">${escapeHtml(product.descripcion || '')}</p><div class="public-product-card__footer"><p class="public-product-card__price">${price} ${normal}</p><button class="public-add-button" type="button" data-product-add="${Number(product.producto_id)}" aria-label="Agregar ${escapeHtml(product.nombre)} al carrito" ${unavailable ? 'disabled aria-describedby="product-unavailable"' : ''}>${plusIcon}</button></div>${unavailable ? '<span id="product-unavailable" class="visually-hidden">Producto no disponible para agregar al carrito.</span>' : ''}</div>
   </article>`;
 }
 
-function categoryLinks(rows) {
-  return categoriesFromRows(rows).map((category) => {
-    const key = category.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const image = categoryImages[key];
-    return `<a href="${appPath(`/catalogo?categoria=${category.id}`)}">${image ? `<img data-category-image src="${image}" alt="" loading="lazy" width="320" height="240">` : ''}<span>${escapeHtml(category.nombre)}</span></a>`;
-  }).join('');
+function editorialCategoriesView() {
+  const categories = [
+    ['Femeninas', 'Elegancia en cada nota', 'femenino.jpg', '/catalogo?genero=mujer'],
+    ['Masculinas', 'Carácter que deja huella', 'masculino.jpg', '/catalogo?genero=hombre'],
+    ['Unisex', 'Aromas sin límites', 'unisex.jpg', '/catalogo?genero=unisex'],
+    ['Inspirados', 'Grandes aromas, más cerca de ti', 'inspirados.jpg', '/catalogo?clasificacion=inspiracion'],
+  ];
+  return categories.map(([title, subtitle, image, href]) => `<a class="editorial-category-card" href="${appPath(href)}" style="--category-image: url('${appPath(`/assets/categories/${image}`)}')"><span><strong>${title}</strong><small>${subtitle}</small></span>${arrowIcon}</a>`).join('');
 }
 
 export function publicShellView(content, currentRoute = 'home', cart = { items: [] }) {
@@ -41,8 +52,11 @@ export function publicShellView(content, currentRoute = 'home', cart = { items: 
 }
 
 export function homeView(rows = []) {
-  const products = productsFromRows(rows); const featured = products.filter((product) => product.destacado); const categories = categoryLinks(rows);
-  return `<section class="public-hero" aria-labelledby="home-title"><div class="public-hero__content"><h1 id="home-title">Tu aroma, siempre contigo.</h1><p>Explora lociones, perfumes y opciones de cuidado personal para cada estilo y ocasión.</p><a class="primary-button public-hero__action" href="${appPath('/catalogo')}">Ver catálogo</a></div></section>${categories ? `<section class="public-categories" aria-labelledby="categories-title"><h2 id="categories-title">Categorías</h2><nav class="public-category-links" aria-label="Categorías">${categories}</nav></section>` : ''}${featured.length ? `<section class="public-section public-featured" aria-labelledby="featured-title"><div class="public-section__heading"><h2 id="featured-title">Productos destacados</h2><a href="${appPath('/catalogo')}">Ver catálogo</a></div><div class="public-product-grid">${featured.map((product) => productCardView(product, true)).join('')}</div></section>` : ''}`;
+  const products = productsFromRows(rows);
+  const featured = products.filter((product) => product.destacado);
+  const quality = [['Originales', 'Fragancias originales seleccionadas para quienes buscan autenticidad, presentación y la experiencia de la marca.', 'Calidad · Autenticidad · Confianza', leafIcon], ['Calidad 1.1', 'Fragancias inspiradas en perfumes reconocidos, elaboradas buscando una excelente similitud aromática, buena fijación y una experiencia de alta calidad.', '40% de concentración · Alta fijación · Excelente relación calidad-precio', diamondIcon], ['Inspirados', 'Aromas inspirados en diferentes estilos y familias olfativas, ideales para descubrir nuevas fragancias y encontrar tu próximo favorito.', 'Variedad · Personalidad · Precio accesible', sparklesIcon]];
+  const steps = [['1', 'Explora', 'Descubre categorías, estilos y opciones según tu gusto.'], ['2', 'Elige', 'Selecciona tu fragancia, presentación y cantidad.'], ['3', 'Recibe', 'Confirma tu pedido y los datos para la entrega.']];
+  return `<section class="public-hero" aria-labelledby="home-title" style="--hero-image: url('${homeAssets.hero}')"><div class="public-hero__content"><h1 id="home-title">Tu aroma, siempre contigo.</h1><p>Explora lociones, perfumes y opciones de cuidado personal para cada estilo y ocasión.</p><a class="primary-button public-hero__action" href="${appPath('/catalogo')}">Ver catálogo ${arrowIcon}</a></div></section><section class="public-categories" aria-labelledby="categories-title"><div class="public-section-label"><p>Nuestras categorías</p><h2 id="categories-title">Explora por tipo de fragancia</h2></div><nav class="editorial-category-grid" aria-label="Categorías">${editorialCategoriesView()}</nav></section>${featured.length ? `<section class="public-section public-featured" aria-labelledby="featured-title"><div class="public-section__heading"><div><p class="public-section-label">Productos destacados</p><h2 id="featured-title">Fragancias que te inspiran</h2></div><a href="${appPath('/catalogo')}">Ver catálogo completo ${arrowIcon}</a></div><div class="public-product-grid">${featured.map((product) => productCardView(product, true)).join('')}</div></section>` : ''}<section class="home-quality" aria-labelledby="quality-title"><div class="home-section-intro"><p>Calidad y transparencia</p><h2 id="quality-title">Encuentra tu aroma ideal</h2></div><div class="quality-grid">${quality.map(([title, description, benefits, icon]) => `<article class="quality-card"><span class="quality-card__icon">${icon}</span><h3>${title}</h3><p>${description}</p><strong>${benefits}</strong></article>`).join('')}</div></section><section class="home-identity" aria-labelledby="identity-title"><div class="home-identity__content"><p>Sobre ESENCIALES</p><h2 id="identity-title">Tu aroma. Tu esencia.</h2><p>En Esenciales creemos que un perfume es mucho más que un aroma: es parte de tu identidad.</p><p>Nacimos con el propósito de acercarte a fragancias de diferentes estilos y categorías, ofreciéndote opciones para encontrar ese aroma que se siente como tú.</p><strong>Tu aroma. Tu esencia.</strong></div><img src="${homeAssets.identity}" alt="Composición editorial de fragancias ESENCIALES" loading="lazy"></section><section class="home-process" aria-labelledby="process-title"><div class="home-section-intro"><p>Proceso simple</p><h2 id="process-title">Compra tu perfume en pocos pasos</h2></div><div class="process-grid">${steps.map(([number, title, description]) => `<article><span>${number}</span><div><h3>${title}</h3><p>${description}</p></div></article>`).join('')}</div></section><section class="home-final-cta" aria-labelledby="final-cta-title" style="--cta-image: url('${homeAssets.cta}')"><div><h2 id="final-cta-title">Encuentra la fragancia que habla de ti</h2><p>No se trata solamente de oler bien.<br>Se trata de encontrar un aroma que se sienta como tú.</p><a class="primary-button public-hero__action" href="${appPath('/catalogo')}">Explora nuestro catálogo ${arrowIcon}</a></div></section>`;
 }
 
 const filterChoices = { disponibilidades: [['en-stock', 'En stock'], ['bajo-pedido', 'Bajo pedido'], ['agotado', 'Agotado'], ['no-disponible', 'No disponible']], generos: [['hombre', 'Hombre'], ['mujer', 'Mujer'], ['unisex', 'Unisex']], clasificaciones: [['original', 'Original'], ['uno_a_uno', '1.1'], ['inspiracion', 'Inspiración']] };

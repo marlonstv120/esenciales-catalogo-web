@@ -128,7 +128,7 @@ Un producto puede contener:
 
 Para publicarse, el producto debe estar activo y tener como mínimo nombre, descripción, categoría activa, una imagen y una presentación activa válida con precio.
 
-Las clasificaciones comerciales disponibles serán `Original`, `1.1` e `Inspiración`, únicamente cuando correspondan al producto. Sus definiciones públicas están pendientes de validación con el encargado de Esenciales.
+Las clasificaciones comerciales disponibles serán `Original`, `1.1` e `Inspiración`, únicamente cuando correspondan al producto. Sus descripciones públicas para la portada fueron validadas por el propietario de ESENCIALES: Originales, Calidad 1.1 e Inspirados muestran sus respectivos beneficios sin representar disponibilidad ni inventario.
 
 La familia olfativa es obligatoria para Perfumes / Lociones y opcional para otras categorías. Las notas de salida, corazón y fondo no forman parte del MVP confirmado.
 
@@ -202,7 +202,7 @@ Cuando un producto tenga presentaciones activas con estados diferentes, la tarje
 
 El detalle permitirá consultar la información del producto, sus imágenes y presentaciones, seleccionar presentación y cantidad y agregar al carrito cuando corresponda.
 
-Una sección educativa sobre clasificaciones comerciales tendrá prioridad SHOULD, después de validar con Esenciales las definiciones exactas de `Original`, `1.1` e `Inspiración`.
+Una sección educativa ampliada sobre clasificaciones comerciales tendrá prioridad SHOULD. La portada ya puede mostrar las descripciones validadas de `Originales`, `Calidad 1.1` e `Inspirados`.
 
 ### MF-06 - Búsqueda, filtrado y navegación
 
@@ -414,7 +414,6 @@ El MVP deberá permitir demostrar de principio a fin que:
 
 ### Negocio y contenido
 
-- Validar las definiciones públicas exactas de `Original`, `1.1` e `Inspiración`.
 - Confirmar el número público de WhatsApp.
 - Confirmar textos de contacto, entrega y envío.
 - Elaborar y validar con Esenciales el contenido y las versiones iniciales de los Términos y condiciones y la Política de tratamiento de datos.

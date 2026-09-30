@@ -21,7 +21,7 @@ test('home presents the editorial category filters and required brand sections',
   assert.match(view, /Encuentra la fragancia que habla de ti/);
   assert.match(view, /data-product-add="4"[^>]*><svg/);
 });
-test('cart renders persisted lines without purchase or payment claims', () => { const view = cartView({ version: 2, items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, maxQuantity: 3, quantity: 2 }] }); assert.match(view, /Valor total de productos/); assert.match(view, /100\.000/); assert.match(view, /max="3"[^>]*data-cart-quantity="2"/); assert.doesNotMatch(view, /Pagar|Compra realizada/); });
+test('cart renders selectable persisted lines and quantity controls without payment claims', () => { const view = cartView({ version: 2, items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, maxQuantity: 3, quantity: 2 }] }); assert.match(view, /Valor total de productos seleccionados/); assert.match(view, /100\.000/); assert.match(view, /data-cart-select="2" checked/); assert.match(view, /data-cart-quantity-change="2" data-cart-quantity-step="-1"/); assert.doesNotMatch(view, /Pagar|Compra realizada/); });
 test('product detail selects a requestable presentation and uses its public limit for quantity', () => {
   const view = productDetailView({ ...row, presentaciones: [
     { id: 2, etiqueta: '100 ml', estado: 'Disponible', precio_normal: 50000, maximo_solicitable: 3 },
@@ -36,7 +36,7 @@ test('product detail selects a requestable presentation and uses its public limi
 test('cart shows current availability warnings and blocks continuation while a line is invalid', () => {
   const view = cartView({ version: 2, items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Agotado', price: 50000, maxQuantity: 0, quantity: 5, validation: { state: 'blocked', message: 'Esta presentación ya no está disponible.', quantityEditable: false } }] }, { ready: false });
   assert.match(view, /Esta presentación ya no está disponible/);
-  assert.match(view, /data-cart-quantity="2"[^>]*disabled/);
+  assert.match(view, /data-cart-quantity-change="2"[^>]*disabled/);
   assert.match(view, /Corrige las líneas señaladas antes de continuar con la solicitud/);
 });
 test('cart exposes a retry action when current availability cannot be verified', () => {

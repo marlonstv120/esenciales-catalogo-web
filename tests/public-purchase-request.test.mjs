@@ -34,6 +34,7 @@ test('persists only non-personal confirmation data and builds an encoded WhatsAp
   assert.deepEqual(loadPurchaseConfirmation(storage), { version: 1, ...confirmation });
   assert.doesNotMatch(JSON.stringify(loadPurchaseConfirmation(storage)), /telefono/);
   assert.match(whatsappUrl(confirmation), /^https:\/\/wa\.me\/573174645670\?text=/);
+  assert.match(decodeURIComponent(whatsappUrl(confirmation)), /\n\nPRODUCTOS\n/);
   clearPurchaseConfirmation(storage);
   assert.equal(loadPurchaseConfirmation(storage), null);
 });

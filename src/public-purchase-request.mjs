@@ -1,3 +1,5 @@
+import { getSelectedCartItems } from './public-cart.mjs';
+
 const CONFIRMATION_KEY = 'esenciales.purchase-request-confirmation.v1';
 
 function trimmed(value) { return String(value || '').trim(); }
@@ -19,12 +21,12 @@ export function validateRequestForm(form, cart) {
   if (ciudad.length > 100) errors.ciudad = 'La ciudad no puede superar 100 caracteres.';
   if (observaciones.length > 500) errors.observaciones = 'Las observaciones no pueden superar 500 caracteres.';
   if (!form.aceptaTerminos || !form.aceptaPoliticaDatos) errors.aceptacion = 'Debes aceptar los Términos y condiciones y la Política de tratamiento de datos.';
-  if (!cart?.items?.length) errors.cart = 'Tu carrito está vacío.';
+  if (!getSelectedCartItems(cart || { items: [] }).length) errors.cart = 'Selecciona al menos un producto para registrar la solicitud.';
   return { errors, values: { nombre, telefono, ciudad, observaciones } };
 }
 
 export function requestLines(cart) {
-  return cart.items.map((item) => ({ presentacion_id: Number(item.presentationId), cantidad: Number(item.quantity), precio_esperado: Number(item.price) }));
+  return getSelectedCartItems(cart).map((item) => ({ presentacion_id: Number(item.presentationId), cantidad: Number(item.quantity), precio_esperado: Number(item.price) }));
 }
 
 export async function registerPurchaseRequest(client, attemptId, form, cart) {
@@ -67,7 +69,7 @@ export function clearPurchaseConfirmation(storage = globalThis.localStorage) {
 }
 
 export function whatsappUrl(confirmation) {
-  const lines = (confirmation?.lineas || []).map((line) => `${line.producto} (${line.presentacion}) x${line.cantidad}: $${Number(line.subtotal).toLocaleString('es-CO')}`).join('\n');
-  const message = `Hola, ESENCIALES. Registré la solicitud ${confirmation?.codigo}.\nProductos:\n${lines}\nValor total de productos: $${Number(confirmation?.valor_total_productos).toLocaleString('es-CO')}.\nQuisiera confirmar disponibilidad y entrega.`;
+  const lines = (confirmation?.lineas || []).map((line) => `• ${line.producto}\n  ${line.presentacion} · Cantidad: ${line.cantidad}\n  Precio unitario: $${Number(line.precio_unitario).toLocaleString('es-CO')}\n  Subtotal: $${Number(line.subtotal).toLocaleString('es-CO')}`).join('\n\n');
+  const message = `Hola, ESENCIALES.\n\nRegistré la solicitud ${confirmation?.codigo}.\n\nPRODUCTOS\n${lines}\n\nVALOR TOTAL DE PRODUCTOS\n$${Number(confirmation?.valor_total_productos).toLocaleString('es-CO')}\n\nQuisiera confirmar disponibilidad y entrega.`;
   return `https://wa.me/573174645670?text=${encodeURIComponent(message)}`;
 }

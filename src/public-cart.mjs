@@ -21,7 +21,7 @@ export function loadCart(storage = globalThis.localStorage) {
   try {
     const value = JSON.parse(storage?.getItem(CART_KEY) || 'null');
     if (!value || value.version !== 2 || !Array.isArray(value.items)) return emptyCart();
-    const items = value.items.filter((item) => Number.isInteger(Number(item.presentationId)) && safeQuantity(item.quantity) && safeMaximum(item.maxQuantity) && Number(item.quantity) <= Number(item.maxQuantity) && Number.isInteger(Number(item.price)) && item.price > 0);
+    const items = value.items.filter((item) => Number.isInteger(Number(item.presentationId)) && safeQuantity(item.quantity) && safeMaximum(item.maxQuantity) && Number(item.quantity) <= Number(item.maxQuantity) && Number.isInteger(Number(item.price)) && item.price > 0).map((item) => ({ ...item, selected: item.selected !== false }));
     return { version: 2, items };
   } catch { return emptyCart(); }
 }
@@ -52,6 +52,7 @@ export function addCartItem(cart, product, presentation, quantity = 1) {
     normalPrice: Number(presentation.precio_normal),
     maxQuantity: maximum,
     quantity: nextQuantity,
+    selected: true,
   };
   return { version: 2, items: existing ? cart.items.map((current) => current.presentationId === presentationId ? item : current) : [...cart.items, item] };
 }
@@ -66,6 +67,13 @@ export function updateCartItemQuantity(cart, presentationId, quantity) {
 export function removeCartItem(cart, presentationId) { return { version: 2, items: cart.items.filter((item) => item.presentationId !== Number(presentationId)) }; }
 export function getCartCount(cart) { return cart.items.reduce((total, item) => total + item.quantity, 0); }
 export function getCartTotal(cart) { return cart.items.reduce((total, item) => total + item.price * item.quantity, 0); }
+export function getSelectedCartItems(cart) { return cart.items.filter((item) => item.selected !== false); }
+export function getSelectedCartTotal(cart) { return getSelectedCartItems(cart).reduce((total, item) => total + item.price * item.quantity, 0); }
+export function toggleCartItemSelection(cart, presentationId) {
+  const item = cart.items.find((current) => current.presentationId === Number(presentationId));
+  if (!item) return cart;
+  return { version: 2, items: cart.items.map((current) => current.presentationId === item.presentationId ? { ...current, selected: !current.selected } : current) };
+}
 
 export function revalidateCart(cart, productsById) {
   const items = cart.items.map((item) => {

@@ -1,11 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { addCartItem, emptyCart, getCartCount, getCartTotal, loadCart, revalidateCart, removeCartItem, updateCartItemQuantity } from '../src/public-cart.mjs';
+import { addCartItem, emptyCart, getCartCount, getCartTotal, getSelectedCartItems, getSelectedCartTotal, loadCart, revalidateCart, removeCartItem, toggleCartItemSelection, updateCartItemQuantity } from '../src/public-cart.mjs';
 
 const product = { producto_id: 1, nombre: 'Brisa', imagen_url: null };
 const available = { id: 2, etiqueta: '100 ml', estado: 'Disponible', precio_normal: 60000, precio_promocional: 50000, maximo_solicitable: 3 };
 test('cart combines lines, respects the public requestable limit, calculates totals and removes items', () => { let cart = addCartItem(emptyCart(), product, available, 2); cart = addCartItem(cart, product, available, 2); assert.equal(getCartCount(cart), 3); assert.equal(getCartTotal(cart), 150000); cart = updateCartItemQuantity(cart, 2, 4); assert.equal(cart.items[0].quantity, 3); assert.equal(removeCartItem(cart, 2).items.length, 0); });
 test('cart rejects unavailable presentations and malformed storage', () => { assert.equal(addCartItem(emptyCart(), product, { ...available, estado: 'Agotado' }).items.length, 0); assert.deepEqual(loadCart({ getItem: () => '{bad' }), emptyCart()); });
+test('cart selects every new line and can exclude products from a request', () => {
+  let cart = addCartItem(emptyCart(), product, available, 2);
+  assert.equal(getSelectedCartItems(cart).length, 1);
+  cart = toggleCartItemSelection(cart, 2);
+  assert.equal(getSelectedCartItems(cart).length, 0);
+  assert.equal(getSelectedCartTotal(cart), 0);
+});
 test('cart revalidation keeps an excessive line visible, updates changes, and blocks continuation', () => {
   const cart = { version: 2, items: [{ presentationId: 2, productId: 1, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, normalPrice: 60000, maxQuantity: 7, quantity: 5 }] };
   const result = revalidateCart(cart, new Map([[1, { ...product, presentaciones: [{ ...available, maximo_solicitable: 3 }] }]]));

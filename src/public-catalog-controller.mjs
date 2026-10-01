@@ -158,6 +158,10 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   };
   const onInput = (event) => { if (event.target.matches?.('[name="precioMinimo"], [name="precioMaximo"]')) event.target.value = formatCopInput(event.target.value); if (event.target.closest?.('[data-request-form]')) { attemptId = null; requestState = { ...requestState, priceReview: null, error: null, errors: {} }; } };
   const onChange = (event) => {
+    if (event.target.matches?.('[data-filter-panel] input[name="categoria"]')) {
+      if (event.target.checked) app.querySelectorAll('[data-filter-panel] input[name="categoria"]').forEach((input) => { if (input !== event.target) input.checked = false; });
+      return;
+    }
     if (event.target.matches?.('[data-detail-presentation]')) {
       const quantity = app.querySelector('[data-detail-quantity]'); const maximum = Number(event.target.dataset.presentationMaximum);
       if (quantity) { quantity.max = String(maximum); if (Number(quantity.value) > maximum) quantity.value = String(maximum); }

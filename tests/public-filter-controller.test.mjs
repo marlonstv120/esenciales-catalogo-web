@@ -35,3 +35,55 @@ test('catalog ignores older filtered responses after navigating through history'
   assert.doesNotMatch(app.innerHTML, /Viejo/);
   stop();
 });
+
+test('adding the only presentation from home keeps the visitor on home', async () => {
+  const listeners = {};
+  const app = {
+    innerHTML: '',
+    addEventListener(name, handler) { listeners[name] = handler; },
+    removeEventListener(name) { delete listeners[name]; },
+    querySelectorAll() { return []; },
+    querySelector() { return null; },
+    insertAdjacentHTML() {},
+  };
+  const windowListeners = {};
+  const storage = { getItem: () => null, setItem() {} };
+  const windowRef = {
+    location: { pathname: '/', search: '', hash: '', href: 'http://localhost/', origin: 'http://localhost' },
+    localStorage: storage,
+    setTimeout,
+    addEventListener(name, handler) { windowListeners[name] = handler; },
+    removeEventListener(name) { delete windowListeners[name]; },
+  };
+  const product = {
+    producto_id: 1,
+    nombre: 'Brisa',
+    destacado: true,
+    categoria_nombre: 'Aromas',
+    precio_referencia: 50000,
+    disponibilidad: 'Disponible',
+    presentaciones: [{ id: 10, etiqueta: '100 ml', estado: 'Disponible', precio_normal: 50000, maximo_solicitable: 5 }],
+  };
+  const client = {
+    rpc: async (name) => name === 'obtener_producto_publico'
+      ? { data: product, error: null }
+      : { data: [product], error: null },
+  };
+  const stop = startPublicCatalog({ app, client, route: { name: 'home' }, windowRef, documentRef: { title: '', activeElement: null, querySelector: () => null } });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  const addButton = {
+    dataset: { productAdd: '1' },
+    disabled: false,
+    setAttribute() {},
+    removeAttribute() {},
+    closest(selector) { return selector === '[data-product-add]' ? this : null; },
+  };
+  listeners.click({ target: addButton });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(windowRef.location.pathname, '/');
+  assert.match(app.innerHTML, /Tu aroma, siempre contigo\./);
+  assert.doesNotMatch(app.innerHTML, /El catálogo está vacío/);
+  stop();
+});

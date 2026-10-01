@@ -87,7 +87,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const result = await loadPublicProduct(client, productId); trigger.disabled = false; trigger.removeAttribute('aria-busy');
     if (result.error || !result.data) { announce('No fue posible consultar las presentaciones. Inténtalo de nuevo.'); return; }
     const available = result.data.presentaciones?.filter((item) => ['Disponible', 'Bajo pedido'].includes(item.estado)) || [];
-    if (available.length === 1) { cart = addCartItem(cart, result.data, available[0]); persistCart(); renderCatalog(parseCatalogFilters(windowRef.location.search)); announce(`${result.data.nombre} fue añadido al carrito.`); showToast(`${result.data.nombre} se agregó al carrito.`); return; }
+    if (available.length === 1) { cart = addCartItem(cart, result.data, available[0]); persistCart(); renderRoute(currentRoute); announce(`${result.data.nombre} fue añadido al carrito.`); showToast(`${result.data.nombre} se agregó al carrito.`); return; }
     if (!available.length) { announce('Este producto ya no tiene presentaciones disponibles para agregar.'); return; }
     selectorProduct = result.data; overlayTrigger = trigger; app.insertAdjacentHTML('beforeend', presentationSelectorView(result.data)); app.querySelector('[data-presentation-selector] button[data-presentation-close]')?.focus();
   };

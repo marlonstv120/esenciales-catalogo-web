@@ -8,7 +8,14 @@ const validForm = { ...emptyRequestForm(), nombre: 'Ana Pérez', telefono: '+57 
 test('validates the request fields and creates server lines without trusting cart totals', () => {
   assert.deepEqual(validateRequestForm(validForm, cart).errors, {});
   assert.match(validateRequestForm({ ...validForm, telefono: 'telefono' }, cart).errors.telefono, /teléfono válido/);
+  assert.match(validateRequestForm({ ...validForm, telefono: '123456' }, cart).errors.telefono, /teléfono válido/);
+  assert.match(validateRequestForm({ ...validForm, telefono: '1234567890123456' }, cart).errors.telefono, /teléfono válido/);
+  const missing = validateRequestForm(emptyRequestForm(), cart).errors;
+  assert.match(missing.nombre, /nombre/);
+  assert.match(missing.telefono, /teléfono válido/);
+  assert.match(missing.aceptacion, /aceptar/);
   assert.deepEqual(requestLines(cart), [{ presentacion_id: 4, cantidad: 2, precio_esperado: 50000 }]);
+  assert.deepEqual(requestLines({ ...cart, items: [...cart.items, { presentationId: 5, quantity: 1, price: 30000, selected: false }] }), [{ presentacion_id: 4, cantidad: 2, precio_esperado: 50000 }]);
 });
 
 test('calls the registration RPC with the approved public contract', async () => {

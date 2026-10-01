@@ -1,7 +1,7 @@
 begin;
 set local search_path = public, extensions;
 
-select plan(29);
+select plan(30);
 
 select ok((select relrowsecurity from pg_class where oid = 'public.categorias'::regclass), 'RLS sigue activo en categorias');
 select ok((select relrowsecurity from pg_class where oid = 'public.productos'::regclass), 'RLS sigue activo en productos');
@@ -116,6 +116,10 @@ select results_eq(
   $$select jsonb_array_length(public.obtener_producto_publico(current_setting('test.public_product_id')::integer)->'presentaciones')$$,
   $$values (3)$$,
   'el detalle devuelve presentaciones activas y excluye las inactivas'
+);
+select ok(
+  jsonb_array_length(public.obtener_producto_publico(current_setting('test.public_product_id')::integer)->'imagenes') >= 1,
+  'el detalle devuelve las imagenes publicas del producto'
 );
 select ok(
   not (public.obtener_producto_publico(current_setting('test.public_product_id')::integer) ? 'stock')

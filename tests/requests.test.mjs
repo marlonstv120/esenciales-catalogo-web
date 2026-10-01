@@ -15,6 +15,7 @@ test('lists requests newest first and calls the protected edit RPC', () => {
   assert.equal(listPurchaseRequests(client), 'listed');
   assert.equal(savePurchaseRequest(client, 4, { nombre_cliente: 'Ana', telefono: '3000000000', lineas: [{ detalle_id: 9, cantidad: 2 }] }), 'saved');
   assert.equal(calls[0].table, 'solicitudes');
+  assert.match(calls[0].columns, /presentaciones\(etiqueta, stock, modo_disponibilidad/);
   assert.deepEqual(calls[0].options, { ascending: false });
   assert.equal(calls[1].name, 'actualizar_solicitud_nueva');
   assert.deepEqual(calls[1].values.p_lineas, [{ detalle_id: 9, cantidad: 2 }]);

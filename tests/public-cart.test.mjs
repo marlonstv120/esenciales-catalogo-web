@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { addCartItem, emptyCart, getCartCount, getCartTotal, getSelectedCartItems, getSelectedCartTotal, loadCart, revalidateCart, removeCartItem, toggleCartItemSelection, updateCartItemQuantity } from '../src/public-cart.mjs';
+import { addCartItem, emptyCart, getCartCount, getCartTotal, getSelectedCartItems, getSelectedCartTotal, loadCart, revalidateCart, removeCartItem, removeSelectedCartItems, selectedCartIsReady, toggleCartItemSelection, updateCartItemQuantity } from '../src/public-cart.mjs';
 
 const product = { producto_id: 1, nombre: 'Brisa', imagen_url: null };
 const available = { id: 2, etiqueta: '100 ml', estado: 'Disponible', precio_normal: 60000, precio_promocional: 50000, maximo_solicitable: 3 };
@@ -12,6 +12,14 @@ test('cart selects every new line and can exclude products from a request', () =
   cart = toggleCartItemSelection(cart, 2);
   assert.equal(getSelectedCartItems(cart).length, 0);
   assert.equal(getSelectedCartTotal(cart), 0);
+});
+test('removes only selected lines after registration and ignores blocked lines excluded from the request', () => {
+  const cart = { version: 2, items: [
+    { presentationId: 2, selected: true, quantity: 1, validation: { state: 'valid' } },
+    { presentationId: 3, selected: false, quantity: 1, validation: { state: 'blocked' } },
+  ] };
+  assert.equal(selectedCartIsReady(cart), true);
+  assert.deepEqual(removeSelectedCartItems(cart).items.map((item) => item.presentationId), [3]);
 });
 test('cart revalidation keeps an excessive line visible, updates changes, and blocks continuation', () => {
   const cart = { version: 2, items: [{ presentationId: 2, productId: 1, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, normalPrice: 60000, maxQuantity: 7, quantity: 5 }] };

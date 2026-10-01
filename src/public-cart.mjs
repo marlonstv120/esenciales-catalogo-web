@@ -69,11 +69,13 @@ export function getCartCount(cart) { return cart.items.reduce((total, item) => t
 export function getCartTotal(cart) { return cart.items.reduce((total, item) => total + item.price * item.quantity, 0); }
 export function getSelectedCartItems(cart) { return cart.items.filter((item) => item.selected !== false); }
 export function getSelectedCartTotal(cart) { return getSelectedCartItems(cart).reduce((total, item) => total + item.price * item.quantity, 0); }
+export function selectedCartIsReady(cart) { return getSelectedCartItems(cart).every((item) => item.validation?.state !== 'blocked'); }
 export function toggleCartItemSelection(cart, presentationId) {
   const item = cart.items.find((current) => current.presentationId === Number(presentationId));
   if (!item) return cart;
   return { version: 2, items: cart.items.map((current) => current.presentationId === item.presentationId ? { ...current, selected: !current.selected } : current) };
 }
+export function removeSelectedCartItems(cart) { return { version: 2, items: cart.items.filter((item) => item.selected === false) }; }
 
 export function revalidateCart(cart, productsById) {
   const items = cart.items.map((item) => {
@@ -116,5 +118,5 @@ export function revalidateCart(cart, productsById) {
       },
     };
   });
-  return { cart: { version: 2, items }, ready: items.every((item) => item.validation.state !== 'blocked') };
+  return { cart: { version: 2, items }, ready: selectedCartIsReady({ items }) };
 }

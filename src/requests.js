@@ -11,7 +11,7 @@ export function normalizePurchaseRequest(values) {
 }
 
 export function listPurchaseRequests(client) {
-  return client.from('solicitudes').select('id, codigo, nombre_cliente, telefono, ciudad, observaciones, terminos_version, politica_datos_version, aceptado_en, estado, creado_en, actualizado_en, confirmado_en, entregado_en, cancelado_en, detalles_solicitud(id, presentacion_id, cantidad, precio_unitario, subtotal, cantidad_descontada, presentaciones(etiqueta, productos(nombre)))').order('creado_en', { ascending: false });
+  return client.from('solicitudes').select('id, codigo, nombre_cliente, telefono, ciudad, observaciones, terminos_version, politica_datos_version, aceptado_en, estado, creado_en, actualizado_en, confirmado_en, entregado_en, cancelado_en, detalles_solicitud(id, presentacion_id, cantidad, precio_unitario, subtotal, cantidad_descontada, presentaciones(etiqueta, stock, modo_disponibilidad, productos(nombre)))').order('creado_en', { ascending: false });
 }
 
 export function savePurchaseRequest(client, requestId, values) {

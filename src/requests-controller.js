@@ -50,6 +50,7 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
   }
   async function transition(transitionName) {
     if (state.busy || !state.selectedId) return;
+    if (state.dirty) { state = { ...state, error: 'Guarda o cancela los cambios antes de cambiar el estado.' }; draw(); return; }
     const labels = { confirm: 'confirmar', deliver: 'marcar como entregada', cancel: 'cancelar' };
     if (!window.confirm(`¿Confirmas ${labels[transitionName]} esta solicitud?`)) return;
     state = { ...state, busy: true, error: '' }; draw();

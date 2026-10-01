@@ -12,17 +12,23 @@ test('lists requests with accessible detail actions and status filters', () => {
   assert.match(view, /100\.000/);
 });
 
-test('edits only a new request without state transition actions', () => {
+test('edits a new request and offers its allowed state transitions', () => {
   const view = purchaseRequestDetailView(request);
   assert.match(view, /id="request-edit-form"/);
   assert.match(view, /name="cantidad-8"/);
   assert.match(view, /data-request-line-remove="8"/);
   assert.match(view, /Precio histórico/);
-  assert.doesNotMatch(view, /Confirmar solicitud|Cancelar solicitud|Marcar como entregada/);
+  assert.match(view, /Confirmar solicitud/);
+  assert.match(view, /Cancelar solicitud/);
+  assert.doesNotMatch(view, /Marcar como entregada/);
 });
 
-test('renders requests outside Nueva as read-only', () => {
+test('renders requests outside Nueva as read-only with only allowed transitions', () => {
   const view = purchaseRequestDetailView({ ...request, estado: 'confirmada' });
   assert.doesNotMatch(view, /id="request-edit-form"/);
+  assert.match(view, /Marcar como entregada/);
+  assert.match(view, /Cancelar solicitud/);
   assert.match(view, /Las solicitudes Confirmada son de solo lectura/);
+  const terminalView = purchaseRequestDetailView({ ...request, estado: 'entregada' });
+  assert.doesNotMatch(terminalView, /data-request-transition/);
 });

@@ -26,6 +26,17 @@ export function savePurchaseRequest(client, requestId, values) {
   });
 }
 
+export function transitionPurchaseRequest(client, requestId, transition) {
+  const rpcByTransition = {
+    confirm: 'confirmar_solicitud_compra',
+    deliver: 'entregar_solicitud_compra',
+    cancel: 'cancelar_solicitud_compra',
+  };
+  const rpc = rpcByTransition[transition];
+  if (!rpc) throw new Error('La transición de solicitud no es válida.');
+  return client.rpc(rpc, { p_solicitud_id: Number(requestId) });
+}
+
 export function filterPurchaseRequests(requests, { query = '', status = '' } = {}) {
   const normalized = String(query).trim().toLocaleLowerCase('es');
   return requests.filter((request) => (!status || request.estado === status) && (!normalized || [request.codigo, request.nombre_cliente, request.telefono].some((value) => String(value || '').toLocaleLowerCase('es').includes(normalized))));

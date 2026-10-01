@@ -45,9 +45,9 @@ Desarrollar una aplicación web full stack que permita la gestión, publicación
 ## Estado
 
 - **Alcance funcional:** MVP V1 aprobado por el equipo el 3 de septiembre de 2026, con pendientes académicos, de negocio y técnicos identificados.
-- **Implementación:** acceso administrativo, gestión de categorías, productos, presentaciones e imágenes, catálogo público, búsqueda con filtros, carrito y registro público de solicitudes están implementados. El acceso anónimo usa RPC de lectura y una RPC de registro idempotente. La interfaz administrativa local permite listar y consultar solicitudes y corregir únicamente las Nuevas mediante una RPC protegida; faltan su publicación, la revisión visual integral y las transacciones de inventario.
+- **Implementación:** acceso administrativo, gestión de categorías, productos, presentaciones e imágenes, catálogo público, búsqueda con filtros, carrito, registro público de solicitudes y gestión administrativa de solicitudes están implementados. El acceso anónimo usa RPC de lectura y una RPC de registro idempotente. La administración permite listar, consultar y corregir únicamente las solicitudes Nuevas, además de confirmar, entregar o cancelar solicitudes mediante RPC protegidas con inventario transaccional.
 - **Tecnologías base del curso:** HTML5, CSS3, JavaScript, Node.js, Express y Git/GitHub. El profesor autorizó usar Supabase en sustitución de Express para agilizar el desarrollo; la autorización y su alcance están registrados en las instrucciones del profesor.
 - **Decisiones técnicas confirmadas:** Supabase proveerá PostgreSQL, autenticación, almacenamiento de imágenes y acceso a datos; el frontend utilizará HTML5, CSS3 y JavaScript sin framework adicional.
-- **Arquitectura restante:** pendientes las transacciones de confirmación, entrega y cancelación con inventario, además de validaciones complementarias.
+- **Arquitectura restante:** pendientes la validación manual integral, el contenido real verificado y las evidencias finales de producción.
 
 Consulte el [alcance funcional MVP V1](functional-scope.md) para conocer las macrofuncionalidades, prioridades, límites y criterios de aceptación.

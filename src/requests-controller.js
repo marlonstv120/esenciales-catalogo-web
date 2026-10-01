@@ -1,4 +1,4 @@
-import { filterPurchaseRequests, listPurchaseRequests, savePurchaseRequest } from './requests.js';
+import { filterPurchaseRequests, listPurchaseRequests, savePurchaseRequest, transitionPurchaseRequest } from './requests.js';
 import { purchaseRequestDetailView, purchaseRequestsView } from './request-views.mjs';
 import { supabase } from './supabase.js';
 
@@ -16,7 +16,7 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
   const selectedRequest = () => state.requests.find((request) => request.id === state.selectedId);
   const draw = () => {
     const request = selectedRequest();
-    outlet.innerHTML = `${state.notice ? `<p class="admin-toast" role="status">${state.notice}</p>` : ''}${request ? purchaseRequestDetailView(request, { values: state.values || valuesFor(request), busy: state.busy, error: state.error }) : purchaseRequestsView({ requests: filterPurchaseRequests(state.requests, state.filters), allCount: state.requests.length, filters: state.filters, loading: state.loading, error: state.error })}`;
+    outlet.innerHTML = `${state.notice ? `<p class="admin-toast" role="status">${state.notice}</p>` : ''}${request ? purchaseRequestDetailView(request, { values: state.values || valuesFor(request), busy: state.busy, dirty: state.dirty, error: state.error }) : purchaseRequestsView({ requests: filterPurchaseRequests(state.requests, state.filters), allCount: state.requests.length, filters: state.filters, loading: state.loading, error: state.error })}`;
     bind();
   };
   const showNotice = (message) => {
@@ -48,6 +48,18 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     await load();
     showNotice('Solicitud actualizada correctamente.');
   }
+  async function transition(transitionName) {
+    if (state.busy || !state.selectedId) return;
+    const labels = { confirm: 'confirmar', deliver: 'marcar como entregada', cancel: 'cancelar' };
+    if (!window.confirm(`¿Confirmas ${labels[transitionName]} esta solicitud?`)) return;
+    state = { ...state, busy: true, error: '' }; draw();
+    const { error } = await transitionPurchaseRequest(supabase, state.selectedId, transitionName);
+    if (!isCurrentGeneration()) return;
+    if (error) { state = { ...state, busy: false, error: requestError(error) }; draw(); return; }
+    state = { ...state, busy: false, dirty: false, values: null };
+    await load();
+    showNotice('Estado de la solicitud actualizado correctamente.');
+  }
   function closeDetail() {
     if (state.dirty && !window.confirm('Hay cambios sin guardar. ¿Quieres volver de todas formas?')) return;
     state = { ...state, selectedId: null, values: null, error: '', dirty: false, busy: false }; draw();
@@ -61,6 +73,7 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     outlet.querySelector('#request-edit-form')?.addEventListener('input', () => { state = { ...state, dirty: true }; });
     outlet.querySelectorAll('[data-request-line-remove]').forEach((button) => button.addEventListener('click', () => { captureValues(); state = { ...state, values: { ...state.values, lineas: state.values.lineas.filter((line) => String(line.id) !== button.dataset.requestLineRemove) }, dirty: true, error: '' }; draw(); }));
     outlet.querySelector('#request-edit-form')?.addEventListener('submit', (event) => { event.preventDefault(); event.currentTarget.checkValidity() ? save(event.currentTarget) : event.currentTarget.reportValidity(); });
+    outlet.querySelectorAll('[data-request-transition]').forEach((button) => button.addEventListener('click', () => transition(button.dataset.requestTransition)));
   }
   await load();
 }

@@ -1,6 +1,8 @@
 import { getSelectedCartItems } from './public-cart.mjs';
 
 const CONFIRMATION_KEY = 'esenciales.purchase-request-confirmation.v1';
+const REQUEST_DRAFT_KEY = 'esenciales:draft:solicitud:nueva';
+const REQUEST_DRAFT = { version: 1, form: 'public-purchase-request' };
 
 function trimmed(value) { return String(value || '').trim(); }
 
@@ -9,6 +11,17 @@ function phoneDigits(value) { return trimmed(value).replace(/[^0-9]/g, ''); }
 export function emptyRequestForm() {
   return { nombre: '', telefono: '', ciudad: '', observaciones: '', aceptaTerminos: false, aceptaPoliticaDatos: false };
 }
+
+export function loadPurchaseRequestDraft(storage = globalThis.sessionStorage) {
+  try {
+    const draft = JSON.parse(storage?.getItem(REQUEST_DRAFT_KEY) || 'null');
+    const values = draft?.values;
+    if (draft?.version !== REQUEST_DRAFT.version || draft?.form !== REQUEST_DRAFT.form || !Number.isFinite(draft.updatedAt) || !values || typeof values !== 'object') return null;
+    return { nombre: String(values.nombre || ''), telefono: String(values.telefono || ''), ciudad: String(values.ciudad || ''), observaciones: String(values.observaciones || ''), aceptaTerminos: values.aceptaTerminos === true, aceptaPoliticaDatos: values.aceptaPoliticaDatos === true };
+  } catch { return null; }
+}
+
+export function purchaseRequestDraftMetadata() { return { ...REQUEST_DRAFT, key: REQUEST_DRAFT_KEY }; }
 
 export function validateRequestForm(form, cart) {
   const errors = {};

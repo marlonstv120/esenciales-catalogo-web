@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { applyPriceReview, clearPurchaseConfirmation, emptyRequestForm, loadPurchaseConfirmation, registerPurchaseRequest, requestLines, savePurchaseConfirmation, validateRequestForm, whatsappUrl } from '../src/public-purchase-request.mjs';
+import { applyPriceReview, clearPurchaseConfirmation, emptyRequestForm, loadPurchaseConfirmation, loadPurchaseRequestDraft, purchaseRequestDraftMetadata, registerPurchaseRequest, requestLines, savePurchaseConfirmation, validateRequestForm, whatsappUrl } from '../src/public-purchase-request.mjs';
 
 const cart = { version: 2, items: [{ presentationId: 4, quantity: 2, price: 50000, name: 'Brisa', label: '100 ml' }] };
 const validForm = { ...emptyRequestForm(), nombre: 'Ana Pérez', telefono: '+57 (300) 123-4567', aceptaTerminos: true, aceptaPoliticaDatos: true };
@@ -44,4 +44,13 @@ test('persists only non-personal confirmation data and builds an encoded WhatsAp
   assert.match(decodeURIComponent(whatsappUrl(confirmation)), /\n\nPRODUCTOS\n/);
   clearPurchaseConfirmation(storage);
   assert.equal(loadPurchaseConfirmation(storage), null);
+});
+
+test('restores only a current, scoped purchase-request draft', () => {
+  const data = new Map(); const storage = { getItem: (key) => data.get(key) || null };
+  const metadata = purchaseRequestDraftMetadata();
+  data.set(metadata.key, JSON.stringify({ ...metadata, updatedAt: Date.now(), values: { nombre: 'Ana', telefono: '3001234567', ciudad: 'Bogotá', observaciones: 'Llamar', aceptaTerminos: true, aceptaPoliticaDatos: false, token: 'no' } }));
+  assert.deepEqual(loadPurchaseRequestDraft(storage), { nombre: 'Ana', telefono: '3001234567', ciudad: 'Bogotá', observaciones: 'Llamar', aceptaTerminos: true, aceptaPoliticaDatos: false });
+  data.set(metadata.key, JSON.stringify({ ...metadata, version: 2, updatedAt: Date.now(), values: { nombre: 'Ana' } }));
+  assert.equal(loadPurchaseRequestDraft(storage), null);
 });

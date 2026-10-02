@@ -8,8 +8,11 @@ import { filterInventory, sortInventory } from './inventory-utils.mjs';
 import { inventoryDashboardView } from './inventory-views.mjs';
 import { supabase } from './supabase.js';
 import { copDigits, formatCopInput, formatCopInputElement } from './cop-input.mjs';
+import { createDraftSaver, readDraft } from './form-drafts.mjs';
 
 const emptyFilters = { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: '', page: 1 };
+const NEW_PRODUCT_DRAFT_KEY = 'esenciales:draft:admin:producto:nuevo';
+const NEW_PRODUCT_DRAFT = { version: 1, form: 'admin-product-new' };
 let state = { products: [], categories: [], loading: true, loadError: '', filters: { ...emptyFilters }, filtersPanelOpen: false, categoriesPanelOpen: false, editor: null, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, productNotice: '', presentation: null, presentationValues: {}, presentationError: '', presentationBusy: false, presentationDirty: false, image: null, imageAlt: '', imageAltDirty: false, imageBusy: false, imageError: '', cleanupPath: '', categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } };
 
 const formValues = (form) => Object.fromEntries(new FormData(form));
@@ -18,6 +21,7 @@ const currentImage = (product) => product?.imagenes_producto?.find((image) => im
 const hasUnsavedChanges = () => state.productDirty || state.presentationDirty;
 
 export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
+  const draftSaver = createDraftSaver(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT);
   const filterKeys = ['query', 'category', 'brand', 'gender', 'classification', 'family', 'status', 'availability', 'minPrice', 'maxPrice', 'order', 'page'];
   const resetPage = (filters) => ({ ...filters, page: 1 });
   const filteredProducts = () => sortInventory(filterInventory(state.products, state.filters), state.filters.order);
@@ -38,7 +42,7 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     outlet.innerHTML = `${!state.editor && state.productNotice ? `<p class="admin-toast" role="status">${state.productNotice}</p>` : ''}${content}`;
     bind(); outlet.querySelectorAll('[name="precio_normal"], [name="precio_promocional"], [name="minPrice"], [name="maxPrice"]').forEach(formatCopInputElement);
   };
-  const closeEditor = () => { if (hasUnsavedChanges() && !window.confirm('Hay cambios sin guardar. ¿Quieres salir de todas formas?')) return; state = { ...state, editor: null, presentation: null, productDirty: false, presentationDirty: false, productError: '', presentationError: '' }; draw(); };
+  const closeEditor = () => { if (hasUnsavedChanges() && !window.confirm('Hay cambios sin guardar. ¿Quieres descartarlos y salir?')) return; if (!state.editor?.id) draftSaver.clear(); state = { ...state, editor: null, presentation: null, productValues: {}, productDirty: false, presentationDirty: false, productError: '', presentationError: '' }; draw(); };
   const closeCategoryDrawer = () => {
     const drawer = state.categoryDrawer;
     if (drawer.dirty && !window.confirm('Hay cambios sin guardar en la categoría. ¿Quieres cerrar?')) return;
@@ -56,6 +60,8 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     const [{ data: products, error: productsError }, { data: categories, error: categoriesError }] = await Promise.all([listProducts(supabase), listCategories(supabase)]);
     if (!isCurrentGeneration()) return;
     state = { ...state, products: products || [], categories: categories || [], loading: false, loadError: productsError || categoriesError ? 'No fue posible cargar el inventario completo. Inténtalo de nuevo.' : '' };
+    const draft = !state.editor && readDraft(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT);
+    if (draft) state = { ...state, editor: { activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }, productValues: draft.values, productDirty: true, productNotice: 'Recuperamos los cambios que estabas realizando.' };
     draw();
   }
   async function saveCurrent(form) {
@@ -67,6 +73,7 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     const { data, error } = await saveProduct(supabase, state.editor?.id, values);
     if (error) { state = { ...state, productBusy: false, productValues: values, productError: databaseError(error) }; draw(); return; }
     const existing = state.editor || {};
+    if (!existing.id) draftSaver.clear();
     const product = { ...existing, ...data, categorias: state.categories.find((item) => String(item.id) === String(data.categoria_id)), presentaciones: existing.presentaciones || [], imagenes_producto: existing.imagenes_producto || [] };
     state = { ...state, editor: product, productValues: {}, productBusy: false, productDirty: false, productError: '', saved: true, productNotice: 'Producto guardado correctamente.', image: currentImage(product), imageAlt: currentImage(product)?.texto_alternativo || product.nombre, imageAltDirty: false };
     state.products = state.products.some((item) => item.id === product.id) ? state.products.map((item) => item.id === product.id ? product : item) : [product, ...state.products];
@@ -97,12 +104,17 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   function trapFocus(event, dialog) { if (event.key !== 'Tab') return; const nodes = [...dialog.querySelectorAll('button, input, select, textarea, [href]')].filter((node) => !node.disabled); const first = nodes[0]; const last = nodes.at(-1); if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); } }
   function bind() {
     outlet.querySelector('[data-products-retry], [data-inventory-retry]')?.addEventListener('click', load);
-    outlet.querySelector('[data-product-create]')?.addEventListener('click', () => { setEditor({ activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }); draw(); outlet.querySelector('#product-name')?.focus(); });
+    outlet.querySelector('[data-product-create]')?.addEventListener('click', () => { const draft = readDraft(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT); setEditor({ activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }); if (draft) { state = { ...state, productValues: draft.values, productDirty: true, productNotice: 'Recuperamos los cambios que estabas realizando.' }; } draw(); outlet.querySelector('#product-name')?.focus(); });
     outlet.querySelectorAll('[data-product-edit]').forEach((button) => button.addEventListener('click', (event) => { event.stopPropagation(); const product = state.products.find((item) => String(item.id) === button.dataset.productEdit); if (product) { setEditor(product); draw(); } }));
     outlet.querySelectorAll('[data-product-open]').forEach((row) => { row.addEventListener('dblclick', (event) => { if (!event.target.closest('button, a, input, select')) { const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { setEditor(product); draw(); } } }); row.addEventListener('click', (event) => { if (!event.target.closest('button, a, input, select') && window.matchMedia('(max-width: 63.9375rem)').matches) { const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { setEditor(product); draw(); } } }); row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { setEditor(product); draw(); } } }); });
     outlet.querySelectorAll('[data-product-close]').forEach((button) => button.addEventListener('click', closeEditor));
-    outlet.querySelector('#product-form')?.addEventListener('input', () => { state.productDirty = true; });
-    outlet.querySelector('#product-form')?.addEventListener('change', () => { state.productDirty = true; });
+    const captureProductValues = (form) => {
+      const values = { ...formValues(form), destacado: form.elements.destacado.checked, activo: form.elements.activo.checked };
+      state = { ...state, productValues: values, productDirty: true };
+      if (!state.editor?.id) draftSaver.save(values);
+    };
+    outlet.querySelector('#product-form')?.addEventListener('input', (event) => captureProductValues(event.currentTarget));
+    outlet.querySelector('#product-form')?.addEventListener('change', (event) => captureProductValues(event.currentTarget));
     outlet.querySelector('#product-form')?.addEventListener('submit', (event) => { event.preventDefault(); event.currentTarget.checkValidity() ? saveCurrent(event.currentTarget) : event.currentTarget.reportValidity(); });
     outlet.querySelector('[data-presentation-create]')?.addEventListener('click', () => { state = { ...state, presentation: { activo: true, modo_disponibilidad: 'venta_inmediata', stock: 0 }, presentationValues: {}, presentationError: '', presentationDirty: false }; draw(); outlet.querySelector('#presentation-label')?.focus(); });
     outlet.querySelectorAll('[data-presentation-edit]').forEach((button) => button.addEventListener('click', () => { state = { ...state, presentation: state.editor.presentaciones.find((item) => String(item.id) === button.dataset.presentationEdit), presentationValues: {}, presentationError: '', presentationDirty: false }; draw(); outlet.querySelector('#presentation-label')?.focus(); }));
@@ -131,6 +143,11 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     outlet.querySelectorAll('[data-inventory-sort]').forEach((button) => button.addEventListener('click', () => { const field = button.dataset.inventorySort; state.filters = resetPage({ ...state.filters, order: state.filters.order === `${field}-asc` ? `${field}-desc` : `${field}-asc` }); draw(); }));
   }
   const beforeUnload = (event) => { if (!hasUnsavedChanges()) return; event.preventDefault(); event.returnValue = ''; };
+  const flushDraft = () => { if (!state.editor?.id && state.productDirty) draftSaver.flush(); };
+  const onVisibilityChange = () => { if (document.visibilityState === 'hidden') flushDraft(); };
   window.addEventListener('beforeunload', beforeUnload);
+  window.addEventListener('pagehide', flushDraft);
+  document.addEventListener('visibilitychange', onVisibilityChange);
   await load();
+  return () => { flushDraft(); draftSaver.destroy(); window.removeEventListener('beforeunload', beforeUnload); window.removeEventListener('pagehide', flushDraft); document.removeEventListener('visibilitychange', onVisibilityChange); };
 }

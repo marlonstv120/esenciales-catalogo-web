@@ -27,6 +27,7 @@ export function shellView(route) {
 
 export function startAdminShell({ app, generation, isCurrentGeneration, onSignOut }) {
   let active = true;
+  let stopScreen = null;
   const context = { app, generation, isCurrentGeneration, render: renderRoute };
   const renderers = {
     inventario: () => import('./products-controller.js').then(({ renderProductsScreen }) => renderProductsScreen),
@@ -35,12 +36,15 @@ export function startAdminShell({ app, generation, isCurrentGeneration, onSignOu
 
   async function renderRoute() {
     if (!active || !isCurrentGeneration()) return;
+    stopScreen?.(); stopScreen = null;
     const route = getAdminRoute(window.location.hash);
     app.innerHTML = shellView(route);
     app.querySelectorAll('[data-sign-out]').forEach((button) => button.addEventListener('click', onSignOut));
     const screen = await renderers[route]();
     if (!active || !isCurrentGeneration()) return;
-    await screen({ ...context, outlet: app.querySelector('[data-admin-outlet]') });
+    const cleanup = await screen({ ...context, outlet: app.querySelector('[data-admin-outlet]') });
+    if (!active || !isCurrentGeneration()) { cleanup?.(); return; }
+    stopScreen = cleanup;
   }
 
   const onHashChange = () => renderRoute();
@@ -48,5 +52,5 @@ export function startAdminShell({ app, generation, isCurrentGeneration, onSignOu
   if (!window.location.hash) window.location.hash = '#inventario';
   else renderRoute();
 
-  return () => { active = false; window.removeEventListener('hashchange', onHashChange); };
+  return () => { active = false; stopScreen?.(); window.removeEventListener('hashchange', onHashChange); };
 }

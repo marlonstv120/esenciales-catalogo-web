@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cartDrawerView, cartView, catalogView, homeView, legalModalView, mobileMenuDrawerView, productDetailView, publicShellView } from '../src/public-views.mjs';
+import { cartDrawerView, cartView, catalogView, homeView, legalModalView, mobileMenuDrawerView, productDetailView, publicRequestView, publicShellView } from '../src/public-views.mjs';
 
 const row = { categoria_id: 1, categoria_nombre: 'Splash', producto_id: 4, nombre: 'Brisa', descripcion: 'Aroma fresco', imagen_url: 'https://example.test/brisa.webp', texto_alternativo: 'Brisa', precio_referencia: 50000, precio_normal_referencia: 60000, precio_desde: true, disponibilidad: 'Disponible', destacado: true };
 test('catalog has one grid, an independent add action, price and textual availability', () => { const view = catalogView([row]); assert.match(view, /<h1>Catálogo<\/h1>/); assert.doesNotMatch(view, /<p class="eyebrow">ESENCIALES/); assert.doesNotMatch(view, /id="categoria-1"/); assert.match(view, /Desde/); assert.match(view, /En stock/); assert.match(view, /data-product-add="4"/); assert.match(view, /aria-label="Agregar Brisa al carrito"/); });
@@ -119,26 +119,39 @@ test('cart drawer shows a zero selected total and blocks continuation without a 
   assert.match(view, /Selecciona al menos un producto para continuar/);
   assert.match(view, /data-cart-drawer-continue disabled/);
 });
-test('cart drawer uses a compact confirmation with one drawer title and WhatsApp as its primary action', () => {
+test('cart drawer presents an eligible confirmation with stacked payment actions and a copyable code', () => {
   const cart = { items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, maxQuantity: 3, quantity: 2 }] };
   const form = cartDrawerView(cart, { open: true, step: 'form', requestState: { form: { nombre: 'Ana', telefono: '3001234567' }, errors: {} } });
   assert.match(form, /data-cart-drawer-back/);
   assert.match(form, /data-request-form/);
   assert.match(form, /name="aceptaTerminos" type="checkbox"/);
   assert.match(form, /1 producto.*100\.000/);
-  const confirmation = cartDrawerView(cart, { open: true, step: 'confirmation', confirmation: { codigo: 'ES-00001', estado: 'nueva', valor_total_productos: 100000, lineas: [{ producto: 'Brisa', presentacion: '100 ml', cantidad: 2, subtotal: 100000 }] } });
+  const confirmation = cartDrawerView(cart, { open: true, step: 'confirmation', confirmation: { codigo: 'ES-00001', estado: 'nueva', elegible_pago: true, valor_total_productos: 100000, lineas: [{ producto: 'Brisa', presentacion: '100 ml', cantidad: 2, subtotal: 100000 }] } });
   assert.equal(confirmation.match(/<h2 id="cart-drawer-title">Solicitud registrada<\/h2>/g).length, 1);
-  assert.match(confirmation, /Solicitud registrada correctamente/);
+  assert.match(confirmation, /Tu solicitud se registró correctamente/);
   assert.match(confirmation, /Código de solicitud/);
   assert.match(confirmation, /<strong>ES-00001<\/strong>/);
+  assert.match(confirmation, /data-confirmation-copy="ES-00001"/);
+  assert.match(confirmation, /aria-label="Copiar código de solicitud"/);
+  assert.match(confirmation, /Resumen de tu solicitud/);
   assert.match(confirmation, /Brisa · 100 ml × 2/);
   assert.match(confirmation, /<span>Total<\/span><strong>\$100\.000<\/strong>/);
   assert.match(confirmation, /Continuar por WhatsApp/);
   assert.match(confirmation, /public-whatsapp-button/);
+  assert.match(confirmation, /Pagar ahora/);
+  assert.doesNotMatch(confirmation, /Pagar más tarde|data-payment-later/);
   assert.match(confirmation, /data-confirmation-continue/);
   assert.match(confirmation, /data-request-new/);
+  assert.match(confirmation, /public-drawer-confirmation__links-separator/);
   assert.doesNotMatch(confirmation, /<p class="eyebrow">ESENCIALES/);
   assert.doesNotMatch(confirmation, /como Nueva/);
+});
+test('cart drawer coordinates payment when a confirmed request is not eligible', () => {
+  const view = cartDrawerView({ items: [] }, { open: true, step: 'confirmation', confirmation: { codigo: 'ES-00002', estado: 'nueva', elegible_pago: false, valor_total_productos: 100000, lineas: [{ producto: 'Brisa', presentacion: '100 ml', cantidad: 1, subtotal: 100000 }] } });
+  assert.match(view, /Pago por coordinar/);
+  assert.match(view, /contiene productos bajo pedido/);
+  assert.match(view, /Continuar por WhatsApp/);
+  assert.doesNotMatch(view, /data-payment-start|data-payment-later|payment-status/);
 });
 test('drawer request step keeps a compact heading, telephone semantics, and field-level errors', () => {
   const cart = { items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, maxQuantity: 3, quantity: 1 }] };
@@ -158,7 +171,7 @@ test('cart provides an accessible request form and legal modal links', () => {
   assert.match(legalModalView('policy'), /role="dialog"/);
   assert.match(legalModalView('policy'), /data-legal-close/);
   assert.match(legalModalView('policy'), /<h2 id="legal-modal-title">Política de tratamiento de datos<\/h2>/);
-  assert.match(legalModalView('terms'), /legal\/terminos-v1\.html/);
+  assert.match(legalModalView('terms'), /legal\/terminos-v2\.html/);
 });
 test('public shell places a legal modal after an open drawer', () => {
   const shell = publicShellView('<h1>Inicio</h1>', 'home', { items: [] }, legalModalView('terms'), '<div data-cart-drawer></div>');
@@ -170,4 +183,16 @@ test('cart confirmation uses server totals and offers voluntary WhatsApp continu
   assert.match(view, /ES-00001/);
   assert.match(view, /wa\.me\/573174645670/);
   assert.match(view, /data-request-new/);
+});
+test('payment step uses a compact Bre-B summary, copyable key, and removable selected proof', () => {
+  const view = publicRequestView({ codigo: 'ES-00049', elegible_pago: true, pago_estado: 'pendiente', valor_total_productos: 82000 }, { step: 'payment', file: { name: 'comprobante.png', size: 2048 } });
+  assert.match(view, /Solicitud <strong>ES-00049<\/strong>/);
+  assert.match(view, /Total a transferir <strong>\$82\.000<\/strong>/);
+  assert.match(view, /<small>Llave<\/small>/);
+  assert.match(view, /data-payment-copy-key="@esensiales"/);
+  assert.match(view, /aria-label="Copiar llave Bre-B"/);
+  assert.match(view, /comprobante\.png/);
+  assert.match(view, /aria-label="Quitar comprobante comprobante\.png"/);
+  assert.doesNotMatch(view, /Pagar solicitud/);
+  assert.doesNotMatch(view, />Copiar llave<|>Quitar</);
 });

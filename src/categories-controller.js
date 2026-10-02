@@ -1,6 +1,7 @@
 import { createCategory, listCategories, updateCategory } from './categories.js';
 import { categoryFormView, categoriesView, deactivationDialogView } from './category-views.mjs';
 import { supabase } from './supabase.js';
+import { showNotification } from './notifications.mjs';
 
 const initialState = { categories: [], mode: null, selectedCategory: null, dialogCategory: null, formName: '', formError: '', message: '', loading: true, error: '', mutating: false };
 let state = { ...initialState };
@@ -14,7 +15,7 @@ function errorMessage(error) {
 function content() {
   const form = state.mode ? categoryFormView({ category: state.selectedCategory, nombre: state.formName, error: state.formError }) : '';
   const dialog = state.dialogCategory ? deactivationDialogView(state.dialogCategory, { busy: state.mutating }) : '';
-  return `<section class="admin-page"><div class="category-toolbar"><p class="message message--success" role="status">${state.message}</p><button class="primary-button category-create" type="button" data-category-create>Nueva categoria</button></div>${categoriesView(state.categories, state)}${form}${dialog}</section>`;
+  return `<section class="admin-page"><div class="category-toolbar"><button class="primary-button category-create" type="button" data-category-create>Nueva categoria</button></div>${categoriesView(state.categories, state)}${form}${dialog}</section>`;
 }
 
 export async function renderCategoriesScreen({ outlet, generation, isCurrentGeneration, render }) {
@@ -32,14 +33,14 @@ export async function renderCategoriesScreen({ outlet, generation, isCurrentGene
     form.querySelector('[type="submit"]').disabled = true;
     const { error } = await operation;
     if (error) { state = { ...state, formName: nombre, formError: errorMessage(error) }; draw(); return; }
-    state = { ...initialState, categories: state.categories, message: 'Categoria guardada correctamente.' }; await load();
+    state = { ...initialState, categories: state.categories }; await load(); showNotification('Categoría guardada correctamente.', { documentRef: outlet.ownerDocument });
   }
   async function setActive(category, activo) {
     if (!category || state.mutating) return;
     state = { ...state, mutating: true }; draw();
     const { error } = await updateCategory(supabase, category.id, { activo });
     if (error) { state = { ...state, mutating: false, error: errorMessage(error) }; draw(); return; }
-    state = { ...initialState, categories: state.categories, message: activo ? 'Categoria activada correctamente.' : 'Categoria desactivada correctamente.' }; await load();
+    state = { ...initialState, categories: state.categories }; await load(); showNotification(activo ? 'Categoría activada correctamente.' : 'Categoría desactivada correctamente.', { documentRef: outlet.ownerDocument });
   }
   function bind() {
     outlet.querySelector('[data-category-retry]')?.addEventListener('click', load);

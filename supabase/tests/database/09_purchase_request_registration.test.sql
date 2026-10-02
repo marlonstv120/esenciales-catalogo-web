@@ -1,7 +1,7 @@
 begin;
 set local search_path = public, extensions;
 
-select plan(23);
+select plan(27);
 
 select has_function(
   'public', 'registrar_solicitud_compra',
@@ -91,6 +91,16 @@ select is((current_setting('test.respuesta_principal')::jsonb)->>'estado', 'nuev
 select ok((current_setting('test.respuesta_principal')::jsonb)->>'codigo' ~ '^ES-[0-9]+$', 'El registro devuelve un codigo legible');
 select is((current_setting('test.respuesta_principal')::jsonb)->>'valor_total_productos', '180000', 'El registro devuelve el total con precio promocional vigente');
 select ok(not ((current_setting('test.respuesta_principal')::jsonb) ? 'telefono'), 'La respuesta publica no devuelve datos personales');
+select ok((current_setting('test.respuesta_principal')::jsonb)->>'token_cliente' ~ '^[0-9a-f-]{36}$', 'El registro devuelve el token publico no predecible');
+select is((current_setting('test.respuesta_principal')::jsonb)->>'elegible_pago', 'true', 'Una solicitud solo de venta inmediata es elegible para pago');
+select is((public.registrar_solicitud_compra(
+  '12121212-1212-1212-1212-121212121212', 'Cliente mixto', '3000000000', null, null,
+  jsonb_build_array(
+    jsonb_build_object('presentacion_id', current_setting('test.presentacion_inmediata')::integer, 'cantidad', 1, 'precio_esperado', 90000),
+    jsonb_build_object('presentacion_id', current_setting('test.presentacion_bajo_pedido')::integer, 'cantidad', 2, 'precio_esperado', 80000)
+  ),
+  true, true
+))->>'elegible_pago', 'false', 'Una solicitud mixta no es elegible para pago');
 
 select set_config(
   'test.respuesta_reintento',
@@ -144,18 +154,23 @@ select is(
 );
 select is(
   (select terminos_version from public.solicitudes where identificador_intento = '99999999-9999-9999-9999-999999999999'),
-  'terminos-v1',
+  'terminos-v2',
   'La solicitud conserva la version vigente de terminos'
 );
 select is(
   (select politica_datos_version from public.solicitudes where identificador_intento = '99999999-9999-9999-9999-999999999999'),
-  'politica-datos-v1',
+  'politica-datos-v2',
   'La solicitud conserva la version vigente de politica de datos'
 );
 select is(
   (select count(*) from public.solicitudes where identificador_intento = '99999999-9999-9999-9999-999999999999'),
   1::bigint,
   'El reintento no duplica la solicitud'
+);
+select is(
+  (select count(*) from public.pagos_solicitud ps join public.solicitudes s on s.id = ps.solicitud_id where s.identificador_intento = '99999999-9999-9999-9999-999999999999'),
+  1::bigint,
+  'El registro crea atomically el pago pendiente asociado'
 );
 
 select * from finish();

@@ -95,6 +95,18 @@ El estado `Aprobado por el equipo` no sustituye una validación académica poste
 | RF-58 | El sistema debe impedir el registro de la solicitud si el visitante no acepta los documentos vigentes. | MUST | Aprobado por el equipo | Decisión del equipo, 2026-09-17 |
 | RF-59 | La solicitud debe conservar las versiones aceptadas de los Términos y condiciones y de la Política de tratamiento de datos, junto con la fecha y hora de aceptación. | MUST | Aprobado por el equipo | Decisión del equipo, 2026-09-17 |
 
+### Pago manual por Bre-B
+
+| ID | Descripción | Prioridad | Estado | Fuente |
+| --- | --- | --- | --- | --- |
+| RF-60 | Después de registrar una solicitud elegible, el sistema debe permitir recuperarla mediante su código y un token aleatorio, sin exigir una cuenta de cliente. | MUST | Implementado; pendiente de validación manual integral | Ampliación aprobada por el equipo, 2026-10-01 |
+| RF-61 | El sistema debe mostrar el QR y la llave Bre-B proporcionados por ESENCIALES únicamente después de registrar una solicitud elegible para pago inmediato. | MUST | Implementado; pendiente de validar datos reales | Ampliación aprobada por el equipo, 2026-10-01 |
+| RF-62 | Solo son elegibles para pago inmediato las solicitudes Nuevas cuyas líneas correspondan a presentaciones activas de venta inmediata con stock suficiente; una solicitud con líneas bajo pedido no debe ofrecer esta opción. | MUST | Implementado; pendiente de validación manual integral | Ampliación aprobada por el equipo, 2026-10-01 |
+| RF-63 | El cliente debe poder enviar un único comprobante JPG, PNG, WebP o PDF de hasta 5 MiB para revisión, mediante una operación que vuelva a validar el código, el token y la elegibilidad. | MUST | Implementado; pendiente de validación manual integral | Ampliación aprobada por el equipo, 2026-10-01 |
+| RF-64 | Los comprobantes deben almacenarse de forma privada y solo un administrador activo debe poder consultarlos mediante una URL firmada de corta duración. | MUST | Implementado; pendiente de validación manual integral | ADR-010, 2026-10-01 |
+| RF-65 | El administrador debe poder rechazar un comprobante indicando el motivo o verificarlo; la verificación debe confirmar el pago, confirmar la solicitud y descontar el inventario aplicable en una sola transacción. | MUST | Implementado; pendiente de validación manual integral | ADR-010, 2026-10-01 |
+| RF-66 | El sistema debe mantener separado el estado del pago (`Pendiente`, `Comprobante enviado`, `Verificado` o `Rechazado`) del estado de la solicitud. | MUST | Implementado; pendiente de validación manual integral | Ampliación aprobada por el equipo, 2026-10-01 |
+
 ### Administración de solicitudes
 
 | ID | Descripción | Prioridad | Estado | Fuente |
@@ -124,11 +136,13 @@ El estado `Aprobado por el equipo` no sustituye una validación académica poste
 | RNF-07 | La aplicación debe evitar cargas innecesarias y optimizar imágenes, listados y operaciones contra Supabase sin fijar métricas no medidas. | SHOULD | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RNF-08 | Las páginas públicas deberían incluir títulos y descripciones adecuados, jerarquía semántica de encabezados, texto alternativo para imágenes relevantes y contenido indexable cuando corresponda. | SHOULD | Aprobado por el equipo | MVP V1, 2026-09-03 |
 | RNF-09 | El sistema debe desplegarse en producción y utilizar PostgreSQL en el entorno definitivo. | MUST | Aprobado por el equipo | MVP V1, 2026-09-03 |
+| RNF-10 | El sitio no debe solicitar ni almacenar tarjetas, CVV, contraseñas bancarias, códigos OTP u otras credenciales financieras; la transferencia Bre-B ocurre en la aplicación bancaria del cliente y requiere revisión administrativa. | MUST | Aprobado por el equipo | ADR-010, 2026-10-01 |
 
 ## Pendientes que afectan requisitos
 
 - El segundo rol autenticado solo se añadirá si el profesor lo exige.
 - La explicación de clasificaciones depende del contenido validado por Esenciales.
 - La validación técnica exacta del teléfono se definirá sin bloquear números legítimos.
-- El contenido de los Términos y condiciones y de la Política de tratamiento de datos debe ser elaborado y validado por Esenciales antes del despliegue; la documentación del proyecto no sustituye asesoría jurídica.
+- Las versiones legales que contemplan el pago manual deben ser validadas por ESENCIALES antes de habilitar el flujo en producción; la documentación del proyecto no sustituye asesoría jurídica.
+- Deben confirmarse la llave, el tipo de llave y el QR Bre-B reales proporcionados por ESENCIALES antes de habilitar las instrucciones de pago en producción.
 - Autenticación, imágenes, despliegue y transacciones se concretarán durante el diseño técnico.

@@ -1,11 +1,9 @@
-import { filterPurchaseRequests, listPurchaseRequests, savePurchaseRequest, transitionPurchaseRequest } from './requests.js';
+import { filterPurchaseRequests, listPurchaseRequests, rejectPaymentProof, savePurchaseRequest, transitionPurchaseRequest, verifyPaymentAndConfirm } from './requests.js';
 import { purchaseRequestDetailView, purchaseRequestsView } from './request-views.mjs';
 import { supabase } from './supabase.js';
+import { showNotification } from './notifications.mjs';
 
-let state = { requests: [], loading: true, error: '', filters: { query: '', status: '' }, selectedId: null, values: null, busy: false, dirty: false, quantityErrors: {}, notice: null };
-
-const escapeHtml = (value = '') => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
-const closeIcon = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>';
+let state = { requests: [], loading: true, error: '', filters: { query: '', status: '' }, selectedId: null, values: null, busy: false, dirty: false, quantityErrors: {} };
 
 function valuesFor(request) {
   return { nombre_cliente: request.nombre_cliente, telefono: request.telefono, ciudad: request.ciudad || '', observaciones: request.observaciones || '', lineas: (request.detalles_solicitud || []).map((line) => ({ ...line })) };
@@ -47,14 +45,11 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
   const selectedRequest = () => state.requests.find((request) => request.id === state.selectedId);
   const draw = () => {
     const request = selectedRequest();
-    const toast = state.notice ? `<div class="admin-toast admin-toast--${state.notice.type}" role="${state.notice.type === 'error' ? 'alert' : 'status'}"><span>${escapeHtml(state.notice.message)}</span><button type="button" data-request-toast-close aria-label="Cerrar notificación">${closeIcon}</button></div>` : '';
-    outlet.innerHTML = `${toast}${request ? purchaseRequestDetailView(request, { values: state.values || valuesFor(request), busy: state.busy, dirty: state.dirty, quantityErrors: state.quantityErrors }) : purchaseRequestsView({ requests: filterPurchaseRequests(state.requests, state.filters), allCount: state.requests.length, filters: state.filters, loading: state.loading, error: state.error })}`;
+    outlet.innerHTML = request ? purchaseRequestDetailView(request, { values: state.values || valuesFor(request), busy: state.busy, dirty: state.dirty, quantityErrors: state.quantityErrors }) : purchaseRequestsView({ requests: filterPurchaseRequests(state.requests, state.filters), allCount: state.requests.length, filters: state.filters, loading: state.loading, error: state.error });
     bind();
   };
   const showNotice = (message, type = 'success') => {
-    const notice = { message, type };
-    state = { ...state, notice }; draw();
-    window.setTimeout(() => { if (state.notice === notice) { state = { ...state, notice: null }; draw(); } }, 5000);
+    showNotification(message, { tone: type, documentRef: outlet.ownerDocument });
   };
   const captureValues = () => {
     const form = outlet.querySelector('#request-edit-form');
@@ -128,6 +123,37 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     await load();
     showNotice('Estado de la solicitud actualizado correctamente.');
   }
+  async function rejectProof() {
+    if (state.busy || !state.selectedId) return;
+    const reason = window.prompt('Indica la razón del rechazo del comprobante:');
+    if (reason === null) return;
+    state = { ...state, busy: true, error: '' }; draw();
+    const { error } = await rejectPaymentProof(supabase, state.selectedId, reason);
+    if (!isCurrentGeneration()) return;
+    if (error) { state = { ...state, busy: false }; showNotice(requestError(error), 'error'); return; }
+    state = { ...state, busy: false, dirty: false, values: null };
+    await load();
+    showNotice('Comprobante rechazado.');
+  }
+  async function verifyPayment() {
+    if (state.busy || !state.selectedId) return;
+    if (!window.confirm('¿Confirmas que verificaste el pago? Esta acción también confirmará la solicitud y descontará el inventario inmediato.')) return;
+    state = { ...state, busy: true, error: '' }; draw();
+    const { error } = await verifyPaymentAndConfirm(supabase, state.selectedId);
+    if (!isCurrentGeneration()) return;
+    if (error) { state = { ...state, busy: false }; showNotice(requestError(error), 'error'); return; }
+    state = { ...state, busy: false, dirty: false, values: null };
+    await load();
+    showNotice('Pago verificado y solicitud confirmada.');
+  }
+  async function openProof() {
+    const request = selectedRequest();
+    const payment = Array.isArray(request?.pagos_solicitud) ? request.pagos_solicitud[0] : request?.pagos_solicitud;
+    if (!payment?.comprobante_path) return;
+    const { data, error } = await supabase.storage.from('comprobantes-pago').createSignedUrl(payment.comprobante_path, 60);
+    if (error || !data?.signedUrl) { showNotice('No fue posible abrir el comprobante.', 'error'); return; }
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+  }
   function closeDetail() {
     if (state.dirty && !window.confirm('Hay cambios sin guardar. ¿Quieres volver de todas formas?')) return;
     state = { ...state, selectedId: null, values: null, error: '', dirty: false, busy: false, quantityErrors: {} }; draw();
@@ -156,7 +182,6 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     }));
     outlet.querySelector('[data-request-back]')?.addEventListener('click', closeDetail);
     outlet.querySelector('[data-request-discard]')?.addEventListener('click', discardChanges);
-    outlet.querySelector('[data-request-toast-close]')?.addEventListener('click', () => { state = { ...state, notice: null }; draw(); });
     outlet.querySelector('#request-edit-form')?.addEventListener('input', () => { captureValues(); syncEditControls(); });
     outlet.querySelectorAll('[data-request-quantity-change]').forEach((button) => button.addEventListener('click', () => {
       captureValues();
@@ -173,6 +198,9 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     outlet.querySelectorAll('[data-request-line-remove]').forEach((button) => button.addEventListener('click', () => { captureValues(); const values = { ...state.values, lineas: state.values.lineas.filter((line) => String(line.id) !== button.dataset.requestLineRemove) }; state = { ...state, values, dirty: hasUnsavedChanges(selectedRequest(), values), quantityErrors: quantityErrorsFor(values.lineas), error: '' }; draw(); }));
     outlet.querySelector('#request-edit-form')?.addEventListener('submit', (event) => { event.preventDefault(); event.currentTarget.checkValidity() ? save(event.currentTarget) : event.currentTarget.reportValidity(); });
     outlet.querySelectorAll('[data-request-transition]').forEach((button) => button.addEventListener('click', () => transition(button.dataset.requestTransition)));
+    outlet.querySelector('[data-payment-reject]')?.addEventListener('click', rejectProof);
+    outlet.querySelector('[data-payment-verify]')?.addEventListener('click', verifyPayment);
+    outlet.querySelector('[data-payment-proof-open]')?.addEventListener('click', openProof);
   }
   await load();
 }

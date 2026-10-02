@@ -8,7 +8,7 @@ Este archivo resume los límites vigentes del proyecto. La especificación detal
 - Se prioriza un producto full stack completo, desplegado, comprensible y sustentable.
 - El cliente consulta el catálogo sin registrarse.
 - El proceso central registra una solicitud de compra y permite continuar voluntariamente hacia WhatsApp.
-- No se procesan pagos ni se considera la solicitud como una venta concluida.
+- El sistema admite pago manual opcional por Bre-B tras registrar una solicitud, con comprobante privado y revisión administrativa; no procesa tarjetas ni valida transferencias automáticamente.
 - El inventario, la disponibilidad y los precios se administran por presentación.
 - El catálogo utiliza productos destacados seleccionados manualmente, no afirmaciones automáticas de productos más vendidos.
 - PostgreSQL, provisto por Supabase, es el sistema gestor de base de datos confirmado.
@@ -52,8 +52,7 @@ Esta agrupación es una decisión de organización del equipo. El supuesto máxi
 
 ## Fuera del MVP
 
-- Pagos, autenticación de clientes y seguimiento público de solicitudes.
-- Gestión administrativa de pagos y ventas contra entrega.
+- Autenticación de clientes, pasarela de pagos, tarjetas, validación bancaria automática, reembolsos y reservas temporales de inventario.
 - Módulo de clientes e historial consolidado de compras.
 - Dirección y barrio dentro del registro web de la solicitud.
 - Costos internos de productos.

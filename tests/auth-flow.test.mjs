@@ -5,6 +5,7 @@ import {
   getAdminAuthReturnUrl,
   getPasswordSetupFlow,
   shouldRenderPasswordUpdate,
+  shouldRefreshAdminSession,
   shouldShowPasswordUpdate,
 } from '../src/auth-flow.mjs';
 
@@ -77,6 +78,14 @@ test('does not re-render an active password update flow for another auth event',
     ),
     false,
   );
+});
+
+test('refreshes administration only for initial, sign-in, or sign-out session events', () => {
+  assert.equal(shouldRefreshAdminSession('INITIAL_SESSION'), true);
+  assert.equal(shouldRefreshAdminSession('SIGNED_OUT', true), true);
+  assert.equal(shouldRefreshAdminSession('SIGNED_IN', false), true);
+  assert.equal(shouldRefreshAdminSession('SIGNED_IN', true), false);
+  assert.equal(shouldRefreshAdminSession('TOKEN_REFRESHED', true), false);
 });
 
 test('returns the sign-in view after an update without admin authorization', () => {

@@ -5,8 +5,10 @@ import { getPublicRoute } from './public-routes.mjs';
 import { appPath } from './app-paths.mjs';
 import { copDigits, formatCopInput, formatCopInputElement } from './cop-input.mjs';
 import { createDraftSaver } from './form-drafts.mjs';
+import { showNotification } from './notifications.mjs';
 import { applyPriceReview, clearPurchaseConfirmation, emptyRequestForm, loadPurchaseRequestDraft, purchaseRequestDraftMetadata, registerPurchaseRequest } from './public-purchase-request.mjs';
-import { cartDrawerView, legalModalView, loadingView, mobileMenuDrawerView, presentationSelectorView, publicShellView, renderPublicRoute, toastView } from './public-views.mjs';
+import { loadPublicPurchaseRequest, loadPurchaseRequestAccess, publicRequestUrl, savePurchaseRequestAccess, submitPaymentProof, tokenFromLocation } from './public-payment.mjs';
+import { cartDrawerView, legalModalView, loadingView, mobileMenuDrawerView, presentationSelectorView, publicShellView, renderPublicRoute } from './public-views.mjs';
 import { startPublicHeaderScroll } from './public-header-scroll.mjs';
 
 export function getDocumentMetadata(route, product = null) {
@@ -27,7 +29,7 @@ const focusable = 'button:not([disabled]), [href], input:not([disabled]), select
 export function startPublicCatalog({ app, client, route, windowRef = window, documentRef = document }) {
   const requestDraft = createDraftSaver(windowRef.sessionStorage, purchaseRequestDraftMetadata().key, purchaseRequestDraftMetadata());
   const restoredRequestForm = loadPurchaseRequestDraft(windowRef.sessionStorage);
-  let active = true; let requestId = 0; let cartValidationId = 0; let currentRoute = route; let currentProduct = null; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null; let legalModal = null; let cartDrawerState = { open: false, step: 'cart', error: null }; let cartDrawerNeedsFocus = false; let cartState = { ready: false }; let requestForm = restoredRequestForm || emptyRequestForm(); let requestState = { form: requestForm, errors: {}, error: null, busy: false, priceReview: null }; let attemptId = null; let confirmation = null; let toastTimer = null; let mobileMenuOpen = false; let previousBodyOverflow = ''; let touchStartY = null;
+  let active = true; let requestId = 0; let cartValidationId = 0; let currentRoute = route; let currentProduct = null; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null; let legalModal = null; let cartDrawerState = { open: false, step: 'cart', error: null }; let cartDrawerNeedsFocus = false; let cartState = { ready: false }; let requestForm = restoredRequestForm || emptyRequestForm(); let requestState = { form: requestForm, errors: {}, error: null, busy: false, priceReview: null }; let attemptId = null; let confirmation = null; let paymentRequest = null; let paymentState = { step: 'summary', file: null, busy: false, error: null }; let mobileMenuOpen = false; let previousBodyOverflow = ''; let touchStartY = null;
   clearPurchaseConfirmation(windowRef.localStorage);
   const announce = (message) => { const region = app.querySelector('.public-live-region'); if (region) region.textContent = message; };
   const syncFooterSections = () => { const desktop = windowRef.matchMedia?.('(min-width: 64rem)').matches ?? Number(windowRef.innerWidth) >= 1024; app.querySelectorAll('[data-footer-section]').forEach((section) => { section.open = desktop; const summary = section.querySelector('summary'); if (summary) summary.tabIndex = desktop ? -1 : 0; }); };
@@ -37,25 +39,26 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     if (locked) { previousBodyOverflow = body.style.overflow; body.style.overflow = 'hidden'; }
     else body.style.overflow = previousBodyOverflow;
   };
+  const syncPageScrollLock = () => setPageScrollLocked(Boolean(mobileMenuOpen || cartDrawerState.open || selectorProduct || filterPanelOpen || legalModal));
   const closeMobileMenu = ({ focusTrigger = false } = {}) => {
     if (!mobileMenuOpen) return;
     mobileMenuOpen = false;
-    setPageScrollLocked(false);
     app.querySelector('[data-mobile-menu-drawer]')?.remove();
     const trigger = app.querySelector('[data-mobile-menu-toggle]');
     trigger?.setAttribute('aria-expanded', 'false');
     trigger?.setAttribute('aria-label', 'Abrir menú de navegación');
     if (focusTrigger) queueMicrotask(() => trigger?.focus());
+    syncPageScrollLock();
   };
   const openMobileMenu = () => {
     if (mobileMenuOpen || cartDrawerState.open) return;
     mobileMenuOpen = true;
-    setPageScrollLocked(true);
     app.insertAdjacentHTML('beforeend', mobileMenuDrawerView(currentRoute.name));
     const trigger = app.querySelector('[data-mobile-menu-toggle]');
     trigger?.setAttribute('aria-expanded', 'true');
     trigger?.setAttribute('aria-label', 'Cerrar menú de navegación');
     queueMicrotask(() => app.querySelector('[data-mobile-menu-close]')?.focus());
+    syncPageScrollLock();
   };
   const setMetadata = (nextRoute, product) => { const metadata = getDocumentMetadata(nextRoute, product); documentRef.title = metadata.title; documentRef.querySelector('meta[name="description"]')?.setAttribute('content', metadata.description); };
   const renderShell = (content, routeName = currentRoute.name) => {
@@ -65,23 +68,20 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     filterToggle?.setAttribute('aria-controls', 'catalog-filter-panel'); filterPanel?.setAttribute('id', 'catalog-filter-panel'); filterPanel?.setAttribute('role', 'dialog'); filterPanel?.setAttribute('aria-modal', 'true'); filterPanel?.setAttribute('aria-labelledby', 'catalog-filter-title'); filterTitle?.setAttribute('id', 'catalog-filter-title'); filterTitle?.setAttribute('tabindex', '-1');
     if (legalModal) queueMicrotask(() => app.querySelector('[data-legal-close]')?.focus());
     if (cartDrawerNeedsFocus) { cartDrawerNeedsFocus = false; queueMicrotask(() => app.querySelector('[data-cart-drawer-close]')?.focus()); }
+    syncPageScrollLock();
   };
   const renderCart = () => renderShell(renderPublicRoute({ name: 'cart' }, { cart, cartState: { ...cartState, confirmation, requestState } }), 'cart');
+  const renderPaymentRequest = () => renderShell(renderPublicRoute(currentRoute, { data: paymentRequest, paymentState }), 'request');
   const renderCatalog = (filters, state = {}) => {
     renderShell(renderPublicRoute({ name: 'catalog' }, { catalogState: { baseRows: baseRows || [], filteredRows: lastFilteredRows, filters, panelOpen: filterPanelOpen, ...state } }), 'catalog');
   };
   const persistCart = () => { if (!saveCart(cart, windowRef.localStorage)) announce('El carrito se mantendrá durante esta sesión, pero no pudo guardarse en este navegador.'); };
   const dismissConfirmation = () => { confirmation = null; clearPurchaseConfirmation(windowRef.localStorage); cartDrawerState = { ...cartDrawerState, step: 'cart' }; };
-  const showToast = (message) => {
-    app.querySelector('[data-cart-toast]')?.remove();
-    app.insertAdjacentHTML('beforeend', toastView(message));
-    clearTimeout(toastTimer);
-    toastTimer = (windowRef.setTimeout || setTimeout)(() => app.querySelector('[data-cart-toast]')?.remove(), 4000);
-  };
-  const closeOverlay = () => { const trigger = overlayTrigger; selectorProduct = null; filterPanelOpen = false; legalModal = null; overlayTrigger = null; if (currentRoute.name === 'catalog') renderCatalog(parseCatalogFilters(windowRef.location.search)); else if (currentRoute.name === 'cart') renderCart(); else renderRoute(currentRoute); queueMicrotask(() => trigger?.focus()); };
+  const showToast = (message, tone = 'success') => showNotification(message, { tone, documentRef });
+  const closeOverlay = () => { const trigger = overlayTrigger; selectorProduct = null; filterPanelOpen = false; legalModal = null; overlayTrigger = null; syncPageScrollLock(); if (currentRoute.name === 'catalog') renderCatalog(parseCatalogFilters(windowRef.location.search)); else if (currentRoute.name === 'cart') renderCart(); else renderRoute(currentRoute); queueMicrotask(() => trigger?.focus()); };
   const trapFocus = (event) => {
     if (event.key !== 'Tab') return;
-    const overlay = app.querySelector('[data-presentation-selector], [data-filter-panel]:not([hidden]), [data-legal-modal-dialog], [data-cart-drawer]');
+    const overlay = app.querySelector('[data-mobile-menu-drawer], [data-presentation-selector], [data-filter-panel]:not([hidden]), [data-legal-modal-dialog], [data-cart-drawer]');
     if (!overlay) return;
     const controls = [...overlay.querySelectorAll(focusable)]; if (!controls.length) return;
     const first = controls[0]; const last = controls.at(-1);
@@ -111,6 +111,24 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     if (next === cart) { announce('La cantidad seleccionada ya no está disponible para agregar.'); return; }
     cart = next; persistCart(); closeOverlay(); announce(`${product.nombre} fue añadido al carrito.`); showToast(`${product.nombre} se agregó al carrito.`);
   };
+  const accessFor = (code) => {
+    if (confirmation?.codigo === code && confirmation?.token_cliente) return { codigo: code, token: confirmation.token_cliente };
+    const token = tokenFromLocation(windowRef.location);
+    return token ? { codigo: code, token } : loadPurchaseRequestAccess(code, windowRef.localStorage);
+  };
+  const loadPaymentRequest = async (code, { drawer = false } = {}) => {
+    const access = accessFor(code);
+    if (!access) { announce('No encontramos el acceso seguro para esta solicitud.'); return; }
+    const result = await loadPublicPurchaseRequest(client, code, access.token);
+    if (!active || result.error || !result.data) {
+      paymentState = { ...paymentState, error: result.error || 'No pudimos cargar el pago.' };
+      if (drawer) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest();
+      return;
+    }
+    paymentRequest = result.data;
+    paymentState = { ...paymentState, error: null };
+    if (drawer) { cartDrawerState = { ...cartDrawerState, step: 'payment', paymentRequest, paymentState }; renderDrawer(); } else renderPaymentRequest();
+  };
   const openPresentationSelector = async (productId, trigger) => {
     trigger.disabled = true; trigger.setAttribute('aria-busy', 'true');
     const result = await loadPublicProduct(client, productId); trigger.disabled = false; trigger.removeAttribute('aria-busy');
@@ -118,12 +136,25 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const available = result.data.presentaciones?.filter((item) => ['Disponible', 'Bajo pedido'].includes(item.estado)) || [];
     if (available.length === 1) { cart = addCartItem(cart, result.data, available[0]); persistCart(); renderRoute(currentRoute); announce(`${result.data.nombre} fue añadido al carrito.`); showToast(`${result.data.nombre} se agregó al carrito.`); return; }
     if (!available.length) { announce('Este producto ya no tiene presentaciones disponibles para agregar.'); return; }
-    selectorProduct = result.data; overlayTrigger = trigger; app.insertAdjacentHTML('beforeend', presentationSelectorView(result.data)); app.querySelector('[data-presentation-selector] button[data-presentation-close]')?.focus();
+    selectorProduct = result.data; overlayTrigger = trigger; app.insertAdjacentHTML('beforeend', presentationSelectorView(result.data)); syncPageScrollLock(); app.querySelector('[data-presentation-selector] button[data-presentation-close]')?.focus();
   };
-  const renderRoute = async (nextRoute) => {
+  const renderRoute = async (nextRoute, { scrollToTop = false } = {}) => {
     closeMobileMenu();
+    if (scrollToTop) windowRef.scrollTo?.({ top: 0, behavior: 'auto' });
     currentRoute = nextRoute; const currentRequest = ++requestId; setMetadata(nextRoute);
     if (nextRoute.name === 'catalog') { loadCatalog(parseCatalogFilters(windowRef.location.search)); return; }
+    if (nextRoute.name === 'request') {
+      currentProduct = null;
+      const access = accessFor(nextRoute.code);
+      if (!access) { renderShell(renderPublicRoute(nextRoute, { error: 'No encontramos un acceso seguro para esta solicitud en este navegador.' }), 'request'); return; }
+      renderShell(loadingView('Cargando solicitud...'), 'request');
+      const result = await loadPublicPurchaseRequest(client, nextRoute.code, access.token);
+      if (!active || currentRequest !== requestId) return;
+      paymentRequest = result.data;
+      paymentState = { ...paymentState, step: 'summary', error: result.error };
+      renderPaymentRequest();
+      return;
+    }
     if (nextRoute.name === 'cart') {
       currentProduct = null;
       if (confirmation) { renderCart(); return; }
@@ -169,8 +200,8 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     if (mobileMenuOpen && event.target.closest?.('[data-mobile-menu-close]')) { closeMobileMenu({ focusTrigger: true }); return; }
     const cartDrawerOpenTrigger = event.target.closest?.('[data-cart-drawer-open]');
     if (cartDrawerOpenTrigger) { closeMobileMenu(); cartDrawerState = { open: true, step: confirmation ? 'confirmation' : 'cart', error: null }; cartDrawerNeedsFocus = true; overlayTrigger = cartDrawerOpenTrigger; renderDrawer(); revalidateDrawerCart(); return; }
-    if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-close]')) { dismissConfirmation(); cartDrawerState = { ...cartDrawerState, open: false }; app.querySelector('[data-cart-drawer]')?.remove(); const trigger = overlayTrigger; overlayTrigger = null; queueMicrotask(() => trigger?.focus()); return; }
-    if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-back]')) { cartDrawerState = { ...cartDrawerState, step: 'cart', error: null }; renderDrawer(); return; }
+    if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-close]')) { dismissConfirmation(); cartDrawerState = { ...cartDrawerState, open: false }; app.querySelector('[data-cart-drawer]')?.remove(); const trigger = overlayTrigger; overlayTrigger = null; syncPageScrollLock(); queueMicrotask(() => trigger?.focus()); return; }
+    if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-back]')) { cartDrawerState = { ...cartDrawerState, step: cartDrawerState.step === 'payment' ? 'confirmation' : 'cart', error: null }; renderDrawer(); return; }
     if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-continue]')) { cartDrawerState = { ...cartDrawerState, step: 'form', error: null }; renderDrawer(); return; }
     if ((selectorProduct || filterPanelOpen || legalModal) && !event.target.closest?.('[data-presentation-selector], [data-filter-panel], [data-filter-toggle], [data-legal-modal-dialog], [data-legal-modal]')) { closeOverlay(); return; }
     const legal = event.target.closest?.('[data-legal-modal]'); if (legal) { overlayTrigger = legal; legalModal = legal.dataset.legalModal; if (currentRoute.name === 'cart') renderCart(); else renderRoute(currentRoute); return; }
@@ -188,11 +219,17 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const cartQuantity = event.target.closest?.('[data-cart-quantity-change]'); if (cartQuantity) { const item = cart.items.find((current) => current.presentationId === Number(cartQuantity.dataset.cartQuantityChange)); const next = item && updateCartItemQuantity(cart, cartQuantity.dataset.cartQuantityChange, item.quantity + Number(cartQuantity.dataset.cartQuantityStep)); if (!next || next === cart) { if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, error: 'La cantidad debe respetar la disponibilidad actual de esta presentación.' }; renderDrawer(); } return; } cart = next; attemptId = null; requestState = { ...requestState, priceReview: null, error: null }; cartDrawerState = { ...cartDrawerState, error: null }; persistCart(); if (cartDrawerState.open) renderDrawer(); else renderCart(); return; }
     const detailQuantity = event.target.closest?.('[data-detail-quantity-change]'); if (detailQuantity) { const input = app.querySelector('[data-detail-quantity]'); syncDetailQuantity(input, Number(input?.value) + Number(detailQuantity.dataset.detailQuantityStep)); return; }
     if (event.target.closest?.('[data-request-new]')) { clearPurchaseConfirmation(windowRef.localStorage); requestDraft.clear(); confirmation = null; requestForm = emptyRequestForm(); requestState = { form: requestForm, errors: {}, error: null, busy: false, priceReview: null }; attemptId = null; if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, step: 'cart' }; renderDrawer(); } else renderRoute(currentRoute); return; }
+    if (event.target.closest?.('[data-payment-start]')) { paymentState = { step: 'payment', file: null, busy: false, error: null }; const code = confirmation?.codigo || currentRoute.code; if (cartDrawerState.open) loadPaymentRequest(code, { drawer: true }); else loadPaymentRequest(code); return; }
+    const copyCode = event.target.closest?.('[data-confirmation-copy]');
+    if (copyCode) { const value = copyCode.dataset.confirmationCopy; const clipboard = windowRef.navigator?.clipboard; if (!value || !clipboard?.writeText) { announce('No fue posible copiar el código.'); return; } clipboard.writeText(value).then(() => showToast('Código de solicitud copiado.')).catch(() => announce('No fue posible copiar el código.')); return; }
+    const copyPaymentKey = event.target.closest?.('[data-payment-copy-key]');
+    if (copyPaymentKey) { const value = copyPaymentKey.dataset.paymentCopyKey; const clipboard = windowRef.navigator?.clipboard; if (value && clipboard?.writeText) clipboard.writeText(value).then(() => showToast('Llave copiada.')).catch(() => announce('No fue posible copiar la llave.')); return; }
+    if (event.target.closest?.('[data-payment-proof-clear]')) { paymentState = { ...paymentState, file: null, error: null }; if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest(); return; }
     if (cartDrawerState.open && event.target.closest?.('[data-confirmation-continue]')) { dismissConfirmation(); cartDrawerState = { ...cartDrawerState, open: false }; app.querySelector('[data-cart-drawer]')?.remove(); overlayTrigger = null; }
     const retry = event.target.closest?.('[data-public-retry]'); if (retry) { event.preventDefault(); if (currentRoute.name === 'catalog') loadCatalog(parseCatalogFilters(windowRef.location.search), { refreshBase: true }); else renderRoute(currentRoute); return; }
     const link = event.target.closest?.('a[href]'); if (!link) return; if (mobileMenuOpen && link.closest?.('[data-mobile-menu-drawer]')) closeMobileMenu(); const target = new URL(link.href, windowRef.location.href);
     if (target.origin !== windowRef.location.origin || target.pathname === windowRef.location.pathname && target.hash) return; const nextRoute = getPublicRoute(target.pathname); if (nextRoute.name === 'admin' || nextRoute.name === 'not-found') return;
-    event.preventDefault(); windowRef.history.pushState({}, '', `${target.pathname}${target.search}`); renderRoute(nextRoute);
+    event.preventDefault(); windowRef.history.pushState({}, '', `${target.pathname}${target.search}`); renderRoute(nextRoute, { scrollToTop: true });
   };
   const onSubmit = (event) => {
     if (event.target.matches?.('[data-catalog-form]')) { event.preventDefault(); filterPanelOpen = false; updateFilters(readFormFilters()); return; }
@@ -209,8 +246,24 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
         if (result.errors && Object.keys(result.errors).length) { requestState = { ...requestState, busy: false, errors: result.errors }; renderRequestSurface(); queueMicrotask(() => app.querySelector('[data-request-form] [aria-invalid="true"]')?.focus()); return; }
         if (result.error) { requestState = { ...requestState, busy: false, error: result.error }; renderRequestSurface(); return; }
         if (result.data?.requiere_revision_precio) { cart = applyPriceReview(cart, result.data); persistCart(); requestState = { ...requestState, busy: false, priceReview: result.data }; cartState = { ...cartState, ready: true }; renderRequestSurface(); return; }
-        confirmation = result.data; requestDraft.clear(); cart = removeSelectedCartItems(cart); persistCart(); cartState = { ready: false }; requestState = { form: emptyRequestForm(), errors: {}, error: null, busy: false, priceReview: null }; attemptId = null; if (cartDrawerState.open) cartDrawerState = { ...cartDrawerState, step: 'confirmation' }; renderRequestSurface();
+        confirmation = result.data; savePurchaseRequestAccess(confirmation, windowRef.localStorage); requestDraft.clear(); cart = removeSelectedCartItems(cart); persistCart(); cartState = { ready: false }; requestState = { form: emptyRequestForm(), errors: {}, error: null, busy: false, priceReview: null }; attemptId = null; if (cartDrawerState.open) cartDrawerState = { ...cartDrawerState, step: 'confirmation' }; renderRequestSurface();
       }).catch(() => { if (!active) return; requestState = { ...requestState, busy: false, error: 'No fue posible registrar la solicitud. Inténtalo de nuevo.' }; renderRequestSurface(); });
+      return;
+    }
+    if (event.target.matches?.('[data-payment-proof-form]')) {
+      event.preventDefault();
+      const code = paymentRequest?.codigo || currentRoute.code;
+      const access = accessFor(code);
+      if (!access) return;
+      paymentState = { ...paymentState, busy: true, error: null };
+      if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest();
+      submitPaymentProof(client, { code, token: access.token, file: paymentState.file }).then(async (result) => {
+        if (!active) return;
+        if (result.error) { paymentState = { ...paymentState, busy: false, error: result.error }; if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest(); return; }
+        paymentState = { step: 'summary', file: null, busy: false, error: null };
+        await loadPaymentRequest(code, { drawer: cartDrawerState.open });
+        showToast('Comprobante enviado correctamente.');
+      });
       return;
     }
     if (!event.target.matches?.('[data-product-detail-form]')) return;
@@ -223,6 +276,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   const updateRequestDraft = (formElement) => { const data = new FormData(formElement); requestForm = { nombre: data.get('nombre'), telefono: data.get('telefono'), ciudad: data.get('ciudad'), observaciones: data.get('observaciones'), aceptaTerminos: data.get('aceptaTerminos') === 'on', aceptaPoliticaDatos: data.get('aceptaPoliticaDatos') === 'on' }; requestDraft.save(requestForm); attemptId = null; requestState = { ...requestState, form: requestForm, priceReview: null, error: null, errors: {} }; };
   const onInput = (event) => { if (event.target.matches?.('[name="precioMinimo"], [name="precioMaximo"]')) event.target.value = formatCopInput(event.target.value); if (event.target.matches?.('[data-detail-quantity]')) syncDetailQuantity(event.target); if (event.target.matches?.('[data-request-form] [name="telefono"]')) event.target.value = event.target.value.replace(/[^0-9+() -]/g, ''); const form = event.target.closest?.('[data-request-form]'); if (form) updateRequestDraft(form); };
   const onChange = (event) => {
+    if (event.target.matches?.('[data-payment-proof-input]')) { paymentState = { ...paymentState, file: event.target.files?.[0] || null, error: null }; if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest(); return; }
     if (event.target.matches?.('[data-filter-panel] input[name="categoria"]')) {
       if (event.target.checked) app.querySelectorAll('[data-filter-panel] input[name="categoria"]').forEach((input) => { if (input !== event.target) input.checked = false; });
       return;
@@ -239,7 +293,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   const onKeyDown = (event) => {
     if (event.key === 'Escape' && mobileMenuOpen) { event.preventDefault(); closeMobileMenu({ focusTrigger: true }); return; }
     if (event.key === 'Escape' && legalModal) { event.preventDefault(); closeOverlay(); return; }
-    if (event.key === 'Escape' && cartDrawerState.open) { event.preventDefault(); dismissConfirmation(); cartDrawerState = { ...cartDrawerState, open: false }; app.querySelector('[data-cart-drawer]')?.remove(); const trigger = overlayTrigger; overlayTrigger = null; queueMicrotask(() => trigger?.focus()); return; }
+    if (event.key === 'Escape' && cartDrawerState.open) { event.preventDefault(); dismissConfirmation(); cartDrawerState = { ...cartDrawerState, open: false }; app.querySelector('[data-cart-drawer]')?.remove(); const trigger = overlayTrigger; overlayTrigger = null; syncPageScrollLock(); queueMicrotask(() => trigger?.focus()); return; }
     if (event.key === 'Escape' && (selectorProduct || filterPanelOpen || legalModal)) { event.preventDefault(); closeOverlay(); return; }
     trapFocus(event);
   };
@@ -249,6 +303,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     if (currentDrawer) currentDrawer.outerHTML = nextDrawer;
     else if (nextDrawer) app.insertAdjacentHTML('beforeend', nextDrawer);
     attachImageFallbacks(app);
+    syncPageScrollLock();
     if (cartDrawerNeedsFocus) { cartDrawerNeedsFocus = false; queueMicrotask(() => app.querySelector('[data-cart-drawer-close]')?.focus()); }
   };
   const renderRequestSurface = () => { if (cartDrawerState.open) renderDrawer(); else renderCart(); };

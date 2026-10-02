@@ -14,6 +14,7 @@ Usuario autenticado responsable de:
 - Marcar productos destacados.
 - Consultar y gestionar solicitudes de compra.
 - Corregir solicitudes Nuevas dentro de los límites permitidos.
+- Revisar comprobantes y confirmar o rechazar pagos manuales.
 - Confirmar, entregar o cancelar solicitudes.
 
 No se incluye registro público de administradores ni gestión avanzada de roles. El administrador puede recuperar su contraseña mediante el correo asociado en Supabase Auth.
@@ -28,8 +29,9 @@ Usuario público que puede:
 - Preparar y modificar el carrito.
 - Registrar una solicitud de compra.
 - Decidir si continúa hacia WhatsApp.
+- Pagar opcionalmente por Bre-B después de registrar una solicitud elegible y enviar un comprobante para revisión.
 
-El cliente no paga, inicia sesión ni consulta públicamente el estado de solicitudes dentro del MVP.
+El cliente no inicia sesión. Puede recuperar una solicitud con el código y un token aleatorio, y consultar únicamente los estados públicos de su solicitud y pago.
 
 ## Actor pendiente de validación académica
 
@@ -76,6 +78,8 @@ Generar código de referencia
 Mostrar confirmación
         ↓
 Cliente decide si continúa por WhatsApp
+        ↓
+Puede pagar luego por Bre-B y enviar comprobante
 ```
 
 La solicitud queda registrada incluso si el cliente no abre o no envía el mensaje de WhatsApp.
@@ -99,7 +103,7 @@ Consulta solicitudes Nuevas
         ↓
 Corrige datos o cantidades permitidas si el cliente lo solicita
         ↓
-Confirma la solicitud
+Revisa comprobante y confirma pago + solicitud de forma atómica
         ↓
 Función de PostgreSQL revalida y descuenta inventario inmediato
         ↓
@@ -138,8 +142,8 @@ Una solicitud Confirmada es inmutable. Si el acuerdo cambia:
 
 ## Límites del flujo
 
-- El sistema no procesa pagos.
+- El sistema no es una pasarela: la transferencia Bre-B ocurre fuera del sitio y el comprobante requiere revisión manual.
 - WhatsApp continúa siendo el canal de conversación comercial.
-- No hay seguimiento público por código.
+- El código por sí solo no autoriza seguimiento: la recuperación exige también un token aleatorio.
 - No se editan solicitudes confirmadas o entregadas.
 - No se reservan unidades al agregar al carrito o registrar una solicitud Nueva.

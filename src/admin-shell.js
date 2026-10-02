@@ -28,13 +28,14 @@ export function shellView(route) {
 export function startAdminShell({ app, generation, isCurrentGeneration, onSignOut }) {
   let active = true;
   let stopScreen = null;
+  let scrollToTopOnNextRoute = false;
   const context = { app, generation, isCurrentGeneration, render: renderRoute };
   const renderers = {
     inventario: () => import('./products-controller.js').then(({ renderProductsScreen }) => renderProductsScreen),
     solicitudes: () => import('./requests-controller.js').then(({ renderRequestsScreen }) => renderRequestsScreen),
   };
 
-  async function renderRoute() {
+  async function renderRoute({ scrollToTop = false } = {}) {
     if (!active || !isCurrentGeneration()) return;
     stopScreen?.(); stopScreen = null;
     const route = getAdminRoute(window.location.hash);
@@ -45,12 +46,22 @@ export function startAdminShell({ app, generation, isCurrentGeneration, onSignOu
     const cleanup = await screen({ ...context, outlet: app.querySelector('[data-admin-outlet]') });
     if (!active || !isCurrentGeneration()) { cleanup?.(); return; }
     stopScreen = cleanup;
+    if (scrollToTop) window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
-  const onHashChange = () => renderRoute();
+  const onHashChange = () => {
+    const scrollToTop = scrollToTopOnNextRoute;
+    scrollToTopOnNextRoute = false;
+    renderRoute({ scrollToTop });
+  };
   window.addEventListener('hashchange', onHashChange);
   if (!window.location.hash) window.location.hash = '#inventario';
   else renderRoute();
 
-  return () => { active = false; stopScreen?.(); window.removeEventListener('hashchange', onHashChange); };
+  const onNavigationClick = (event) => {
+    if (event.target.closest('.admin-navigation__links a, .admin-mobile-menu__panel a')) scrollToTopOnNextRoute = true;
+  };
+  app.addEventListener('click', onNavigationClick);
+
+  return () => { active = false; stopScreen?.(); app.removeEventListener('click', onNavigationClick); window.removeEventListener('hashchange', onHashChange); };
 }

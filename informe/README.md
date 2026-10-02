@@ -5,7 +5,7 @@ Esta carpeta organiza los entregables y evidencias solicitados para los hitos ac
 ## Estructura
 
 - [`01-briefing/`](01-briefing/): guia y acta de entrevista, y acceso al briefing validado.
-- [`02-requisitos/`](02-requisitos/): requisitos, reglas de negocio, alcance y flujos.
+- [`02-requisitos/`](02-requisitos/): reglas de negocio para la entrega y acceso a requisitos, alcance y flujos vigentes.
 - [`03-diseno/`](03-diseno/): wireframes y mockups exportados por pantalla.
 - [`04-arquitectura/`](04-arquitectura/): diagrama editable y exportacion para el informe.
 - [`05-evidencias/`](05-evidencias/): pruebas, comparativos, validaciones y despliegue verificables.

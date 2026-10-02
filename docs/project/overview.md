@@ -28,7 +28,7 @@ El [briefing de necesidades](briefing-esenciales.md) sintetiza el levantamiento 
 
 La aplicación permitirá administrar productos, presentaciones, precios, disponibilidad e inventario; publicar un catálogo para visitantes; registrar solicitudes de compra; y continuar voluntariamente la conversación comercial por WhatsApp.
 
-Una solicitud de compra expresa intención de compra, pero no representa un pago o una venta concluida. La confirmación comercial ocurre por WhatsApp y su estado se administra dentro del sistema.
+Una solicitud de compra expresa inicialmente intención de compra y no representa por sí sola un pago o una venta concluida. Después de registrarla, el cliente puede continuar por WhatsApp o, si todas sus líneas son elegibles, realizar una transferencia manual por Bre-B y enviar un comprobante privado. La confirmación del pago y de la solicitud exige revisión administrativa; el sitio no valida transferencias automáticamente.
 
 ## Objetivos vigentes
 

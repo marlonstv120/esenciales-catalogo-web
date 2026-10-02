@@ -39,9 +39,9 @@ Las afirmaciones comparativas del análisis externo no se consideran resultados 
 
 ESENCIALES comercializa principalmente perfumes inspirados 1.1, originales o importados y otros productos de perfumería. La aplicación busca centralizar la administración y publicación de productos, presentaciones, precios, disponibilidad e inventario, y permitir que los clientes preparen una solicitud de compra antes de continuar la conversación comercial por WhatsApp.
 
-El sistema no procesa pagos ni afirma que una solicitud registrada sea una venta concluida. La compra se confirma comercialmente con Esenciales por WhatsApp y administrativamente dentro del sistema.
+El sistema admite un pago manual opcional por Bre-B después de registrar una solicitud. La transferencia ocurre fuera del sitio, el comprobante se almacena privado y un administrador lo revisa antes de confirmar el pago y la solicitud; no es una pasarela ni valida transferencias automáticamente.
 
-El propietario valida que el inventario se descuente cuando la solicitud pasa a `Confirmada`. Dirección y barrio se recopilan posteriormente por WhatsApp. El costo interno de los productos, la gestión de pagos, el módulo de clientes y los reportes de ventas permanecen fuera del MVP.
+El propietario valida que el inventario se descuente cuando la solicitud pasa a `Confirmada`. Dirección y barrio se recopilan posteriormente por WhatsApp. El costo interno de los productos, los pagos automatizados, el módulo de clientes y los reportes de ventas permanecen fuera del MVP.
 
 ## 4. Objetivos vigentes
 
@@ -65,11 +65,11 @@ La existencia de un máximo académico de ocho funcionalidades debe reconfirmars
 
 ### Administrador o propietario
 
-Usuario autenticado que administra categorías, productos, presentaciones, imágenes, precios, promociones, inventario, disponibilidad, productos destacados y solicitudes de compra.
+Usuario autenticado que administra categorías, productos, presentaciones, imágenes, precios, promociones, inventario, disponibilidad, productos destacados, solicitudes de compra y comprobantes de pago manual.
 
 ### Cliente o visitante
 
-Usuario público que consulta el catálogo sin registrarse, prepara un carrito, registra una solicitud de compra y decide si continúa hacia WhatsApp.
+Usuario público que consulta el catálogo sin registrarse, prepara un carrito, registra una solicitud de compra, decide si continúa hacia WhatsApp y puede enviar un comprobante de pago manual cuando la solicitud sea elegible.
 
 ### Colaborador
 
@@ -253,9 +253,11 @@ Una función de PostgreSQL volverá a validar productos, presentaciones, cantida
 
 Después del registro, el sistema preparará un mensaje con código, cliente, productos, presentaciones, cantidades, precios y valor total. El cliente decidirá si abre WhatsApp y envía el mensaje. La solicitud permanecerá registrada aunque el cliente no continúe hacia WhatsApp.
 
+Una solicitud Nueva será elegible para pago manual cuando todas sus líneas sean de venta inmediata, continúen activas y tengan stock suficiente. En ese caso, el cliente podrá recuperar la solicitud con su código y un token aleatorio, consultar el QR y la llave Bre-B proporcionados por ESENCIALES y enviar un comprobante privado para revisión. Las solicitudes con líneas bajo pedido no ofrecen pago inmediato.
+
 No se integrará inicialmente la API oficial avanzada de WhatsApp.
 
-### MF-08 - Gestión administrativa de solicitudes
+### MF-08 - Gestión administrativa de solicitudes y pago manual
 
 Estados permitidos:
 
@@ -283,7 +285,7 @@ No podrá agregar ninguna línea, duplicar líneas existentes, cambiar la presen
 
 Al confirmar, la función transaccional de PostgreSQL utilizará el modo de disponibilidad vigente después de la conversación comercial por WhatsApp. También comprobará que producto, categoría y presentación continúen activos. Revalidará el stock de las líneas que en ese momento estén en `Venta inmediata` y descontará sus unidades dentro de una transacción. Una línea inactiva, `Agotado` o `No disponible` impedirá confirmar; las líneas que estén `Bajo pedido` no descontarán inventario.
 
-Después de confirmada, la solicitud será inmutable. Si el acuerdo cambia, deberá cancelarse para restituir únicamente el inventario descontado y registrarse una nueva solicitud.
+Después de confirmada, la solicitud será inmutable. Si el acuerdo cambia, deberá cancelarse para restituir únicamente el inventario descontado y registrarse una nueva solicitud. Para solicitudes elegibles, el administrador puede revisar el comprobante privado y rechazarlo o verificarlo; verificar el pago confirma la solicitud y aplica el inventario dentro de una misma transacción.
 
 Una solicitud entregada se considera finalizada. No se contempla modificarla o cancelarla dentro del flujo normal.
 
@@ -300,6 +302,7 @@ El modelo conceptual contempla las siguientes entidades:
 - Imagen de producto.
 - Solicitud.
 - Detalle de solicitud.
+- Pago de solicitud.
 
 Relaciones principales:
 
@@ -309,6 +312,7 @@ Producto 1 -> N Presentacion
 Producto 1 -> N ImagenProducto
 Solicitud 1 -> N DetalleSolicitud
 DetalleSolicitud N -> 1 Presentacion
+Solicitud 1 -> 1 PagoSolicitud
 ```
 
 El detalle de solicitud debe conservar cantidad, precio unitario aplicado y subtotal. El diseño lógico deberá permitir identificar qué líneas descontaron inventario para que una cancelación restituya exactamente lo correspondiente.
@@ -336,6 +340,7 @@ La estructura definitiva de PostgreSQL y el mecanismo de trazabilidad del descue
 - Flujo voluntario hacia WhatsApp.
 - Seguridad y validaciones esenciales.
 - Aceptación y evidencia de los términos y la política de tratamiento de datos por cada solicitud.
+- Pago manual opcional por Bre-B para solicitudes elegibles, con comprobante privado y verificación administrativa.
 - Despliegue en producción.
 
 ### SHOULD - Importante si no compromete el núcleo
@@ -358,12 +363,12 @@ La estructura definitiva de PostgreSQL y el mecanismo de trazabilidad del descue
 ### WON'T - Fuera de este MVP
 
 - Pasarela de pagos.
-- Gestión administrativa de pagos y ventas contra entrega.
+- Gestión de pagos automatizados, tarjetas, reembolsos automáticos y ventas contra entrega.
 - Registro o inicio de sesión de clientes.
 - Módulo consolidado de clientes e historial de compras.
 - Dirección y barrio dentro del registro web de la solicitud.
 - Costos internos de productos.
-- Seguimiento público de solicitudes.
+- Seguimiento público basado solo en el código de solicitud.
 - Reseñas, favoritos y fidelización.
 - Suscripción a novedades o comunicaciones promocionales.
 - Facturación electrónica, contabilidad y cuentas por cobrar.

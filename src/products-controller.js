@@ -9,11 +9,12 @@ import { inventoryDashboardView } from './inventory-views.mjs';
 import { supabase } from './supabase.js';
 import { copDigits, formatCopInput, formatCopInputElement } from './cop-input.mjs';
 import { createDraftSaver, readDraft } from './form-drafts.mjs';
+import { showNotification } from './notifications.mjs';
 
 const emptyFilters = { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: '', page: 1 };
 const NEW_PRODUCT_DRAFT_KEY = 'esenciales:draft:admin:producto:nuevo';
 const NEW_PRODUCT_DRAFT = { version: 1, form: 'admin-product-new' };
-let state = { products: [], categories: [], loading: true, loadError: '', filters: { ...emptyFilters }, filtersPanelOpen: false, categoriesPanelOpen: false, editor: null, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, productNotice: '', presentation: null, presentationValues: {}, presentationError: '', presentationBusy: false, presentationDirty: false, image: null, imageAlt: '', imageAltDirty: false, imageBusy: false, imageError: '', cleanupPath: '', categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } };
+let state = { products: [], categories: [], loading: true, loadError: '', filters: { ...emptyFilters }, filtersPanelOpen: false, categoriesPanelOpen: false, editor: null, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, presentation: null, presentationValues: {}, presentationError: '', presentationBusy: false, presentationDirty: false, image: null, imageAlt: '', imageAltDirty: false, imageBusy: false, imageError: '', cleanupPath: '', categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } };
 
 const formValues = (form) => Object.fromEntries(new FormData(form));
 const databaseError = (error) => error?.code === '23514' ? 'Verifica la familia olfativa para perfumes, el precio, la promoción, el stock y la disponibilidad.' : error?.code === '23505' ? 'Ya existe un registro con ese nombre.' : 'No fue posible guardar. Inténtalo de nuevo.';
@@ -22,6 +23,7 @@ const hasUnsavedChanges = () => state.productDirty || state.presentationDirty;
 
 export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   const draftSaver = createDraftSaver(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT);
+  let previousBodyOverflow = '';
   const filterKeys = ['query', 'category', 'brand', 'gender', 'classification', 'family', 'status', 'availability', 'minPrice', 'maxPrice', 'order', 'page'];
   const resetPage = (filters) => ({ ...filters, page: 1 });
   const filteredProducts = () => sortInventory(filterInventory(state.products, state.filters), state.filters.order);
@@ -35,12 +37,19 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     const list = state.editor.presentaciones?.length ? `<ul class="presentation-list">${state.editor.presentaciones.map(presentationRowView).join('')}</ul>` : '<p class="empty-state">Aún no hay presentaciones. Agrega la primera para registrar precio, stock y disponibilidad.</p>';
     return `<div class="product-management-grid">${productImageEditorView({ product: state.editor, image: state.image, altText: state.imageAlt, altChanged: state.imageAltDirty, busy: state.imageBusy, error: state.imageError, cleanupPath: state.cleanupPath })}<section class="presentations-section"><header><div><h3>Presentaciones</h3><p>Precio, stock y disponibilidad se administran por presentación.</p></div><button class="secondary-button" type="button" data-presentation-create>Agregar presentación</button></header>${list}${state.presentation ? presentationFormView({ presentation: state.presentation, values: state.presentationValues, error: state.presentationError, saving: state.presentationBusy }) : ''}</section></div>`;
   };
+  const syncPageScrollLock = () => {
+    const body = outlet.ownerDocument?.body;
+    const locked = state.categoriesPanelOpen || state.filtersPanelOpen;
+    if (!body?.style) return;
+    if (locked && body.style.overflow !== 'hidden') { previousBodyOverflow = body.style.overflow; body.style.overflow = 'hidden'; }
+    if (!locked && body.style.overflow === 'hidden') body.style.overflow = previousBodyOverflow;
+  };
   const draw = () => {
     const content = state.editor
-      ? `${state.productNotice ? `<p class="admin-toast" role="status">${state.productNotice}</p>` : ''}${productFormView({ product: state.editor, categories: state.categories, values: state.productValues, error: state.productError, saving: state.productBusy, dirty: state.productDirty })}${productManagement()}`
+      ? `${productFormView({ product: state.editor, categories: state.categories, values: state.productValues, error: state.productError, saving: state.productBusy, dirty: state.productDirty })}${productManagement()}`
       : `${inventoryDashboardView({ products: { all: state.products, filtered: filteredProducts() }, categories: state.categories, filters: state.filters, loading: state.loading, error: state.loadError, drawerOpen: state.filtersPanelOpen }).replaceAll('Sin stock', 'Con presentación agotada')}${categoriesPanel()}`;
-    outlet.innerHTML = `${!state.editor && state.productNotice ? `<p class="admin-toast" role="status">${state.productNotice}</p>` : ''}${content}`;
-    bind(); outlet.querySelectorAll('[name="precio_normal"], [name="precio_promocional"], [name="minPrice"], [name="maxPrice"]').forEach(formatCopInputElement);
+    outlet.innerHTML = content;
+    bind(); syncPageScrollLock(); outlet.querySelectorAll('[name="precio_normal"], [name="precio_promocional"], [name="minPrice"], [name="maxPrice"]').forEach(formatCopInputElement);
   };
   const closeEditor = () => { if (hasUnsavedChanges() && !window.confirm('Hay cambios sin guardar. ¿Quieres descartarlos y salir?')) return; if (!state.editor?.id) draftSaver.clear(); state = { ...state, editor: null, presentation: null, productValues: {}, productDirty: false, presentationDirty: false, productError: '', presentationError: '' }; draw(); };
   const closeCategoryDrawer = () => {
@@ -50,19 +59,21 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     draw();
     outlet.querySelector('[data-categories-open]')?.focus();
   };
-  const showNotice = (message) => {
-    state = { ...state, productNotice: message, categoryDrawer: { ...state.categoryDrawer, message: '' } };
+  const closeFiltersDrawer = () => {
+    state.filtersPanelOpen = false;
     draw();
-    window.setTimeout(() => { if (state.productNotice === message) { state = { ...state, productNotice: '' }; draw(); } }, 4000);
+    outlet.querySelector('[data-inventory-drawer-open]')?.focus();
   };
+  const showNotice = (message, tone = 'success') => showNotification(message, { tone, documentRef: outlet.ownerDocument });
   async function load() {
     state = { ...state, loading: true, loadError: '' }; draw();
     const [{ data: products, error: productsError }, { data: categories, error: categoriesError }] = await Promise.all([listProducts(supabase), listCategories(supabase)]);
     if (!isCurrentGeneration()) return;
     state = { ...state, products: products || [], categories: categories || [], loading: false, loadError: productsError || categoriesError ? 'No fue posible cargar el inventario completo. Inténtalo de nuevo.' : '' };
     const draft = !state.editor && readDraft(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT);
-    if (draft) state = { ...state, editor: { activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }, productValues: draft.values, productDirty: true, productNotice: 'Recuperamos los cambios que estabas realizando.' };
+    if (draft) state = { ...state, editor: { activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }, productValues: draft.values, productDirty: true };
     draw();
+    if (draft) showNotice('Recuperamos los cambios que estabas realizando.', 'info');
   }
   async function saveCurrent(form) {
     if (state.productBusy) return;
@@ -75,7 +86,7 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     const existing = state.editor || {};
     if (!existing.id) draftSaver.clear();
     const product = { ...existing, ...data, categorias: state.categories.find((item) => String(item.id) === String(data.categoria_id)), presentaciones: existing.presentaciones || [], imagenes_producto: existing.imagenes_producto || [] };
-    state = { ...state, editor: product, productValues: {}, productBusy: false, productDirty: false, productError: '', saved: true, productNotice: 'Producto guardado correctamente.', image: currentImage(product), imageAlt: currentImage(product)?.texto_alternativo || product.nombre, imageAltDirty: false };
+    state = { ...state, editor: product, productValues: {}, productBusy: false, productDirty: false, productError: '', saved: true, image: currentImage(product), imageAlt: currentImage(product)?.texto_alternativo || product.nombre, imageAltDirty: false };
     state.products = state.products.some((item) => item.id === product.id) ? state.products.map((item) => item.id === product.id ? product : item) : [product, ...state.products];
     showNotice('Producto guardado correctamente.');
   }
@@ -104,7 +115,7 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   function trapFocus(event, dialog) { if (event.key !== 'Tab') return; const nodes = [...dialog.querySelectorAll('button, input, select, textarea, [href]')].filter((node) => !node.disabled); const first = nodes[0]; const last = nodes.at(-1); if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); } }
   function bind() {
     outlet.querySelector('[data-products-retry], [data-inventory-retry]')?.addEventListener('click', load);
-    outlet.querySelector('[data-product-create]')?.addEventListener('click', () => { const draft = readDraft(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT); setEditor({ activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }); if (draft) { state = { ...state, productValues: draft.values, productDirty: true, productNotice: 'Recuperamos los cambios que estabas realizando.' }; } draw(); outlet.querySelector('#product-name')?.focus(); });
+    outlet.querySelector('[data-product-create]')?.addEventListener('click', () => { const draft = readDraft(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT); setEditor({ activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }); if (draft) { state = { ...state, productValues: draft.values, productDirty: true }; } draw(); if (draft) showNotice('Recuperamos los cambios que estabas realizando.', 'info'); outlet.querySelector('#product-name')?.focus(); });
     outlet.querySelectorAll('[data-product-edit]').forEach((button) => button.addEventListener('click', (event) => { event.stopPropagation(); const product = state.products.find((item) => String(item.id) === button.dataset.productEdit); if (product) { setEditor(product); draw(); } }));
     outlet.querySelectorAll('[data-product-open]').forEach((row) => { row.addEventListener('dblclick', (event) => { if (!event.target.closest('button, a, input, select')) { const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { setEditor(product); draw(); } } }); row.addEventListener('click', (event) => { if (!event.target.closest('button, a, input, select') && window.matchMedia('(max-width: 63.9375rem)').matches) { const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { setEditor(product); draw(); } } }); row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { setEditor(product); draw(); } } }); });
     outlet.querySelectorAll('[data-product-close]').forEach((button) => button.addEventListener('click', closeEditor));
@@ -132,13 +143,14 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
       const input = outlet.querySelector('#inventory-search'); input?.focus(); input?.setSelectionRange(state.filters.query.length, state.filters.query.length);
     });
     outlet.querySelector('[data-inventory-drawer-open]')?.addEventListener('click', () => { state.filtersPanelOpen = true; state.categoriesPanelOpen = false; draw(); outlet.querySelector('[data-inventory-drawer-close]')?.focus(); });
-    outlet.querySelectorAll('[data-inventory-drawer-close]').forEach((button) => button.addEventListener('click', () => { state.filtersPanelOpen = false; draw(); outlet.querySelector('[data-inventory-drawer-open]')?.focus(); }));
+    outlet.querySelectorAll('[data-inventory-drawer-close]').forEach((button) => button.addEventListener('click', closeFiltersDrawer));
     outlet.querySelector('#inventory-filter-form')?.addEventListener('input', (event) => { if (event.target.matches('[name="minPrice"], [name="maxPrice"]')) event.target.value = formatCopInput(event.target.value); });
-    outlet.querySelector('#inventory-filter-form')?.addEventListener('submit', (event) => { event.preventDefault(); const values = Object.fromEntries(new FormData(event.currentTarget)); state.filters = resetPage({ ...state.filters, ...values, minPrice: copDigits(values.minPrice), maxPrice: copDigits(values.maxPrice), featured: event.currentTarget.elements.featured.checked }); state.filtersPanelOpen = false; draw(); });
+    outlet.querySelector('#inventory-filter-form')?.addEventListener('submit', (event) => { event.preventDefault(); const values = Object.fromEntries(new FormData(event.currentTarget)); state.filters = resetPage({ ...state.filters, ...values, minPrice: copDigits(values.minPrice), maxPrice: copDigits(values.maxPrice), featured: event.currentTarget.elements.featured.checked }); closeFiltersDrawer(); });
     outlet.querySelectorAll('[data-inventory-availability]').forEach((button) => button.addEventListener('click', () => { state.filters = resetPage({ ...state.filters, availability: state.filters.availability === button.dataset.inventoryAvailability ? '' : button.dataset.inventoryAvailability }); draw(); }));
     outlet.querySelectorAll('[data-inventory-status]').forEach((button) => button.addEventListener('click', () => { state.filters = resetPage({ ...state.filters, status: state.filters.status === button.dataset.inventoryStatus ? '' : button.dataset.inventoryStatus }); draw(); }));
     outlet.querySelector('[data-inventory-featured]')?.addEventListener('click', () => { state.filters = resetPage({ ...state.filters, featured: !state.filters.featured }); draw(); });
     outlet.querySelectorAll('[data-inventory-filter-clear]').forEach((button) => button.addEventListener('click', () => { state.filters = { ...emptyFilters }; state.filtersPanelOpen = false; draw(); }));
+    const filtersDrawer = outlet.querySelector('.inventory-drawer'); if (filtersDrawer) filtersDrawer.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.preventDefault(); closeFiltersDrawer(); } else trapFocus(event, filtersDrawer); });
     outlet.querySelectorAll('[data-inventory-page]').forEach((button) => button.addEventListener('click', () => { state.filters.page = Number(button.dataset.inventoryPage); draw(); }));
     outlet.querySelectorAll('[data-inventory-sort]').forEach((button) => button.addEventListener('click', () => { const field = button.dataset.inventorySort; state.filters = resetPage({ ...state.filters, order: state.filters.order === `${field}-asc` ? `${field}-desc` : `${field}-asc` }); draw(); }));
   }
@@ -149,5 +161,5 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   window.addEventListener('pagehide', flushDraft);
   document.addEventListener('visibilitychange', onVisibilityChange);
   await load();
-  return () => { flushDraft(); draftSaver.destroy(); window.removeEventListener('beforeunload', beforeUnload); window.removeEventListener('pagehide', flushDraft); document.removeEventListener('visibilitychange', onVisibilityChange); };
+  return () => { const body = outlet.ownerDocument?.body; if (body?.style?.overflow === 'hidden') body.style.overflow = previousBodyOverflow; flushDraft(); draftSaver.destroy(); window.removeEventListener('beforeunload', beforeUnload); window.removeEventListener('pagehide', flushDraft); document.removeEventListener('visibilitychange', onVisibilityChange); };
 }

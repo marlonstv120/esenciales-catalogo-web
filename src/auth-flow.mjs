@@ -23,6 +23,11 @@ export function shouldRenderPasswordUpdate(
   return !passwordUpdateActive && shouldShowPasswordUpdate(event, url);
 }
 
+export function shouldRefreshAdminSession(event, adminReady = false) {
+  if (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') return true;
+  return event === 'SIGNED_IN' && !adminReady;
+}
+
 export function getPostPasswordUpdateView(authorized) {
   return authorized ? 'authorized' : 'sign-in';
 }

@@ -11,7 +11,7 @@ export function normalizePurchaseRequest(values) {
 }
 
 export function listPurchaseRequests(client) {
-  return client.from('solicitudes').select('id, codigo, nombre_cliente, telefono, ciudad, observaciones, terminos_version, politica_datos_version, aceptado_en, estado, creado_en, actualizado_en, confirmado_en, entregado_en, cancelado_en, detalles_solicitud(id, presentacion_id, cantidad, precio_unitario, subtotal, cantidad_descontada, presentaciones(etiqueta, stock, modo_disponibilidad, productos(nombre)))').order('creado_en', { ascending: false });
+  return client.from('solicitudes').select('id, codigo, nombre_cliente, telefono, ciudad, observaciones, terminos_version, politica_datos_version, aceptado_en, estado, creado_en, actualizado_en, confirmado_en, entregado_en, cancelado_en, pagos_solicitud(id, metodo, estado, monto, comprobante_path, comprobante_mime, enviado_en, revisado_en, revisado_por, observacion_revision), detalles_solicitud(id, presentacion_id, cantidad, precio_unitario, subtotal, cantidad_descontada, presentaciones(etiqueta, stock, modo_disponibilidad, productos(nombre)))').order('creado_en', { ascending: false });
 }
 
 export function savePurchaseRequest(client, requestId, values) {
@@ -35,6 +35,14 @@ export function transitionPurchaseRequest(client, requestId, transition) {
   const rpc = rpcByTransition[transition];
   if (!rpc) throw new Error('La transición de solicitud no es válida.');
   return client.rpc(rpc, { p_solicitud_id: Number(requestId) });
+}
+
+export function rejectPaymentProof(client, requestId, reason) {
+  return client.rpc('rechazar_comprobante_pago', { p_solicitud_id: Number(requestId), p_razon: String(reason || '').trim() });
+}
+
+export function verifyPaymentAndConfirm(client, requestId) {
+  return client.rpc('verificar_pago_y_confirmar_solicitud', { p_solicitud_id: Number(requestId) });
 }
 
 export function filterPurchaseRequests(requests, { query = '', status = '' } = {}) {

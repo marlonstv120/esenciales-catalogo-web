@@ -1,5 +1,16 @@
 # Bitácora del proyecto
 
+## 2026-10-01
+
+### Ampliacion de pago manual Bre-B y ajuste academico
+
+- Se incorpora como ampliacion posterior al briefing un pago manual opcional para solicitudes Nuevas elegibles, mediante QR o llave Bre-B proporcionados por ESENCIALES.
+- La transferencia ocurre fuera del sitio; el comprobante se almacena de forma privada y requiere revision administrativa. El sistema no es una pasarela ni valida transferencias automaticamente.
+- La verificacion del comprobante confirma el pago, confirma la solicitud y descuenta el inventario aplicable dentro de una sola transaccion.
+- Se diferencia el QR bancario de Bre-B del QR de acceso a la aplicacion utilizado en la sustentacion.
+- El informe deja de atribuir 37 preguntas a la entrevista: describe una guia organizada por bloques y notas sintetizadas, que es la evidencia conservada en el repositorio.
+- El briefing validado permanece sin cambios como linea base historica; la ampliacion de pago se registra en alcance, requisitos, reglas, arquitectura e informe.
+
 ## 2026-09-30
 
 ### Decisiones / cambios
@@ -484,7 +495,7 @@ Incorporación de la entrevista de levantamiento de requerimientos realizada al 
 
 - Se conserva la entrevista como fuente primaria del diagnóstico y se identifica que el material no es por sí solo un briefing.
 - Se crea un briefing derivado, redactado en primera persona a partir de las respuestas, para validación expresa del propietario.
-- La metodología diferencia la entrevista como técnica, el cuestionario de 37 preguntas como instrumento y el briefing como síntesis para validar el problema y priorizar el alcance.
+- La metodología diferencia la entrevista como técnica, la guía de preguntas organizada por bloques y las notas sintetizadas como instrumento y registro, y el briefing como síntesis para validar el problema y priorizar el alcance. Se retira la atribución de 37 preguntas porque esa cantidad no está respaldada por el instrumento conservado en el repositorio.
 - Se actualiza el caso de estudio con los canales Instagram, Facebook Marketplace, WhatsApp y ventas directas, y con la gestión manual del catálogo y el inventario.
 - Se documenta que las necesidades sobre pagos, clientes, ventas, costos, direcciones, reportes y estados comerciales no modifican automáticamente el MVP.
 - El briefing compara cada necesidad con el alcance vigente y señala coberturas completas, parciales, conflictos y elementos externos al MVP.

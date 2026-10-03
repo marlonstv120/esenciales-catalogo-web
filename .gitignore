@@ -23,6 +23,11 @@ Thumbs.db
 # Local design previews (exported academic evidence lives in informe/)
 docs/wireframes/*.html
 
+# Local project and academic source material
+docs/project/
+docs/academic/
+docs/sources/
+
 # Local AI tools, agents, working state, and generated knowledge graphs
 .ai/
 .agents/

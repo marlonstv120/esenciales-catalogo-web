@@ -112,7 +112,7 @@ La arquitectura y los contratos se describen en [`docs/architecture/`](docs/arch
 
 ```text
 .github/    flujo de despliegue en GitHub Pages
-docs/       documentacion tecnica, funcional y academica
+docs/       documentacion tecnica y registro historico
 ia/         registro academico del uso de inteligencia artificial
 informe/    entregables y evidencias academicas
 public/     assets publicos y versiones legales
@@ -127,7 +127,6 @@ Los archivos raíz `index.html`, `vite.config.mjs`, `package.json` y `package-lo
 
 - [`informe/`](informe/README.md) organiza briefing, requisitos, diseno, arquitectura y evidencias de la entrega.
 - [`ia/`](ia/README.md) conserva el registro academico revisado del uso de inteligencia artificial.
-- [`docs/academic/`](docs/academic/README.md) conserva instrucciones del curso y el informe tecnico en construccion.
 
 ## Seguridad
 

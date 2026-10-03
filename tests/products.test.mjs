@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classificationLabel, effectivePrice, normalizePresentation, normalizeProduct } from '../src/products.js';
+import { classificationLabel, effectivePrice, listProducts, normalizePresentation, normalizeProduct } from '../src/products.js';
 import { productFormView } from '../src/product-views.mjs';
 
 test('normalizes aromatic family and excludes legacy product reference from writes', () => {
@@ -40,4 +40,12 @@ test('uses a valid promotion as the effective price', () => {
 test('uses the established commercial classification labels', () => {
   assert.equal(classificationLabel('uno_a_uno'), '1.1');
   assert.equal(classificationLabel('inspiracion'), 'Inspiración');
+});
+
+test('loads inventory products from newest to oldest', () => {
+  const calls = [];
+  const client = { from: (table) => ({ select: () => ({ order: (column, options) => { calls.push({ table, column, options }); return 'listed'; } }) }) };
+
+  assert.equal(listProducts(client), 'listed');
+  assert.deepEqual(calls, [{ table: 'productos', column: 'creado_en', options: { ascending: false } }]);
 });

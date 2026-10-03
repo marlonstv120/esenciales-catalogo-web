@@ -66,7 +66,7 @@ export function filterInventory(products, filters = {}) {
   });
 }
 
-export function sortInventory(products, order = '') {
+export function sortInventory(products, order = 'newest') {
   const direction = ['stock-desc', 'name-desc', 'newest', 'price-desc'].includes(order) ? -1 : 1;
   return [...products].sort((a, b) => {
     if (order.startsWith('stock')) return direction * (productStock(a) - productStock(b)) || a.nombre.localeCompare(b.nombre, 'es');

@@ -44,7 +44,7 @@ export function normalizePresentation(values) {
 }
 
 export function listProducts(client) {
-  return client.from('productos').select(`${productColumns}, categorias(id, nombre, activo), presentaciones(${presentationColumns}), imagenes_producto(id, producto_id, url, identificador_externo, texto_alternativo, posicion)`).order('nombre');
+  return client.from('productos').select(`${productColumns}, categorias(id, nombre, activo), presentaciones(${presentationColumns}), imagenes_producto(id, producto_id, url, identificador_externo, texto_alternativo, posicion)`).order('creado_en', { ascending: false });
 }
 
 export function listInventory(client) {

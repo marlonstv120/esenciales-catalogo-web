@@ -32,3 +32,10 @@ test('keeps products without a valid price after priced products in either price
   assert.equal(sortInventory([withoutPrice, product], 'price-asc').at(-1), withoutPrice);
   assert.equal(sortInventory([withoutPrice, product], 'price-desc').at(-1), withoutPrice);
 });
+
+test('orders inventory by newest product first by default', () => {
+  const oldest = { id: 1, nombre: 'Anterior', creado_en: '2026-10-01T10:00:00Z' };
+  const newest = { id: 2, nombre: 'Reciente', creado_en: '2026-10-02T10:00:00Z' };
+
+  assert.deepEqual(sortInventory([oldest, newest]).map(({ id }) => id), [2, 1]);
+});

@@ -11,7 +11,7 @@ import { copDigits, formatCopInput, formatCopInputElement } from './cop-input.mj
 import { createDraftSaver, readDraft } from './form-drafts.mjs';
 import { showNotification } from './notifications.mjs';
 
-const emptyFilters = { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: '', page: 1 };
+const emptyFilters = { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: 'newest', page: 1 };
 const NEW_PRODUCT_DRAFT_KEY = 'esenciales:draft:admin:producto:nuevo';
 const NEW_PRODUCT_DRAFT = { version: 1, form: 'admin-product-new' };
 const initialState = () => ({ products: [], categories: [], loading: true, loadError: '', filters: { ...emptyFilters }, filtersPanelOpen: false, categoriesPanelOpen: false, editor: null, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, presentation: null, presentationValues: {}, presentationError: '', presentationBusy: false, presentationDirty: false, image: null, imageAlt: '', imageAltDirty: false, imageAltEditing: false, imageBusy: false, imageError: '', cleanupPath: '', categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } });

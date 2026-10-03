@@ -1,6 +1,6 @@
 # Política de tratamiento de datos personales
 
-**Estado:** versión vigente aprobada para el formulario de solicitudes de ESENCIALES.
+**Estado:** versión histórica sustituida por `politica-datos-v2`; se conserva porque las solicitudes registran la versión aceptada.
 
 **Versión:** `politica-datos-v1`. **Vigencia:** 30 de septiembre de 2026.
 

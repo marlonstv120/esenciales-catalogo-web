@@ -26,7 +26,7 @@ test('renders the official identity and a semantic administration heading', () =
   assert.match(view, /esenciales-logo-completo\.png/);
   assert.match(view, /alt="ESENCIALES"/);
   assert.match(view, /<h1[^>]*>Administración<\/h1>/);
-  assert.match(view, /class="auth-back-link" href="\/">Volver a la tienda<\/a>/);
+  assert.match(view, /class="back-navigation auth-back-navigation" href="\/"[^>]*><svg[^>]*><path d="M19 12H5m6-6-6 6 6 6"\/><\/svg><span>Volver a la tienda<\/span><\/a>/);
 });
 
 test('associates visible labels, help, and status with sign-in controls', () => {

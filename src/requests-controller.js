@@ -3,7 +3,7 @@ import { purchaseRequestDetailView, purchaseRequestsView } from './request-views
 import { supabase } from './supabase.js';
 import { showNotification } from './notifications.mjs';
 
-let state = { requests: [], loading: true, error: '', filters: { query: '', status: '' }, selectedId: null, values: null, operation: '', dirty: false, quantityErrors: {} };
+const initialState = () => ({ requests: [], loading: true, error: '', filters: { query: '', status: '' }, selectedId: null, values: null, operation: '', dirty: false, quantityErrors: {} });
 
 function valuesFor(request) {
   return { nombre_cliente: request.nombre_cliente, telefono: request.telefono, ciudad: request.ciudad || '', observaciones: request.observaciones || '', lineas: (request.detalles_solicitud || []).map((line) => ({ ...line })) };
@@ -42,6 +42,7 @@ function hasUnsavedChanges(request, values) {
 }
 
 export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
+  let state = initialState();
   const selectedRequest = () => state.requests.find((request) => request.id === state.selectedId);
   const draw = () => {
     const request = selectedRequest();
@@ -174,7 +175,6 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     if (!request) return;
     state = { ...state, selectedId: request.id, values: valuesFor(request), error: '', dirty: false, operation: '', quantityErrors: {} };
     draw();
-    outlet.querySelector('#request-edit-form input')?.focus();
   }
   function bind() {
     outlet.querySelector('[data-requests-retry]')?.addEventListener('click', load);
@@ -208,4 +208,7 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     outlet.querySelector('[data-payment-proof-open]')?.addEventListener('click', openProof);
   }
   await load();
+  return {
+    canLeave: () => !state.dirty || window.confirm('Hay cambios sin guardar. ¿Quieres volver de todas formas?'),
+  };
 }

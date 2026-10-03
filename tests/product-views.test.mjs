@@ -28,7 +28,7 @@ test('keeps product and presentation actions separated and makes perfume family 
   assert.match(view, /Nuevo producto/);
   assert.match(view, /Familia olfativa.*required/);
   assert.match(view, /aria-required="true"/);
-  assert.match(view, /aria-label="Volver al inventario"/);
+  assert.match(view, /<span>Volver al inventario<\/span>/);
   assert.match(view, /Guardar producto/);
   const presentation = presentationFormView({ presentation: {} });
   assert.match(presentation, /Guardar presentación/);
@@ -48,22 +48,46 @@ test('keeps a promotional price after a database constraint error', () => {
   assert.match(view, /La promocion debe ser menor al precio normal/);
 });
 
-test('shows a neutral product image editor with editable alternative text', () => {
+test('uses the full empty image area as an accessible file selector', () => {
   const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: null });
-  assert.match(view, /Imagen no disponible/);
-  assert.match(view, /name="texto_alternativo"/);
-  assert.match(view, /value="Aroma"/);
+  assert.match(view, /data-image-select/);
   assert.match(view, /Agregar imagen/);
+  assert.match(view, /JPG, PNG o WebP/);
+  assert.match(view, /id="product-image-file" class="visually-hidden" type="file"/);
+  assert.doesNotMatch(view, /Imagen no disponible/);
+  assert.doesNotMatch(view, /data-image-upload/);
+  assert.doesNotMatch(view, /name="texto_alternativo"/);
+});
+
+test('groups image actions and summarizes alternative text for an existing image', () => {
+  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { id: 3, url: 'https://example.test/aroma.jpg' } });
+  assert.match(view, /image-editor__image-actions/);
+  assert.match(view, /Cambiar imagen/);
+  assert.match(view, /Retirar imagen/);
+  assert.match(view, /Texto alternativo/);
+  assert.match(view, /Se usa para describir la imagen/);
+  assert.match(view, /data-image-alt-edit/);
+  assert.doesNotMatch(view, /<details/);
+});
+
+test('renders compact inline controls while editing alternative text', () => {
+  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { id: 3, url: 'https://example.test/aroma.jpg' }, altEditing: true });
+  assert.match(view, /name="texto_alternativo"/);
+  assert.match(view, /Si lo dejas vacío, se utilizará «Aroma»/);
+  assert.match(view, /data-image-alt-cancel/);
+  assert.match(view, /data-image-alt-save/);
+  assert.match(view, />Guardar</);
 });
 
 test('keeps the fallback available when an existing image fails to load', () => {
   const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { url: 'https://example.test/aroma.jpg' } });
   assert.match(view, /data-image-placeholder hidden/);
   assert.match(view, /Cambiar imagen/);
+  assert.match(view, /data-image-select/);
 });
 
-test('offers an explicit action to save an existing image alternative text', () => {
-  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { id: 3, url: 'https://example.test/aroma.jpg' } });
+test('disables saving an unchanged alternative text', () => {
+  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { id: 3, url: 'https://example.test/aroma.jpg' }, altEditing: true });
   assert.match(view, /data-image-alt-save/);
   assert.match(view, /data-image-alt-save disabled/);
 });

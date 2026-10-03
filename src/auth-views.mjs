@@ -1,4 +1,5 @@
 import { appPath } from './app-paths.mjs';
+import { backButton, backLink } from './back-navigation.mjs';
 
 const logoUrl = appPath('/assets/brand/esenciales-logo-completo.png');
 
@@ -50,7 +51,7 @@ export function authCard(content) {
         <p class="eyebrow">Área privada</p>
         <h1 id="auth-title">Administración</h1>
         ${content}
-        <a class="auth-back-link" href="${appPath('/')}">Volver a la tienda</a>
+        ${backLink({ href: appPath('/'), label: 'Volver a la tienda', className: 'auth-back-navigation' })}
       </div>
     </section>`;
 }
@@ -91,7 +92,7 @@ export function recoveryView(message = '', tone = 'error') {
       ${messageRegion(message, tone, 'recovery-message')}
       <button class="primary-button" type="submit" data-busy-label="Enviando enlace…">Enviar enlace de recuperación</button>
     </form>
-    <button class="link-button" id="show-sign-in" type="button">Volver al acceso</button>
+    ${backButton({ label: 'Volver al acceso', attributes: 'id="show-sign-in"' })}
   `;
 }
 

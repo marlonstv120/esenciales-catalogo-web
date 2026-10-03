@@ -16,6 +16,8 @@ test('offers inventory and requests sections with a safe catalog link', () => {
   assert.match(html, /href="#solicitudes"/);
   assert.doesNotMatch(html, />Productos</);
   assert.match(html, /<details class="admin-mobile-menu">/);
+  assert.match(html, /<summary aria-label="Abrir menú"><svg aria-hidden="true"[^>]*><path d="M4 6h16M4 12h16M4 18h16"\/><\/svg><\/summary>/);
+  assert.doesNotMatch(html, /<summary[^>]*>Menú<\/summary>/);
   assert.equal((html.match(/href="\/" target="_blank" rel="noopener noreferrer"/g) || []).length, 2);
   assert.equal((html.match(/data-sign-out/g) || []).length, 2);
   assert.match(html, /admin-shop-link[^>]*><svg[^>]*>.*?<\/svg>Ver catálogo/);

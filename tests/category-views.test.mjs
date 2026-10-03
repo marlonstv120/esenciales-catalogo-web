@@ -31,7 +31,7 @@ test('renders an accessible searchable category drawer with textual states', () 
 
 test('renders category edit controls, state and destructive confirmation', () => {
   const view = categoryDrawerView({ mode: 'edit', selected: { id: 2, nombre: 'Cremas', activo: false }, confirmDelete: true });
-  assert.match(view, /Volver a todas las categorías/);
+  assert.match(view, /<span>Volver a categorías<\/span>/);
   assert.match(view, /name="activo"/);
   assert.match(view, /Eliminar categoría/);
   assert.match(view, /¿Eliminar categoría/);

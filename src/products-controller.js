@@ -14,14 +14,15 @@ import { showNotification } from './notifications.mjs';
 const emptyFilters = { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: '', page: 1 };
 const NEW_PRODUCT_DRAFT_KEY = 'esenciales:draft:admin:producto:nuevo';
 const NEW_PRODUCT_DRAFT = { version: 1, form: 'admin-product-new' };
-let state = { products: [], categories: [], loading: true, loadError: '', filters: { ...emptyFilters }, filtersPanelOpen: false, categoriesPanelOpen: false, editor: null, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, presentation: null, presentationValues: {}, presentationError: '', presentationBusy: false, presentationDirty: false, image: null, imageAlt: '', imageAltDirty: false, imageBusy: false, imageError: '', cleanupPath: '', categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } };
+const initialState = () => ({ products: [], categories: [], loading: true, loadError: '', filters: { ...emptyFilters }, filtersPanelOpen: false, categoriesPanelOpen: false, editor: null, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, presentation: null, presentationValues: {}, presentationError: '', presentationBusy: false, presentationDirty: false, image: null, imageAlt: '', imageAltDirty: false, imageAltEditing: false, imageBusy: false, imageError: '', cleanupPath: '', categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } });
 
 const formValues = (form) => Object.fromEntries(new FormData(form));
 const databaseError = (error) => error?.code === '23514' ? 'Verifica la familia olfativa para perfumes, el precio, la promoción, el stock y la disponibilidad.' : error?.code === '23505' ? 'Ya existe un registro con ese nombre.' : 'No fue posible guardar. Inténtalo de nuevo.';
 const currentImage = (product) => product?.imagenes_producto?.find((image) => image.posicion === 0) || null;
-const hasUnsavedChanges = () => state.productDirty || state.presentationDirty;
 
-export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
+export async function renderProductsScreen({ outlet, isCurrentGeneration, openRoot = false }) {
+  let state = initialState();
+  const hasUnsavedChanges = () => state.productDirty || state.presentationDirty;
   const draftSaver = createDraftSaver(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT);
   let previousBodyOverflow = '';
   const filterKeys = ['query', 'category', 'brand', 'gender', 'classification', 'family', 'status', 'availability', 'minPrice', 'maxPrice', 'order', 'page'];
@@ -29,13 +30,13 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   const filteredProducts = () => sortInventory(filterInventory(state.products, state.filters), state.filters.order);
   const setEditor = (product) => {
     const image = currentImage(product);
-    state = { ...state, editor: product, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, presentation: null, presentationValues: {}, presentationError: '', presentationDirty: false, image, imageAlt: image?.texto_alternativo || product?.nombre || '', imageError: '', cleanupPath: '' };
+    state = { ...state, editor: product, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, presentation: null, presentationValues: {}, presentationError: '', presentationDirty: false, image, imageAlt: image?.texto_alternativo || product?.nombre || '', imageAltEditing: false, imageError: '', cleanupPath: '' };
   };
   const categoriesPanel = () => state.categoriesPanelOpen ? categoryDrawerView({ categories: state.categories, ...state.categoryDrawer }) : '';
   const productManagement = () => {
     if (!state.editor) return '';
     const list = state.editor.presentaciones?.length ? `<ul class="presentation-list">${state.editor.presentaciones.map(presentationRowView).join('')}</ul>` : '<p class="empty-state">Aún no hay presentaciones. Agrega la primera para registrar precio, stock y disponibilidad.</p>';
-    return `<div class="product-management-grid">${productImageEditorView({ product: state.editor, image: state.image, altText: state.imageAlt, altChanged: state.imageAltDirty, busy: state.imageBusy, error: state.imageError, cleanupPath: state.cleanupPath })}<section class="presentations-section"><header><div><h3>Presentaciones</h3><p>Precio, stock y disponibilidad se administran por presentación.</p></div><button class="secondary-button" type="button" data-presentation-create>Agregar presentación</button></header>${list}${state.presentation ? presentationFormView({ presentation: state.presentation, values: state.presentationValues, error: state.presentationError, saving: state.presentationBusy }) : ''}</section></div>`;
+    return `<div class="product-management-grid">${productImageEditorView({ product: state.editor, image: state.image, altText: state.imageAlt, altChanged: state.imageAltDirty, altEditing: state.imageAltEditing, busy: state.imageBusy, error: state.imageError, cleanupPath: state.cleanupPath })}<section class="presentations-section"><header><div><h3>Presentaciones</h3><p>Precio, stock y disponibilidad se administran por presentación.</p></div><button class="secondary-button" type="button" data-presentation-create>Agregar presentación</button></header>${list}${state.presentation ? presentationFormView({ presentation: state.presentation, values: state.presentationValues, error: state.presentationError, saving: state.presentationBusy }) : ''}</section></div>`;
   };
   const syncPageScrollLock = () => {
     const body = outlet.ownerDocument?.body;
@@ -70,7 +71,7 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     const [{ data: products, error: productsError }, { data: categories, error: categoriesError }] = await Promise.all([listProducts(supabase), listCategories(supabase)]);
     if (!isCurrentGeneration()) return;
     state = { ...state, products: products || [], categories: categories || [], loading: false, loadError: productsError || categoriesError ? 'No fue posible cargar el inventario completo. Inténtalo de nuevo.' : '' };
-    const draft = !state.editor && readDraft(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT);
+    const draft = !openRoot && !state.editor && readDraft(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT);
     if (draft) state = { ...state, editor: { activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }, productValues: draft.values, productDirty: true };
     draw();
     if (draft) showNotice('Recuperamos los cambios que estabas realizando.', 'info');
@@ -103,14 +104,29 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   }
   async function saveImage(file, altText) {
     if (state.imageBusy || !state.editor?.id) return;
-    try { validateImage(file); } catch (error) { state = { ...state, imageError: error.message, imageAlt: altText }; draw(); return; }
+    try { validateImage(file); } catch (error) { state = { ...state, imageError: error.message, imageAlt: altText }; draw(); showNotice(error.message, 'error'); return; }
     state = { ...state, imageBusy: true, imageError: '', imageAlt: altText, cleanupPath: '' }; draw();
-    try { const image = state.image ? await replaceImage(supabase, state.image, file, altText) : await uploadImage(supabase, state.editor.id, file, altText); const images = [...(state.editor.imagenes_producto || []).filter((item) => item.id !== state.image?.id), image]; state = { ...state, image, imageAltDirty: false, imageBusy: false, editor: { ...state.editor, imagenes_producto: images } }; showNotice('Imagen guardada correctamente.'); return; } catch (error) { state = { ...state, imageBusy: false, imageError: error.message, cleanupPath: error.cleanupPath || '' }; }
-    draw();
+    let saved = false;
+    let uploadError = '';
+    try {
+      const image = state.image ? await replaceImage(supabase, state.image, file, altText) : await uploadImage(supabase, state.editor.id, file, altText);
+      const images = [...(state.editor.imagenes_producto || []).filter((item) => item.id !== state.image?.id), image];
+      const editor = { ...state.editor, imagenes_producto: images };
+      state = { ...state, image, imageAlt: image.texto_alternativo || editor.nombre || '', imageAltDirty: false, imageAltEditing: false, editor, products: state.products.map((item) => item.id === editor.id ? editor : item) };
+      saved = true;
+    } catch (error) {
+      state = { ...state, imageError: error.message, cleanupPath: error.cleanupPath || '' };
+      uploadError = error.message;
+    } finally {
+      state = { ...state, imageBusy: false };
+      draw();
+    }
+    if (saved) showNotice('Imagen guardada correctamente.');
+    else showNotice(`No fue posible subir la imagen: ${uploadError}`, 'error');
   }
   async function removeCurrentImage() { if (!state.image || state.imageBusy) return; state = { ...state, imageBusy: true, imageError: '' }; draw(); try { await removeImage(supabase, state.image); state = { ...state, image: null, imageBusy: false, editor: { ...state.editor, imagenes_producto: state.editor.imagenes_producto.filter((item) => item.id !== state.image.id) } }; } catch (error) { state = { ...state, imageBusy: false, imageError: error.message, cleanupPath: error.cleanupPath || '' }; } draw(); }
-  async function updateCurrentImageAlt(altText) { if (!state.image || state.imageBusy) return; state = { ...state, imageBusy: true, imageError: '' }; draw(); try { const image = await updateImageAlt(supabase, state.image, altText); state = { ...state, image, imageAlt: altText, imageAltDirty: false, imageBusy: false, editor: { ...state.editor, imagenes_producto: state.editor.imagenes_producto.map((item) => item.id === image.id ? image : item) } }; } catch (error) { state = { ...state, imageBusy: false, imageError: error.message }; } draw(); }
-  async function saveCategory(form) { if (state.categoryDrawer.busy) return; const nombre = new FormData(form).get('nombre'); const activo = form.elements.activo.checked; const drawer = { ...state.categoryDrawer, busy: true, values: { nombre, activo }, error: '' }; state = { ...state, categoryDrawer: drawer }; draw(); const operation = drawer.selected ? updateCategory(supabase, drawer.selected.id, { nombre, activo }) : createCategory(supabase, nombre, activo); const { data, error } = await operation; if (error) { state = { ...state, categoryDrawer: { ...drawer, busy: false, error: databaseError(error) } }; draw(); return; } const categories = drawer.selected ? state.categories.map((item) => item.id === data.id ? data : item) : [...state.categories, data].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')); state = { ...state, categories, categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } }; showNotice('Categoría guardada correctamente.'); }
+  async function updateCurrentImageAlt(altText) { if (!state.image || state.imageBusy) return; state = { ...state, imageBusy: true, imageError: '' }; draw(); try { const image = await updateImageAlt(supabase, state.image, altText); state = { ...state, image, imageAlt: altText || state.editor.nombre || '', imageAltDirty: false, imageAltEditing: false, imageBusy: false, editor: { ...state.editor, imagenes_producto: state.editor.imagenes_producto.map((item) => item.id === image.id ? image : item) } }; } catch (error) { state = { ...state, imageBusy: false, imageError: error.message }; } draw(); }
+  async function saveCategory(form) { if (state.categoryDrawer.busy) return; const nombre = new FormData(form).get('nombre'); const activo = form.elements.activo.checked; const drawer = { ...state.categoryDrawer, busy: true, values: { nombre, activo }, error: '' }; state = { ...state, categoryDrawer: drawer }; draw(); const operation = drawer.selected ? updateCategory(supabase, drawer.selected.id, { nombre, activo }) : createCategory(supabase, nombre, activo); const { data, error } = await operation; if (error) { state = { ...state, categoryDrawer: { ...drawer, busy: false, error: databaseError(error) } }; draw(); return; } const categories = drawer.selected ? state.categories.map((item) => item.id === data.id ? data : item) : [...state.categories, data].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')); state = { ...state, categories, categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } }; draw(); showNotice('Categoría guardada correctamente.'); }
   async function deleteCurrentCategory() { const category = state.categoryDrawer.selected; if (!category || state.categoryDrawer.busy) return; if (state.products.some((product) => String(product.categoria_id) === String(category.id))) { state = { ...state, categoryDrawer: { ...state.categoryDrawer, confirmDelete: false, error: 'No se puede eliminar esta categoría porque tiene productos relacionados. Reasígnalos primero o desactiva la categoría.' } }; draw(); return; } state = { ...state, categoryDrawer: { ...state.categoryDrawer, busy: true, error: '' } }; draw(); const { error } = await deleteCategory(supabase, category.id); if (error) { state = { ...state, categoryDrawer: { ...state.categoryDrawer, busy: false, confirmDelete: false, error: 'No fue posible eliminar la categoría. Verifica que no tenga productos relacionados.' } }; draw(); return; } state = { ...state, categories: state.categories.filter((item) => item.id !== category.id), categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } }; showNotice('Categoría eliminada correctamente.'); }
   function trapFocus(event, dialog) { if (event.key !== 'Tab') return; const nodes = [...dialog.querySelectorAll('button, input, select, textarea, [href]')].filter((node) => !node.disabled); const first = nodes[0]; const last = nodes.at(-1); if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); } }
   function bind() {
@@ -131,8 +147,11 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
     outlet.querySelectorAll('[data-presentation-edit]').forEach((button) => button.addEventListener('click', () => { state = { ...state, presentation: state.editor.presentaciones.find((item) => String(item.id) === button.dataset.presentationEdit), presentationValues: {}, presentationError: '', presentationDirty: false }; draw(); outlet.querySelector('#presentation-label')?.focus(); }));
     outlet.querySelector('[data-presentation-cancel]')?.addEventListener('click', () => { if (state.presentationDirty && !window.confirm('Hay cambios sin guardar en la presentación. ¿Quieres cancelar?')) return; state = { ...state, presentation: null, presentationValues: {}, presentationError: '', presentationDirty: false }; draw(); });
     outlet.querySelector('#presentation-form')?.addEventListener('input', (event) => { if (event.target.matches('[name="precio_normal"], [name="precio_promocional"]')) event.target.value = formatCopInput(event.target.value); state.presentationDirty = true; }); outlet.querySelector('#presentation-form')?.addEventListener('change', () => { state.presentationDirty = true; }); outlet.querySelector('#presentation-form')?.addEventListener('submit', (event) => { event.preventDefault(); event.currentTarget.checkValidity() ? saveCurrentPresentation(event.currentTarget) : event.currentTarget.reportValidity(); });
-    outlet.querySelector('[data-image-upload]')?.addEventListener('click', () => saveImage(outlet.querySelector('#product-image-file')?.files[0], outlet.querySelector('#product-image-alt')?.value));
+    outlet.querySelector('[data-image-select]')?.addEventListener('click', () => outlet.querySelector('#product-image-file')?.click());
+    outlet.querySelector('#product-image-file')?.addEventListener('change', (event) => saveImage(event.currentTarget.files[0], outlet.querySelector('#product-image-alt')?.value || state.imageAlt || state.editor?.nombre || ''));
     outlet.querySelector('#product-image-alt')?.addEventListener('input', (event) => { state = { ...state, imageAlt: event.target.value, imageAltDirty: event.target.value !== (state.image?.texto_alternativo || state.editor.nombre || '') }; });
+    outlet.querySelector('[data-image-alt-edit]')?.addEventListener('click', () => { state = { ...state, imageAltEditing: true, imageAltDirty: false }; draw(); outlet.querySelector('#product-image-alt')?.focus(); });
+    outlet.querySelector('[data-image-alt-cancel]')?.addEventListener('click', () => { state = { ...state, imageAlt: state.image?.texto_alternativo || state.editor.nombre || '', imageAltDirty: false, imageAltEditing: false }; draw(); });
     outlet.querySelector('[data-image-alt-save]')?.addEventListener('click', () => updateCurrentImageAlt(outlet.querySelector('#product-image-alt').value)); outlet.querySelector('[data-image-remove]')?.addEventListener('click', removeCurrentImage); outlet.querySelector('[data-image-preview]')?.addEventListener('error', (event) => { event.currentTarget.hidden = true; outlet.querySelector('[data-image-placeholder]')?.removeAttribute('hidden'); }); outlet.querySelector('[data-image-cleanup]')?.addEventListener('click', async () => { try { await retryImageCleanup(supabase, state.cleanupPath); state = { ...state, cleanupPath: '', imageError: '' }; } catch (error) { state = { ...state, imageError: error.message }; } draw(); });
     outlet.querySelector('[data-categories-open]')?.addEventListener('click', () => { state = { ...state, categoriesPanelOpen: true, filtersPanelOpen: false, categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } }; draw(); outlet.querySelector('#category-search')?.focus(); });
     outlet.querySelectorAll('[data-category-drawer-close]').forEach((button) => button.addEventListener('click', closeCategoryDrawer)); outlet.querySelector('[data-category-drawer-create]')?.addEventListener('click', () => { state.categoryDrawer = { ...state.categoryDrawer, mode: 'create', selected: null, values: { activo: true }, error: '', dirty: false }; draw(); outlet.querySelector('#drawer-category-name')?.focus(); }); outlet.querySelectorAll('[data-category-drawer-edit]').forEach((button) => button.addEventListener('click', () => { const selected = state.categories.find((item) => String(item.id) === button.dataset.categoryDrawerEdit); state.categoryDrawer = { ...state.categoryDrawer, mode: 'edit', selected, values: {}, error: '', dirty: false }; draw(); outlet.querySelector('#drawer-category-name')?.focus(); }));
@@ -161,5 +180,8 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration }) {
   window.addEventListener('pagehide', flushDraft);
   document.addEventListener('visibilitychange', onVisibilityChange);
   await load();
-  return () => { const body = outlet.ownerDocument?.body; if (body?.style?.overflow === 'hidden') body.style.overflow = previousBodyOverflow; flushDraft(); draftSaver.destroy(); window.removeEventListener('beforeunload', beforeUnload); window.removeEventListener('pagehide', flushDraft); document.removeEventListener('visibilitychange', onVisibilityChange); };
+  return {
+    canLeave: () => !hasUnsavedChanges() || window.confirm('Hay cambios sin guardar. ¿Quieres descartarlos y salir?'),
+    cleanup: () => { const body = outlet.ownerDocument?.body; if (body?.style?.overflow === 'hidden') body.style.overflow = previousBodyOverflow; flushDraft(); draftSaver.destroy(); window.removeEventListener('beforeunload', beforeUnload); window.removeEventListener('pagehide', flushDraft); document.removeEventListener('visibilitychange', onVisibilityChange); },
+  };
 }

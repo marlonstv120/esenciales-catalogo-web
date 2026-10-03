@@ -20,14 +20,14 @@ build/
 .DS_Store
 Thumbs.db
 
-# Temporary AI working files
-.ai/scratch/*
-!.ai/scratch/.gitkeep
-
-# Local design previews (export PNG evidence instead)
+# Local design previews (exported academic evidence lives in informe/)
 docs/wireframes/*.html
 
-# Local AI tool integrations and generated knowledge graphs
+# Local AI tools, agents, working state, and generated knowledge graphs
+.ai/
+.agents/
+.superpowers/
 .opencode/
 graphify-out/
 docs/superpowers/
+/AGENTS.md

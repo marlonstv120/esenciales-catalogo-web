@@ -1,6 +1,7 @@
 {
   "name": "esenciales-catalogo-web",
   "version": "1.0.0",
+  "type": "module",
   "description": "Aplicación web Full Stack para la **gestión y publicación del catálogo de productos de Esenciales**, desarrollada como proyecto integrador del Curso de Opción de Grado en Desarrollo Web Full Stack.",
   "directories": {
     "doc": "docs"

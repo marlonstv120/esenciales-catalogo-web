@@ -47,7 +47,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     app.querySelector('[data-mobile-menu-drawer]')?.remove();
     const trigger = app.querySelector('[data-mobile-menu-toggle]');
     trigger?.setAttribute('aria-expanded', 'false');
-    trigger?.setAttribute('aria-label', 'Abrir menú de navegación');
+    trigger?.setAttribute('aria-label', 'Abrir menú');
     if (focusTrigger) queueMicrotask(() => trigger?.focus());
     syncPageScrollLock();
   };
@@ -57,7 +57,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     app.insertAdjacentHTML('beforeend', mobileMenuDrawerView(currentRoute.name));
     const trigger = app.querySelector('[data-mobile-menu-toggle]');
     trigger?.setAttribute('aria-expanded', 'true');
-    trigger?.setAttribute('aria-label', 'Cerrar menú de navegación');
+    trigger?.setAttribute('aria-label', 'Cerrar menú');
     queueMicrotask(() => app.querySelector('[data-mobile-menu-close]')?.focus());
     syncPageScrollLock();
   };

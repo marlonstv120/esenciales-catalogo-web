@@ -19,7 +19,7 @@ export function shellView(route) {
         <a class="admin-navigation__brand" href="#inventario" aria-label="ESENCIALES — Inventario"><img src="${appPath('/assets/brand/esenciales-logo-horizontal.png')}" alt=""></a>
         <nav class="admin-navigation__links" aria-label="Secciones administrativas">${navigation}</nav>
         <div class="admin-navigation__actions">${shopLink}<button class="admin-sign-out" type="button" data-sign-out><svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 17l5-5-5-5M15 12H3m9-8h7v16h-7"/></svg>Cerrar sesión</button></div>
-        <details class="admin-mobile-menu"><summary aria-label="Menú administrativo">Menú</summary><div class="admin-mobile-menu__panel"><nav aria-label="Secciones administrativas">${navigation}</nav><div class="admin-mobile-menu__actions">${shopLink}<button class="admin-sign-out" type="button" data-sign-out>Cerrar sesión</button></div></div></details>
+        <details class="admin-mobile-menu"><summary aria-label="Abrir menú"><svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary><div class="admin-mobile-menu__panel"><nav aria-label="Secciones administrativas">${navigation}</nav><div class="admin-mobile-menu__actions">${shopLink}<button class="admin-sign-out" type="button" data-sign-out>Cerrar sesión</button></div></div></details>
       </aside>
       <main class="admin-main" id="admin-content" tabindex="-1"><div class="admin-main__inner"><header class="admin-header"><div><h1>${label}</h1></div></header><div data-admin-outlet></div></div></main>
     </div>`;
@@ -29,37 +29,51 @@ export function startAdminShell({ app, generation, isCurrentGeneration, onSignOu
   let active = true;
   let stopScreen = null;
   let scrollToTopOnNextRoute = false;
+  let openRootOnNextRoute = false;
   const context = { app, generation, isCurrentGeneration, render: renderRoute };
+  let canLeaveScreen = () => true;
   const renderers = {
     inventario: () => import('./products-controller.js').then(({ renderProductsScreen }) => renderProductsScreen),
     solicitudes: () => import('./requests-controller.js').then(({ renderRequestsScreen }) => renderRequestsScreen),
   };
 
-  async function renderRoute({ scrollToTop = false } = {}) {
+  async function renderRoute({ scrollToTop = false, openRoot = false } = {}) {
     if (!active || !isCurrentGeneration()) return;
     stopScreen?.(); stopScreen = null;
+    canLeaveScreen = () => true;
     const route = getAdminRoute(window.location.hash);
     app.innerHTML = shellView(route);
     app.querySelectorAll('[data-sign-out]').forEach((button) => button.addEventListener('click', onSignOut));
     const screen = await renderers[route]();
     if (!active || !isCurrentGeneration()) return;
-    const cleanup = await screen({ ...context, outlet: app.querySelector('[data-admin-outlet]') });
+    const result = await screen({ ...context, outlet: app.querySelector('[data-admin-outlet]'), openRoot });
+    const cleanup = typeof result === 'function' ? result : result?.cleanup;
     if (!active || !isCurrentGeneration()) { cleanup?.(); return; }
     stopScreen = cleanup;
+    canLeaveScreen = result?.canLeave || (() => true);
     if (scrollToTop) window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
   const onHashChange = () => {
     const scrollToTop = scrollToTopOnNextRoute;
+    const openRoot = openRootOnNextRoute;
     scrollToTopOnNextRoute = false;
-    renderRoute({ scrollToTop });
+    openRootOnNextRoute = false;
+    renderRoute({ scrollToTop, openRoot });
   };
   window.addEventListener('hashchange', onHashChange);
   if (!window.location.hash) window.location.hash = '#inventario';
   else renderRoute();
 
   const onNavigationClick = (event) => {
-    if (event.target.closest('.admin-navigation__links a, .admin-mobile-menu__panel a')) scrollToTopOnNextRoute = true;
+    const link = event.target.closest('.admin-navigation__links a, .admin-mobile-menu__panel nav a, .admin-navigation__brand');
+    if (!link) return;
+    event.preventDefault();
+    if (!canLeaveScreen()) return;
+    const hash = link.getAttribute('href');
+    scrollToTopOnNextRoute = true;
+    if (window.location.hash === hash) renderRoute({ scrollToTop: true, openRoot: true });
+    else { openRootOnNextRoute = true; window.location.hash = hash; }
   };
   app.addEventListener('click', onNavigationClick);
 

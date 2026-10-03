@@ -1,130 +1,140 @@
-# Esenciales Catálogo Web
+# Esenciales
 
-Aplicación web Full Stack para la **gestión y publicación del catálogo de productos de Esenciales**, desarrollada como proyecto integrador del Curso de Opción de Grado en Desarrollo Web Full Stack.
+Aplicacion web para publicar y administrar el catalogo de productos de ESENCIALES. El sistema permite consultar productos sin registro, preparar un carrito, registrar solicitudes de compra y continuar voluntariamente la conversacion comercial por WhatsApp. Las solicitudes elegibles pueden usar pago manual por Bre-B con comprobante privado y revision administrativa.
 
-> **Estado actual:** el MVP usa Supabase alojado para los servicios de backend y GitHub Pages para publicar automáticamente el frontend desde `main`. El catálogo público, la búsqueda y los filtros, el acceso administrativo, la gestión del catálogo, el carrito, el registro público de solicitudes y las transiciones administrativas con inventario están implementados. Falta la validación manual integral, la revisión del contenido real y la evidencia final de producción.
+## Funcionalidades principales
 
-## Sobre el proyecto
+- Catalogo publico con busqueda y filtros combinables.
+- Productos, categorias, imagenes y presentaciones con precio y disponibilidad.
+- Carrito local con cantidades, seleccion de lineas y revision de precios.
+- Registro idempotente de solicitudes con aceptacion de documentos legales.
+- Continuacion voluntaria por WhatsApp despues del registro.
+- Pago manual opcional por Bre-B para solicitudes elegibles.
+- Acceso administrativo mediante Supabase Auth.
+- Gestion de catalogo, inventario, solicitudes y comprobantes.
+- Confirmacion y cancelacion transaccional con control de inventario.
 
-**Esenciales** es un emprendimiento real que comercializa lociones, splash, cremas, humidificadores y otros productos.
+El pago ocurre fuera del sitio. La aplicacion no solicita tarjetas, claves bancarias, CVV ni codigos OTP y no valida transferencias automaticamente.
 
-El proyecto busca centralizar mediante una aplicación web la administración y presentación de su catálogo, facilitando la gestión de la información de los productos y su consulta por parte de los clientes.
+## Tecnologias
 
-El MVP está enfocado específicamente en Esenciales. Una posible plataforma para múltiples emprendimientos se considera una evolución futura y no forma parte del alcance actual.
+- HTML5, CSS3 y JavaScript sin framework de interfaz.
+- Vite para desarrollo y compilacion.
+- Supabase PostgreSQL, Auth, Storage, RPC y Edge Functions.
+- GitHub Actions y GitHub Pages para despliegue.
+- `node:test` para pruebas del cliente y pgTAP para la base de datos.
 
-## Contexto académico
+## Requisitos
 
-Este repositorio corresponde al proyecto integrador del Curso de Opción de Grado de Desarrollo Web Full Stack.
+- Node.js 24 o una version compatible con las dependencias declaradas.
+- npm.
+- Variables publicas de un proyecto Supabase para ejecutar la aplicacion conectada.
+- Supabase CLI y acceso autorizado al proyecto para operaciones de base de datos.
+- Docker Desktop solo cuando se utilice el entorno local completo de Supabase.
 
-Además del desarrollo de la aplicación, el repositorio conserva el contexto académico y técnico necesario para acompañar progresivamente:
+## Instalacion
 
-- las actividades y avances del curso;
-- las indicaciones del profesor;
-- las decisiones del proyecto;
-- el desarrollo y validación del sistema;
-- la preparación del documento académico;
-- la sustentación final.
-
-La documentación se actualizará conforme avance el curso. Las indicaciones explícitas más recientes del profesor tienen prioridad sobre decisiones o planteamientos anteriores cuando exista algún conflicto.
-
-## Documentación
-
-La documentación principal se encuentra en [`docs/`](docs/README.md).
-
-Áreas principales:
-
-- [`docs/sources/`](docs/sources/) — documentos fuente del curso y del proyecto.
-- [`docs/project/`](docs/project/) — contexto, alcance, requisitos, reglas de negocio, actores y flujos.
-- [`docs/architecture/`](docs/architecture/) — arquitectura y decisiones técnicas confirmadas.
-- [`docs/development/`](docs/development/) — configuración, convenciones y flujo de desarrollo.
-- [`docs/academic/`](docs/academic/) — contexto académico, indicaciones del profesor y material de trabajo para el documento académico.
-- [`docs/history/`](docs/history/) — evolución, decisiones y cambios relevantes del proyecto.
-
-Las fuentes originales se conservan separadas de la documentación derivada para evitar duplicaciones y mantener trazabilidad.
-
-## Estructura del repositorio
-
-- [`docs/`](docs/README.md): documentacion permanente del proyecto.
-- [`api/`](api/README.md): contrato entre el frontend y los servicios de Supabase.
-- [`db/`](db/README.md): orientacion del esquema, reglas y datos de prueba.
-- [`supabase/`](supabase/): configuracion local y SQL versionado de Supabase.
-- [`ia/`](ia/README.md): registro academico del uso de inteligencia artificial.
-- [`informe/`](informe/README.md): entregables y evidencias organizados por hito.
-
-El proyecto usa `supabase/` como ruta de backend; no mantiene simultaneamente una carpeta `backend/`. La carpeta [`.ai/`](.ai/README.md) contiene contexto operativo para agentes y no reemplaza el registro academico de `ia/`.
-
-## Desarrollo asistido por IA
-
-El proyecto puede utilizar herramientas de IA como apoyo para análisis, aprendizaje, implementación, revisión y documentación.
-
-Las reglas que deben seguir los agentes de IA están definidas en [`AGENTS.md`](AGENTS.md).
-
-La IA actúa como asistente de desarrollo. Las decisiones importantes del proyecto deben estar respaldadas por el contexto disponible y, cuando corresponda, ser aprobadas por el equipo antes de considerarse definitivas.
-
-## Principios del proyecto
-
-- Resolver el problema real identificado para Esenciales.
-- Mantener un MVP alcanzable dentro del curso.
-- Diferenciar decisiones confirmadas, propuestas preliminares y evolución futura.
-- Priorizar funcionamiento, claridad, seguridad y mantenibilidad.
-- Evitar tecnologías, dependencias y complejidad innecesarias.
-- Mantener coherencia entre requisitos, implementación, documentación y trabajo académico.
-- Comprender, probar y validar el código, incluso cuando sea generado con ayuda de IA.
-
-## Estado de implementación
-
-El prototipo inicial con Node.js y Express fue sustituido por una base de frontend con Vite, HTML5, CSS3 y JavaScript sin framework. Supabase está vinculado al proyecto remoto y el entorno local cuenta con migraciones validadas para el catálogo, su administración, Storage, lectura pública, búsqueda filtrada y registro idempotente de solicitudes mediante RPC.
-
- La arquitectura, estructura del código y decisiones técnicas se incorporarán progresivamente a partir del [alcance funcional MVP V1](docs/project/functional-scope.md).
-
-## Desarrollo
-
-Instale las dependencias:
+Instale las dependencias bloqueadas por `package-lock.json`:
 
 ```bash
-npm install
+npm ci
 ```
 
-Copie `.env.example` como `.env.local` y complete las dos variables públicas del proyecto compartido de Supabase. Las claves secretas o de servicio nunca deben utilizar el prefijo `VITE_` ni incluirse en el frontend.
+Copie `.env.example` como `.env.local` y complete:
 
-Ejecute el cliente:
+```text
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Estas variables son publicas para el cliente. Nunca incluya `service_role`, contrasenas u otros secretos en variables con prefijo `VITE_`.
+
+## Desarrollo
 
 ```bash
 npm run dev
 ```
 
-Vite mostrará la URL local del cliente, normalmente `http://localhost:5173`; los datos, Auth y Storage provienen del proyecto remoto de Supabase.
+Vite mostrara la URL local, normalmente `http://localhost:5173`.
 
-Compruebe las pruebas y la compilación:
+## Build
+
+```bash
+npm run build
+npm run preview
+```
+
+La salida se genera en `dist/` y no se versiona.
+
+## Pruebas
+
+Pruebas Node del cliente:
+
+```bash
+npm run test:auth
+```
+
+Pruebas pgTAP de PostgreSQL contra el proyecto Supabase enlazado:
+
+```bash
+npm run supabase:test-db
+```
+
+Suite completa configurada:
 
 ```bash
 npm test
-npm run build
 ```
 
-Los cambios de base de datos siempre se crean como migraciones versionadas. Antes de aplicarlos al proyecto remoto:
+El script completo incluye las pruebas remotas de base de datos y requiere acceso autorizado e infraestructura disponible.
+
+## Base de datos y Supabase
+
+El backend reproducible se encuentra en `supabase/`:
+
+- `supabase/migrations/`: esquema, restricciones, RLS, permisos y RPC versionadas.
+- `supabase/functions/`: Edge Functions, incluido el envio privado de comprobantes.
+- `supabase/tests/database/`: pruebas pgTAP de estructura, seguridad y reglas transaccionales.
+- `supabase/seed.sql`: categorias iniciales y datos reproducibles de desarrollo.
+- `supabase/config.toml`: configuracion del entorno local.
+
+No se editan migraciones ya aplicadas. Los cambios de base de datos se agregan mediante nuevas migraciones y se revisan antes de enviarlos:
 
 ```bash
+npm run supabase:status
 npm run supabase:push:dry
 npm run supabase:push
 ```
 
-Coordine los cambios de esquema con el equipo y no modifique manualmente en el Dashboard objetos que deban permanecer reproducibles.
+La arquitectura y los contratos se describen en [`docs/architecture/`](docs/architecture/).
 
-## Despliegue
+## Estructura del proyecto
 
-Cada `push` a `main` ejecuta pruebas, compila el frontend y lo publica mediante GitHub Actions en:
-
-`https://marlonstv120.github.io/esenciales-catalogo-web/`
-
-GitHub Actions utiliza las variables públicas `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`. La clave `service_role` y cualquier secreto administrativo están prohibidos en el frontend y en esas variables.
-
-Para previsualizar manualmente una compilación:
-
-```bash
-npm run preview
+```text
+.github/    flujo de despliegue en GitHub Pages
+docs/       documentacion tecnica, funcional y academica
+ia/         registro academico del uso de inteligencia artificial
+informe/    entregables y evidencias academicas
+public/     assets publicos y versiones legales
+src/        aplicacion web
+supabase/   migraciones, funciones, configuracion, seed y pruebas SQL
+tests/      pruebas automatizadas del cliente
 ```
 
----
+Los archivos raíz `index.html`, `vite.config.mjs`, `package.json` y `package-lock.json` configuran la aplicacion y su entorno de desarrollo.
 
-Para conocer el estado vigente y detallado del proyecto, consulta [`docs/README.md`](docs/README.md) y la documentación enlazada desde allí.
+## Documentacion academica
+
+- [`informe/`](informe/README.md) organiza briefing, requisitos, diseno, arquitectura y evidencias de la entrega.
+- [`ia/`](ia/README.md) conserva el registro academico revisado del uso de inteligencia artificial.
+- [`docs/academic/`](docs/academic/README.md) conserva instrucciones del curso y el informe tecnico en construccion.
+
+## Seguridad
+
+- El visitante no tiene acceso directo a las tablas del catalogo, solicitudes o pagos.
+- Las operaciones publicas y administrativas sensibles se validan en PostgreSQL.
+- La administracion exige Supabase Auth y autorizacion adicional mediante RLS y funciones protegidas.
+- Los comprobantes se guardan en un bucket privado y se consultan mediante URLs firmadas de corta duracion.
+- Los secretos administrativos no pertenecen al frontend ni al repositorio.
+
+Consulte [`docs/README.md`](docs/README.md) para navegar la documentacion vigente.

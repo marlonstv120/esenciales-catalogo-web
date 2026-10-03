@@ -10,6 +10,15 @@ Este documento define la estructura lógica en PostgreSQL para administrar el ca
 
 No sustituye las reglas de negocio en [business-rules.md](../project/business-rules.md). Las migraciones SQL, políticas RLS y funciones RPC deberán cumplir ambos documentos.
 
+## Fuentes tecnicas
+
+- El esquema ejecutable, las restricciones, las politicas RLS y las funciones RPC se versionan en [`supabase/migrations/`](../../supabase/migrations/).
+- Los datos iniciales reproducibles se mantienen en [`supabase/seed.sql`](../../supabase/seed.sql).
+- Las reglas del dominio se documentan en [business-rules.md](../project/business-rules.md).
+- Los contratos consumidos por el frontend se resumen en [service-contracts.md](service-contracts.md).
+
+Las migraciones son la autoridad del esquema implementado. No se mantienen copias SQL divergentes ni datos personales reales dentro de la documentacion.
+
 ## Convenciones
 
 - Tablas y columnas en español, minúsculas y sin tildes.

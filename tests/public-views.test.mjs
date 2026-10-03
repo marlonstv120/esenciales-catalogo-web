@@ -36,7 +36,7 @@ test('product detail selects a requestable presentation and uses its public limi
     { id: 2, etiqueta: '100 ml', estado: 'Disponible', precio_normal: 50000, maximo_solicitable: 3 },
     { id: 3, etiqueta: '50 ml', estado: 'Agotado', precio_normal: 40000, maximo_solicitable: 0 },
   ] });
-  assert.match(view, /←<\/span> Volver al catálogo/);
+  assert.match(view, /<svg[^>]*><path d="M19 12H5m6-6-6 6 6 6"\/><\/svg><span>Volver al catálogo<\/span>/);
   assert.equal(view.match(/data-product-gallery-image/g).length, 3);
   assert.match(view, /data-product-detail-form/);
   assert.match(view, /data-detail-presentation="2"[^>]*checked/);
@@ -67,7 +67,7 @@ test('public shell exposes the live cart counter, mobile menu, and complete resp
   const view = publicShellView('<h1>Inicio</h1>', 'home', { items: [{ quantity: 2 }] });
   assert.match(view, /aria-label="Abrir carrito \(2\)"/);
   assert.match(view, /data-cart-drawer-open/);
-  assert.match(view, /aria-label="Abrir menú de navegación" aria-expanded="false"/);
+  assert.match(view, /aria-label="Abrir menú" aria-expanded="false"/);
   assert.match(view, /aria-controls="mobile-menu-drawer"/);
   assert.match(view, /href="#main-content"/);
   assert.match(view, /assets\/brand\/esenciales-logo-completo\.png/);
@@ -123,6 +123,7 @@ test('cart drawer presents an eligible confirmation with stacked payment actions
   const cart = { items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, maxQuantity: 3, quantity: 2 }] };
   const form = cartDrawerView(cart, { open: true, step: 'form', requestState: { form: { nombre: 'Ana', telefono: '3001234567' }, errors: {} } });
   assert.match(form, /data-cart-drawer-back/);
+  assert.match(form, /class="back-navigation public-cart-drawer__back"[^>]*><svg[^>]*><path d="M19 12H5m6-6-6 6 6 6"\/><\/svg><span>Volver al carrito<\/span><\/button>/);
   assert.match(form, /data-request-form/);
   assert.match(form, /name="aceptaTerminos" type="checkbox"/);
   assert.match(form, /1 producto.*100\.000/);

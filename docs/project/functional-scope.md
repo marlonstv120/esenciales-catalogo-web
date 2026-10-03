@@ -28,7 +28,6 @@ La consolidación considera:
 - El [contexto original del proyecto](../sources/CONTEXTO_PROYECTO_ESENCIALES.md).
 - La [entrevista de levantamiento de requerimientos](../sources/ENTREVISTA_LEVANTAMIENTO_REQUERIMIENTOS_ESENCIALES.md) y el [briefing derivado](briefing-esenciales.md).
 - Las decisiones de alcance y tecnología registradas en el repositorio.
-- El [análisis externo de Claude](../sources/ANALISIS_PROPUESTA_ESENCIALES_CLAUDE.md) únicamente como insumo de contraste.
 - Las decisiones funcionales aprobadas directamente por el equipo el 3 de septiembre de 2026.
 
 `CONTEXTO_FUNCIONAL_ESENCIALES_MVP.md` fue mencionado por un insumo externo, pero no se encuentra actualmente en el repositorio y no se utiliza como fuente disponible.
@@ -151,7 +150,7 @@ Una presentación válida debe tener una etiqueta no vacía, un precio normal en
 
 Un producto publicado requiere al menos una imagen. La capacidad de asociar varias imágenes es importante, pero tiene prioridad SHOULD y no debe retrasar el flujo principal.
 
-El mecanismo técnico de almacenamiento de imágenes permanece pendiente.
+Las imágenes se almacenan en Supabase Storage y PostgreSQL conserva sus referencias y metadatos, según la arquitectura vigente.
 
 #### Productos destacados
 
@@ -218,7 +217,7 @@ Tienen prioridad SHOULD:
 
 La interfaz seguirá un enfoque mobile-first para usuarios procedentes principalmente de Instagram, TikTok y WhatsApp.
 
-La disponibilidad continúa visible en la tarjeta y por presentación en el detalle, pero no se utiliza como filtro. Esta decisión del equipo del 28 de septiembre de 2026 reemplaza el filtro de disponibilidad inicialmente aprobado. Los filtros de género y clasificación aceptan varios valores por grupo; los grupos se combinan entre sí. El filtro de precio coincide cuando al menos una presentación activa y solicitable tiene un precio efectivo dentro del rango inclusivo, teniendo en cuenta el precio promocional vigente.
+La disponibilidad continúa visible en la tarjeta y por presentación en el detalle, y se utiliza como filtro combinable según la decisión del equipo del 29 de septiembre de 2026. Los filtros de género y clasificación aceptan varios valores por grupo; los grupos se combinan entre sí. El filtro de precio coincide cuando al menos una presentación activa y solicitable tiene un precio efectivo dentro del rango inclusivo, teniendo en cuenta el precio promocional vigente.
 
 Si se implementa el ordenamiento SHOULD por precio, se utilizará el menor precio efectivo de las presentaciones activas que admitan solicitudes; `Más recientes` utilizará la fecha de creación del producto.
 
@@ -317,7 +316,7 @@ Solicitud 1 -> 1 PagoSolicitud
 
 El detalle de solicitud debe conservar cantidad, precio unitario aplicado y subtotal. El diseño lógico deberá permitir identificar qué líneas descontaron inventario para que una cancelación restituya exactamente lo correspondiente.
 
-La estructura definitiva de PostgreSQL y el mecanismo de trazabilidad del descuento son decisiones pendientes de diseño técnico. No se exige un módulo profesional de movimientos de almacén.
+La estructura de PostgreSQL y la trazabilidad mediante `cantidad_descontada` están materializadas en las migraciones versionadas. No se exige un módulo profesional de movimientos de almacén.
 
 ## 9. Priorización
 

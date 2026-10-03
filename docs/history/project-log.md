@@ -241,7 +241,6 @@ Materialización local del primer incremento de implementación: base de datos d
 
 - [Migración inicial](../../supabase/migrations/20260924000100_create_catalog_core.sql).
 - [Pruebas de base de datos](../../supabase/tests/database/).
-- [Hoja de ruta de implementación](../development/mvp-implementation-roadmap.md).
 
 ### Contexto
 
@@ -277,7 +276,6 @@ Implementacion local del sexto incremento: catalogo publico.
 - [Migracion de RPC publicas](../../supabase/migrations/20260926000200_add_public_catalog_rpc.sql).
 - [Precio normal de referencia](../../supabase/migrations/20260927000100_add_public_reference_normal_price.sql).
 - [ADR-008: lectura publica mediante RPC](../architecture/decisions/ADR-008-lectura-publica-del-catalogo-mediante-rpc.md).
-- [Plan del Incremento 6](../superpowers/plans/2026-09-26-incremento-6-catalogo-publico.md).
 
 ## 2026-09-26
 
@@ -299,7 +297,6 @@ Implementacion local del quinto incremento: imagen principal de producto.
 ### Referencias
 
 - [Migracion de Storage](../../supabase/migrations/20260926000100_add_product_images_storage.sql).
-- [Plan del Incremento 5](../superpowers/plans/2026-09-26-incremento-5-imagenes.md).
 
 ## 2026-09-26
 
@@ -333,7 +330,7 @@ El docente especifica la estructura de carpetas que debe ser visible en GitHub y
 
 ### Decisiones / cambios
 
-- Se incorporan `api/`, `db/`, `ia/` e `informe/` y se conserva `supabase/` como unica ruta de backend, de acuerdo con la autorizacion vigente para sustituir Express.
+- Se incorporaron inicialmente espacios documentales para contratos y base de datos, junto con `ia/` e `informe/`; la documentacion tecnica se consolido posteriormente bajo `docs/architecture/` y `supabase/` se conserva como unica ruta de backend.
 - `informe/` organiza briefing, requisitos, diseno, arquitectura y evidencias sin reemplazar las fuentes de verdad mantenidas en `docs/`.
 - El acta publica identifica a la persona entrevistada por su cargo y no por su nombre.
 - Los wireframes y mockups de entrega se exportaran como PNG por pantalla; las previsualizaciones HTML locales quedan excluidas de Git.
@@ -350,8 +347,8 @@ El docente especifica la estructura de carpetas que debe ser visible en GitHub y
 
 - [Estructura de entregables](../../informe/README.md).
 - [Registro de uso de IA](../../ia/README.md).
-- [Contrato de servicios](../../api/README.md).
-- [Base de datos](../../db/README.md).
+- [Contratos de servicios](../architecture/service-contracts.md).
+- [Modelo logico de datos](../architecture/data-model.md).
 - [Reglas de negocio](../project/business-rules.md).
 
 ## 2026-09-07

@@ -195,7 +195,7 @@ El catálogo usa normalmente separaciones de `--space-6` a `--space-16`; la admi
 - Sombra baja: `0 1px 3px rgb(23 20 15 / 8%)`.
 - Sombra elevada: `0 12px 30px rgb(23 20 15 / 14%)`, reservada para superposiciones.
 - No envolver cada sección en una tarjeta. Fondo, espacio, borde o encabezado pueden establecer jerarquía sin contenedor elevado.
-- Los formularios administrativos usan marfil muy claro, no blanco puro, para diferenciar sus campos de las superficies de sección. Los campos comparten un borde gris-beige neutro de `1px`; al recibir foco conservan ese color y pasan a `2px`, sin anillo, sombra ni segundo borde. Los buscadores siguen la misma regla y no incorporan bordes duplicados.
+- Los formularios administrativos usan marfil muy claro, no blanco puro, para diferenciar sus campos de las superficies de sección. Los campos comparten un borde gris-beige neutro de `1px`; al recibir foco usan un único borde de `1px` `--color-brand-bronze`, sin anillo, sombra ni segundo borde. Los buscadores compuestos aplican ese borde a su contenedor completo, incluidos sus iconos, y no incorporan bordes duplicados en el control interno.
 
 ## 8. Fotografías e imágenes
 
@@ -336,7 +336,7 @@ El MVP necesita un conjunto pequeño:
 Los controles relevantes deben diseñar `hover`, `focus-visible`, `active`, `selected`, `disabled`, `busy`, `error` y `success`.
 
 - `hover` refuerza la disponibilidad sin ser el único indicador.
-- `focus-visible` usa contorno de al menos `3px`, preferentemente `--color-brand-bronze` sobre superficies claras y `--color-brand-gold-light` sobre superficies negras, con separación suficiente del componente.
+- Los campos simples usan un único borde de foco `--color-brand-bronze`, sin sombra ni contorno adicional. Los controles compuestos trasladan ese borde a su contenedor mediante `:focus-within`; los controles internos no dibujan un segundo foco. Los demás elementos interactivos mantienen un único indicador de teclado visible sobre el borde existente.
 - `active` comunica la pulsación sin desplazar contenido.
 - `selected` combina borde, superficie y estado programático.
 - `disabled` se usa solo cuando la acción no es válida; debe seguir siendo comprensible.
@@ -421,5 +421,4 @@ No quedan decisiones visuales bloqueantes para comenzar la adaptación del front
 - [Alcance funcional](functional-scope.md): prioridades y límites del MVP.
 - [Logo original](../sources/logo_esenciales.jpg) y variantes de trabajo en `../../public/assets/brand/`.
 - [Referencia aprobada opción B](../sources/referencia-pagina-opcion-b.png): atmósfera, jerarquía y composición; no fuente de productos ni precios.
-- [`docs/wireframes/wireframes.html`](../wireframes/wireframes.html): referencia estructural de baja fidelidad.
 - [`informe/03-diseno/`](../../informe/03-diseno/): evidencias y exportaciones de diseño, no fuente visual definitiva.

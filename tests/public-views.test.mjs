@@ -196,3 +196,17 @@ test('payment step uses a compact Bre-B summary, copyable key, and removable sel
   assert.doesNotMatch(view, /Pagar solicitud/);
   assert.doesNotMatch(view, />Copiar llave<|>Quitar</);
 });
+test('payment proof sent view consolidates verification status and offers contextual WhatsApp continuation', () => {
+  const view = publicRequestView({ codigo: 'ES-00061', estado: 'nueva', pago_estado: 'comprobante_enviado', valor_total_productos: 90000, lineas: [{ producto: '9 PM', presentacion: '100 ml', cantidad: 1, subtotal: 90000 }] });
+  assert.match(view, /Comprobante enviado/);
+  assert.match(view, /Solicitud <strong>ES-00061<\/strong>/);
+  assert.match(view, /9 PM · 100 ml × 1/);
+  assert.match(view, /<span>Total<\/span><strong>\$90\.000<\/strong>/);
+  assert.match(view, /Pendiente de verificación/);
+  assert.match(view, /ESENCIALES revisará el comprobante antes de confirmar el pago/);
+  assert.match(view, /Continuar por WhatsApp/);
+  assert.match(view, /ES-00061%20por%20%2490\.000%20y%20ya%20envi%C3%A9%20el%20comprobante/);
+  assert.match(view, /Seguir viendo productos/);
+  assert.match(view, /data-confirmation-continue/);
+  assert.doesNotMatch(view, /Estado de solicitud|Pago: Comprobante enviado|<p class="eyebrow">ESENCIALES|Solicitud ES-00061<\/h1>/);
+});

@@ -1,7 +1,7 @@
 import { appPath } from './app-paths.mjs';
 import { getCartCount, getCartTotal, getSelectedCartItems, getSelectedCartTotal } from './public-cart.mjs';
 import { getCatalogFilterCount, hasCatalogFilters, parseCatalogFilters } from './public-catalog-filters.mjs';
-import { whatsappUrl } from './public-purchase-request.mjs';
+import { paymentProofWhatsappUrl, whatsappUrl } from './public-purchase-request.mjs';
 import { PAYMENT_CONFIG, paymentInstructionsAreConfigured } from './payment-config.mjs';
 import { paymentStatusLabel } from './public-payment.mjs';
 import { classificationLabel } from './products.js';
@@ -209,11 +209,15 @@ function publicRequestSummaryView(request) {
   return `<section class="public-confirmation public-request-status-view" aria-labelledby="request-status-title"><p class="eyebrow">ESENCIALES</p><h1 id="request-status-title">Solicitud ${escapeHtml(request.codigo)}</h1><p class="public-confirmation__code">Estado de solicitud <strong>${escapeHtml(request.estado)}</strong></p><ul>${(request.lineas || []).map((line) => `<li><span>${escapeHtml(line.producto)} · ${escapeHtml(line.presentacion)} × ${line.cantidad}</span><strong>${money(line.subtotal)}</strong></li>`).join('')}</ul><p class="public-confirmation__total">Valor total de productos <strong>${money(request.valor_total_productos)}</strong></p><p class="payment-status payment-status--${escapeHtml(request.pago_estado)}">Pago: ${escapeHtml(paymentStatusLabel(request.pago_estado))}</p>${request.razon_rechazo ? `<p class="payment-review-note"><strong>Motivo de rechazo:</strong> ${escapeHtml(request.razon_rechazo)}</p>` : ''}</section>`;
 }
 
+function paymentProofSentView(request) {
+  return `<section class="public-payment-sent" aria-label="Comprobante enviado"><p class="public-payment-sent__success" role="status"><span aria-hidden="true">✓</span><strong>Comprobante enviado</strong></p><p class="public-payment-sent__code">Solicitud <strong>${escapeHtml(request.codigo)}</strong></p><ul>${(request.lineas || []).map((line) => `<li><span>${escapeHtml(line.producto)} · ${escapeHtml(line.presentacion)} × ${line.cantidad}</span><strong>${money(line.subtotal)}</strong></li>`).join('')}</ul><p class="public-payment-sent__total"><span>Total</span><strong>${money(request.valor_total_productos)}</strong></p><p class="public-payment-sent__verification"><strong>Pendiente de verificación</strong><span>ESENCIALES revisará el comprobante antes de confirmar el pago.</span></p><div class="public-payment-sent__actions"><a class="public-whatsapp-button" href="${paymentProofWhatsappUrl(request)}" target="_blank" rel="noopener noreferrer">${whatsappIcon}<span>Continuar por WhatsApp</span></a><a href="${appPath('/catalogo')}" data-confirmation-continue>Seguir viendo productos</a></div></section>`;
+}
+
 function paymentStepView(request, state = {}) {
   const configured = paymentInstructionsAreConfigured();
   const selected = state.file;
   const status = request.pago_estado;
-  if (status === 'comprobante_enviado') return `${publicRequestSummaryView(request)}<p class="payment-review-note" role="status">Comprobante enviado. Pendiente de verificación por ESENCIALES.</p>`;
+  if (status === 'comprobante_enviado') return paymentProofSentView(request);
   if (status === 'verificado') return `${publicRequestSummaryView(request)}<p class="payment-review-note" role="status">Tu pago fue verificado y la solicitud quedó confirmada.</p>`;
   if (!request.elegible_pago) return `${publicRequestSummaryView(request)}<p class="payment-review-note">Esta solicitud no admite pago inmediato. Si incluye productos bajo pedido o cambió la disponibilidad, coordina con ESENCIALES por WhatsApp.</p>`;
   return `<section class="public-payment-step" aria-label="Detalles de pago Bre-B"><header class="public-payment-step__summary"><p>Solicitud <strong>${escapeHtml(request.codigo)}</strong></p><p>Total a transferir <strong>${money(request.valor_total_productos)}</strong></p></header>${configured ? `<div class="payment-instructions"><img src="${escapeHtml(PAYMENT_CONFIG.qrSrc)}" alt="Código QR para pago por Bre-B"><div class="payment-key-row"><span><small>Llave</small><strong>${escapeHtml(PAYMENT_CONFIG.keyValue)}</strong></span><button type="button" class="icon-button" data-payment-copy-key="${escapeHtml(PAYMENT_CONFIG.keyValue)}" aria-label="Copiar llave Bre-B" title="Copiar llave">${copyIcon}</button></div></div>` : `<p class="payment-review-note">El pago por Bre-B estará disponible cuando ESENCIALES configure su llave y QR oficiales. Puedes continuar por WhatsApp.</p>`}<p class="field-help">El envío del comprobante no implica aprobación automática. ESENCIALES verificará la transferencia antes de confirmar el pago.</p>${configured ? `<form data-payment-proof-form class="payment-proof-form"><label class="payment-proof-file">Comprobante de pago<input name="proof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" data-payment-proof-input><span>Seleccionar comprobante</span></label><p class="field-help">JPG, PNG, WebP o PDF. Máximo 5 MiB.</p>${selected ? `<div class="payment-file-name"><span><strong>${escapeHtml(selected.name)}</strong><small>${Math.ceil(selected.size / 1024)} KB</small></span><button type="button" class="icon-button" data-payment-proof-clear aria-label="Quitar comprobante ${escapeHtml(selected.name)}" title="Quitar comprobante">${trashIcon}</button></div>` : ''}${state.error ? `<p class="message message--error" role="alert">${escapeHtml(state.error)}</p>` : ''}<button class="primary-button" type="submit" ${state.busy || !selected ? 'disabled' : ''}>${state.busy ? 'Enviando comprobante...' : 'Enviar comprobante'}</button></form>` : ''}</section>`;
@@ -221,6 +225,7 @@ function paymentStepView(request, state = {}) {
 
 export function publicRequestView(request, state = {}) {
   if (!request) return errorView('No pudimos cargar la información de esta solicitud.', '/catalogo');
+  if (request.pago_estado === 'comprobante_enviado') return paymentProofSentView(request);
   return state.step === 'payment' ? paymentStepView(request, state) : `${publicRequestSummaryView(request)}${request.elegible_pago ? '<button class="primary-button" type="button" data-payment-start>Pagar ahora</button>' : ''}<a class="secondary-button" href="https://wa.me/573174645670" target="_blank" rel="noopener noreferrer">Continuar por WhatsApp</a>`;
 }
 

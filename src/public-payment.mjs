@@ -79,5 +79,5 @@ export async function submitPaymentProof(client, { code, token, file }) {
 }
 
 export function paymentStatusLabel(status) {
-  return ({ pendiente: 'Pendiente', comprobante_enviado: 'Comprobante enviado', verificado: 'Verificado', rechazado: 'Rechazado' }[status] || 'Pendiente');
+  return ({ pendiente: 'Pendiente', comprobante_enviado: 'Comprobante enviado', verificado: 'Verificado', rechazado: 'Rechazado', validado_manualmente: 'Validado manualmente' }[status] || 'Pendiente');
 }

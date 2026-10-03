@@ -29,15 +29,16 @@ const focusable = 'button:not([disabled]), [href], input:not([disabled]), select
 export function startPublicCatalog({ app, client, route, windowRef = window, documentRef = document }) {
   const requestDraft = createDraftSaver(windowRef.sessionStorage, purchaseRequestDraftMetadata().key, purchaseRequestDraftMetadata());
   const restoredRequestForm = loadPurchaseRequestDraft(windowRef.sessionStorage);
-  let active = true; let requestId = 0; let cartValidationId = 0; let currentRoute = route; let currentProduct = null; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null; let legalModal = null; let cartDrawerState = { open: false, step: 'cart', error: null }; let cartDrawerNeedsFocus = false; let cartState = { ready: false }; let requestForm = restoredRequestForm || emptyRequestForm(); let requestState = { form: requestForm, errors: {}, error: null, busy: false, priceReview: null }; let attemptId = null; let confirmation = null; let paymentRequest = null; let paymentState = { step: 'summary', file: null, busy: false, error: null }; let mobileMenuOpen = false; let previousBodyOverflow = ''; let touchStartY = null;
+  let active = true; let requestId = 0; let cartValidationId = 0; let currentRoute = route; let currentProduct = null; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null; let legalModal = null; let cartDrawerState = { open: false, step: 'cart', error: null }; let cartDrawerNeedsFocus = false; let cartState = { ready: false }; let requestForm = restoredRequestForm || emptyRequestForm(); let requestState = { form: requestForm, errors: {}, error: null, busy: false, priceReview: null }; let attemptId = null; let confirmation = null; let paymentRequest = null; let paymentState = { step: 'summary', file: null, busy: false, error: null }; let mobileMenuOpen = false; let previousBodyOverflow = ''; let pageScrollLocked = false; let touchStartY = null;
   clearPurchaseConfirmation(windowRef.localStorage);
   const announce = (message) => { const region = app.querySelector('.public-live-region'); if (region) region.textContent = message; };
   const syncFooterSections = () => { const desktop = windowRef.matchMedia?.('(min-width: 64rem)').matches ?? Number(windowRef.innerWidth) >= 1024; app.querySelectorAll('[data-footer-section]').forEach((section) => { section.open = desktop; const summary = section.querySelector('summary'); if (summary) summary.tabIndex = desktop ? -1 : 0; }); };
   const setPageScrollLocked = (locked) => {
     const body = documentRef.body;
-    if (!body?.style) return;
+    if (!body?.style || locked === pageScrollLocked) return;
     if (locked) { previousBodyOverflow = body.style.overflow; body.style.overflow = 'hidden'; }
     else body.style.overflow = previousBodyOverflow;
+    pageScrollLocked = locked;
   };
   const syncPageScrollLock = () => setPageScrollLocked(Boolean(mobileMenuOpen || cartDrawerState.open || selectorProduct || filterPanelOpen || legalModal));
   const closeMobileMenu = ({ focusTrigger = false } = {}) => {
@@ -77,6 +78,16 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   };
   const persistCart = () => { if (!saveCart(cart, windowRef.localStorage)) announce('El carrito se mantendrá durante esta sesión, pero no pudo guardarse en este navegador.'); };
   const dismissConfirmation = () => { confirmation = null; clearPurchaseConfirmation(windowRef.localStorage); cartDrawerState = { ...cartDrawerState, step: 'cart' }; };
+  const closeCartDrawer = ({ focusTrigger = false } = {}) => {
+    if (!cartDrawerState.open) return;
+    dismissConfirmation();
+    cartDrawerState = { ...cartDrawerState, open: false };
+    app.querySelector('[data-cart-drawer]')?.remove();
+    const trigger = overlayTrigger;
+    overlayTrigger = null;
+    syncPageScrollLock();
+    if (focusTrigger) queueMicrotask(() => trigger?.focus());
+  };
   const showToast = (message, tone = 'success') => showNotification(message, { tone, documentRef });
   const closeOverlay = () => { const trigger = overlayTrigger; selectorProduct = null; filterPanelOpen = false; legalModal = null; overlayTrigger = null; syncPageScrollLock(); if (currentRoute.name === 'catalog') renderCatalog(parseCatalogFilters(windowRef.location.search)); else if (currentRoute.name === 'cart') renderCart(); else renderRoute(currentRoute); queueMicrotask(() => trigger?.focus()); };
   const trapFocus = (event) => {
@@ -200,7 +211,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     if (mobileMenuOpen && event.target.closest?.('[data-mobile-menu-close]')) { closeMobileMenu({ focusTrigger: true }); return; }
     const cartDrawerOpenTrigger = event.target.closest?.('[data-cart-drawer-open]');
     if (cartDrawerOpenTrigger) { closeMobileMenu(); cartDrawerState = { open: true, step: confirmation ? 'confirmation' : 'cart', error: null }; cartDrawerNeedsFocus = true; overlayTrigger = cartDrawerOpenTrigger; renderDrawer(); revalidateDrawerCart(); return; }
-    if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-close]')) { dismissConfirmation(); cartDrawerState = { ...cartDrawerState, open: false }; app.querySelector('[data-cart-drawer]')?.remove(); const trigger = overlayTrigger; overlayTrigger = null; syncPageScrollLock(); queueMicrotask(() => trigger?.focus()); return; }
+    if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-close]')) { closeCartDrawer({ focusTrigger: true }); return; }
     if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-back]')) { cartDrawerState = { ...cartDrawerState, step: cartDrawerState.step === 'payment' ? 'confirmation' : 'cart', error: null }; renderDrawer(); return; }
     if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-continue]')) { cartDrawerState = { ...cartDrawerState, step: 'form', error: null }; renderDrawer(); return; }
     if ((selectorProduct || filterPanelOpen || legalModal) && !event.target.closest?.('[data-presentation-selector], [data-filter-panel], [data-filter-toggle], [data-legal-modal-dialog], [data-legal-modal]')) { closeOverlay(); return; }
@@ -225,10 +236,10 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const copyPaymentKey = event.target.closest?.('[data-payment-copy-key]');
     if (copyPaymentKey) { const value = copyPaymentKey.dataset.paymentCopyKey; const clipboard = windowRef.navigator?.clipboard; if (value && clipboard?.writeText) clipboard.writeText(value).then(() => showToast('Llave copiada.')).catch(() => announce('No fue posible copiar la llave.')); return; }
     if (event.target.closest?.('[data-payment-proof-clear]')) { paymentState = { ...paymentState, file: null, error: null }; if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest(); return; }
-    if (cartDrawerState.open && event.target.closest?.('[data-confirmation-continue]')) { dismissConfirmation(); cartDrawerState = { ...cartDrawerState, open: false }; app.querySelector('[data-cart-drawer]')?.remove(); overlayTrigger = null; }
+    if (cartDrawerState.open && event.target.closest?.('[data-confirmation-continue]')) closeCartDrawer();
     const retry = event.target.closest?.('[data-public-retry]'); if (retry) { event.preventDefault(); if (currentRoute.name === 'catalog') loadCatalog(parseCatalogFilters(windowRef.location.search), { refreshBase: true }); else renderRoute(currentRoute); return; }
     const link = event.target.closest?.('a[href]'); if (!link) return; if (mobileMenuOpen && link.closest?.('[data-mobile-menu-drawer]')) closeMobileMenu(); const target = new URL(link.href, windowRef.location.href);
-    if (target.origin !== windowRef.location.origin || target.pathname === windowRef.location.pathname && target.hash) return; const nextRoute = getPublicRoute(target.pathname); if (nextRoute.name === 'admin' || nextRoute.name === 'not-found') return;
+    if (target.origin !== windowRef.location.origin || target.pathname === windowRef.location.pathname && target.hash) return; if (cartDrawerState.open && link.closest?.('[data-cart-drawer]')) closeCartDrawer(); const nextRoute = getPublicRoute(target.pathname); if (nextRoute.name === 'admin' || nextRoute.name === 'not-found') return;
     event.preventDefault(); windowRef.history.pushState({}, '', `${target.pathname}${target.search}`); renderRoute(nextRoute, { scrollToTop: true });
   };
   const onSubmit = (event) => {
@@ -293,7 +304,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   const onKeyDown = (event) => {
     if (event.key === 'Escape' && mobileMenuOpen) { event.preventDefault(); closeMobileMenu({ focusTrigger: true }); return; }
     if (event.key === 'Escape' && legalModal) { event.preventDefault(); closeOverlay(); return; }
-    if (event.key === 'Escape' && cartDrawerState.open) { event.preventDefault(); dismissConfirmation(); cartDrawerState = { ...cartDrawerState, open: false }; app.querySelector('[data-cart-drawer]')?.remove(); const trigger = overlayTrigger; overlayTrigger = null; syncPageScrollLock(); queueMicrotask(() => trigger?.focus()); return; }
+    if (event.key === 'Escape' && cartDrawerState.open) { event.preventDefault(); closeCartDrawer({ focusTrigger: true }); return; }
     if (event.key === 'Escape' && (selectorProduct || filterPanelOpen || legalModal)) { event.preventDefault(); closeOverlay(); return; }
     trapFocus(event);
   };
@@ -311,10 +322,10 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   const onTouchStart = (event) => { touchStartY = mobileMenuOpen && event.target.closest?.('[data-mobile-menu-drawer]') ? event.touches?.[0]?.clientY ?? null : null; };
   const onTouchMove = (event) => { const currentY = event.touches?.[0]?.clientY; if (!mobileMenuOpen || touchStartY === null || currentY === undefined || touchStartY - currentY <= 8) return; event.preventDefault(); const distance = touchStartY - currentY; touchStartY = null; closeMobileMenu(); windowRef.scrollBy?.(0, distance); };
   const onResize = () => { syncFooterSections(); if (windowRef.matchMedia?.('(min-width: 40rem)').matches ?? Number(windowRef.innerWidth) >= 640) closeMobileMenu(); };
-  const onPopState = () => renderRoute(getPublicRoute(windowRef.location.pathname));
+  const onPopState = () => { closeCartDrawer(); selectorProduct = null; filterPanelOpen = false; legalModal = null; overlayTrigger = null; syncPageScrollLock(); renderRoute(getPublicRoute(windowRef.location.pathname)); };
   const stopHeaderScroll = startPublicHeaderScroll({ app, windowRef, onHide: closeMobileMenu });
   const flushRequestDraft = () => requestDraft.flush();
   const onVisibilityChange = () => { if (documentRef.visibilityState === 'hidden') flushRequestDraft(); };
   app.addEventListener('click', onClick); app.addEventListener('submit', onSubmit); app.addEventListener('input', onInput); app.addEventListener('change', onChange); app.addEventListener('wheel', onDrawerWheel, { passive: false }); app.addEventListener('touchstart', onTouchStart, { passive: true }); app.addEventListener('touchmove', onTouchMove, { passive: false }); documentRef.addEventListener?.('keydown', onKeyDown); documentRef.addEventListener?.('visibilitychange', onVisibilityChange); windowRef.addEventListener('pagehide', flushRequestDraft); windowRef.addEventListener('popstate', onPopState); windowRef.addEventListener('resize', onResize); renderRoute(route); if (restoredRequestForm) queueMicrotask(() => announce('Recuperamos los cambios que estabas realizando.'));
-  return () => { active = false; requestId += 1; flushRequestDraft(); requestDraft.destroy(); closeMobileMenu(); stopHeaderScroll(); app.removeEventListener('click', onClick); app.removeEventListener('submit', onSubmit); app.removeEventListener('input', onInput); app.removeEventListener('change', onChange); app.removeEventListener('wheel', onDrawerWheel); app.removeEventListener('touchstart', onTouchStart); app.removeEventListener('touchmove', onTouchMove); documentRef.removeEventListener?.('keydown', onKeyDown); documentRef.removeEventListener?.('visibilitychange', onVisibilityChange); windowRef.removeEventListener('pagehide', flushRequestDraft); windowRef.removeEventListener('popstate', onPopState); windowRef.removeEventListener('resize', onResize); };
+  return () => { active = false; requestId += 1; flushRequestDraft(); requestDraft.destroy(); closeMobileMenu(); cartDrawerState = { ...cartDrawerState, open: false }; selectorProduct = null; filterPanelOpen = false; legalModal = null; overlayTrigger = null; syncPageScrollLock(); stopHeaderScroll(); app.removeEventListener('click', onClick); app.removeEventListener('submit', onSubmit); app.removeEventListener('input', onInput); app.removeEventListener('change', onChange); app.removeEventListener('wheel', onDrawerWheel); app.removeEventListener('touchstart', onTouchStart); app.removeEventListener('touchmove', onTouchMove); documentRef.removeEventListener?.('keydown', onKeyDown); documentRef.removeEventListener?.('visibilitychange', onVisibilityChange); windowRef.removeEventListener('pagehide', flushRequestDraft); windowRef.removeEventListener('popstate', onPopState); windowRef.removeEventListener('resize', onResize); };
 }

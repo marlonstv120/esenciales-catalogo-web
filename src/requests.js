@@ -6,7 +6,7 @@ export function normalizePurchaseRequest(values) {
     telefono: String(values.telefono || '').trim(),
     ciudad: trimOrNull(values.ciudad),
     observaciones: trimOrNull(values.observaciones),
-    lineas: (values.lineas || []).map((linea) => ({ detalle_id: Number(linea.detalle_id), cantidad: Number(linea.cantidad) })),
+    lineas: (values.lineas || []).map((linea) => ({ detalle_id: Number(linea.detalle_id ?? linea.id), cantidad: Number(linea.cantidad) })),
   };
 }
 

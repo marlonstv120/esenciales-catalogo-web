@@ -110,6 +110,8 @@ Función de PostgreSQL revalida y descuenta inventario inmediato
 Marca la solicitud como Entregada o Cancelada
 ```
 
+Como alternativa, si no existe un comprobante pendiente, el administrador puede confirmar el acuerdo realizado por un canal externo. La misma transacción confirma la solicitud, aplica el inventario y registra el pago como `Validado manualmente`; no se presenta como un comprobante verificado.
+
 ## Flujo de ajuste antes de confirmar
 
 Mientras la solicitud esté Nueva:

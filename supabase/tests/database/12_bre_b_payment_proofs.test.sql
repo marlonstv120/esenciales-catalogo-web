@@ -1,7 +1,7 @@
 begin;
 set local search_path = public, extensions;
 
-select plan(25);
+select plan(28);
 
 select ok(to_regclass('public.pagos_solicitud') is not null, 'Existe la tabla de pagos de solicitud');
 select ok((select relrowsecurity from pg_class where oid = 'public.pagos_solicitud'::regclass), 'RLS esta activo en pagos');
@@ -51,6 +51,18 @@ insert into public.usuarios_administrativos (id, activo) values ('12121212-1212-
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '12121212-1212-1212-1212-121212121212', true);
+select lives_ok(
+  $$select public.actualizar_solicitud_nueva(current_setting('test.solicitud_pago_uno')::integer, 'Cliente pago corregido', '3000000001', 'Cali', 'Actualizar datos antes de aprobar', jsonb_build_array(jsonb_build_object('detalle_id', (select id from public.detalles_solicitud where solicitud_id = current_setting('test.solicitud_pago_uno')::integer), 'cantidad', 1)))$$,
+  'Un comprobante pendiente permite corregir solo los datos del cliente'
+);
+set local role postgres;
+select is((select nombre_cliente from public.solicitudes where id = current_setting('test.solicitud_pago_uno')::integer), 'Cliente pago corregido', 'La correccion conserva la solicitud y su comprobante pendientes');
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '12121212-1212-1212-1212-121212121212', true);
+select throws_ok(
+  $$select public.actualizar_solicitud_nueva(current_setting('test.solicitud_pago_uno')::integer, 'Cliente pago corregido', '3000000001', 'Cali', null, jsonb_build_array(jsonb_build_object('detalle_id', (select id from public.detalles_solicitud where solicitud_id = current_setting('test.solicitud_pago_uno')::integer), 'cantidad', 2)))$$,
+  '22023', null, 'Un comprobante pendiente sigue bloqueando cambios de cantidad'
+);
 select throws_ok($$select public.rechazar_comprobante_pago(current_setting('test.solicitud_pago_uno')::integer, '')$$, '22023', null, 'Rechazar exige una razon');
 select lives_ok($$select public.rechazar_comprobante_pago(current_setting('test.solicitud_pago_uno')::integer, 'Comprobante ilegible')$$, 'El administrador rechaza el comprobante');
 

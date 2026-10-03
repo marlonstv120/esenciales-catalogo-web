@@ -4,6 +4,7 @@ import { filterPurchaseRequests, listPurchaseRequests, normalizePurchaseRequest,
 
 test('normalizes only editable request fields and existing detail quantities', () => {
   assert.deepEqual(normalizePurchaseRequest({ nombre_cliente: ' Ana ', telefono: ' 300 0000000 ', ciudad: '  Cali ', observaciones: ' ', lineas: [{ detalle_id: '7', cantidad: '3' }] }), { nombre_cliente: 'Ana', telefono: '300 0000000', ciudad: 'Cali', observaciones: null, lineas: [{ detalle_id: 7, cantidad: 3 }] });
+  assert.deepEqual(normalizePurchaseRequest({ nombre_cliente: 'Ana', telefono: '3000000000', lineas: [{ id: 8, cantidad: 2 }] }).lineas, [{ detalle_id: 8, cantidad: 2 }]);
 });
 
 test('lists requests newest first and calls the protected edit RPC', () => {

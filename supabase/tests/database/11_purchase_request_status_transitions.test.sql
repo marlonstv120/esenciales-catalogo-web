@@ -1,7 +1,7 @@
 begin;
 set local search_path = public, extensions;
 
-select plan(20);
+select plan(21);
 
 select has_function('public', 'confirmar_solicitud_compra', array['integer']::text[], 'Existe la RPC para confirmar solicitudes');
 select has_function('public', 'entregar_solicitud_compra', array['integer']::text[], 'Existe la RPC para entregar solicitudes');
@@ -38,6 +38,9 @@ select s.id, p.id, 1, p.precio_normal from public.solicitudes s join public.pres
 union all
 select s.id, p.id, 1, p.precio_normal from public.solicitudes s join public.presentaciones p on p.etiqueta = 'Sin stock transicion' where s.codigo = 'ES-11003';
 
+insert into public.pagos_solicitud (solicitud_id, monto)
+select s.id, sum(d.subtotal)::integer from public.solicitudes s join public.detalles_solicitud d on d.solicitud_id = s.id where s.codigo in ('ES-11001', 'ES-11002', 'ES-11003', 'ES-11004') group by s.id;
+
 select set_config('test.mixta', (select id::text from public.solicitudes where codigo = 'ES-11001'), true);
 select set_config('test.nueva', (select id::text from public.solicitudes where codigo = 'ES-11002'), true);
 select set_config('test.sin_stock', (select id::text from public.solicitudes where codigo = 'ES-11003'), true);
@@ -56,6 +59,11 @@ select results_eq(
   $$select estado, confirmado_en is not null from public.solicitudes where id = current_setting('test.mixta')::integer$$,
   $$values ('confirmada'::text, true)$$,
   'La confirmacion registra el estado y su fecha'
+);
+select results_eq(
+  $$select metodo, estado, revisado_en is not null from public.pagos_solicitud where solicitud_id = current_setting('test.mixta')::integer$$,
+  $$values ('externo'::text, 'validado_manualmente'::text, true)$$,
+  'La confirmacion manual registra una validacion externa sin comprobante'
 );
 select results_eq(
   $$select p.etiqueta, p.stock, d.cantidad_descontada from public.detalles_solicitud d join public.presentaciones p on p.id = d.presentacion_id where d.solicitud_id = current_setting('test.mixta')::integer order by p.etiqueta$$,

@@ -1,10 +1,10 @@
 # Arquitectura
 
-Esta seccion debe contener:
+Esta seccion contiene:
 
-- `arquitectura.drawio`: diagrama editable.
-- `arquitectura.png`: exportacion utilizada en el informe.
+- `esenciales-architecture.drawio`: diagrama editable actualizado con frontend, Supabase, PostgreSQL, Storage, RLS, RPC, despliegue y pago manual Bre-B.
+- `esenciales-architecture.drawio.png`: exportacion para el informe.
 
-Ambos archivos estan pendientes. No se incluye una imagen provisional porque la arquitectura debe representar fielmente la implementacion vigente con frontend estatico y servicios de Supabase.
+El PNG debe regenerarse desde el archivo `.drawio` al modificar el diagrama para conservar correspondencia con la implementacion vigente. La version actual del XML incorpora la Edge Function `submit-payment-proof`, el bucket privado `comprobantes-pago`, `pagos_solicitud`, el token de cliente y la verificacion administrativa transaccional.
 
 Consulte la [arquitectura confirmada](../../docs/architecture/overview.md), el [modelo logico](../../docs/architecture/data-model.md) y las [decisiones ADR](../../docs/architecture/decisions/README.md) antes de elaborar el diagrama.

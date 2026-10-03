@@ -2,11 +2,11 @@
 
 ## Estado
 
-Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo fue materializado en `20260924000100_create_catalog_core.sql`; las políticas administrativas, Storage y las RPC de lectura pública se implementaron en migraciones posteriores. Las migraciones `20260930000100_create_purchase_request_schema.sql`, `20260930000200_add_purchase_request_registration_rpc.sql` y `20261001000100_add_admin_purchase_request_edit_rpc.sql` materializan las tablas, restricciones, RLS, el registro transaccional y la edición administrativa limitada de solicitudes Nuevas. El cliente consulta el catálogo mediante `obtener_catalogo_publico()` y `obtener_producto_publico(integer)`, manteniendo las tablas cerradas a `anon`.
+Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo fue materializado en `20260924000100_create_catalog_core.sql`; las políticas administrativas, Storage y las RPC de lectura pública se implementaron en migraciones posteriores. Las migraciones de solicitudes materializan restricciones, RLS, registro transaccional, edición limitada y transiciones administrativas. La migración `20261001000400_add_bre_b_payment_proofs.sql` agrega el token público de la solicitud, `pagos_solicitud`, el bucket privado de comprobantes y las RPC asociadas al pago manual Bre-B. El cliente consulta el catálogo mediante `obtener_catalogo_publico()` y `obtener_producto_publico(integer)`, manteniendo las tablas cerradas a `anon`.
 
 ## Propósito
 
-Este documento define la estructura lógica inicial en PostgreSQL para administrar el catálogo y las solicitudes de compra. Supabase Auth administrará las credenciales y sesiones administrativas fuera de las tablas de negocio. También establece las transacciones necesarias para preservar precios históricos e inventario consistente.
+Este documento define la estructura lógica en PostgreSQL para administrar el catálogo, las solicitudes de compra y su pago manual opcional. Supabase Auth administra las credenciales y sesiones administrativas fuera de las tablas de negocio. También establece las transacciones necesarias para preservar precios históricos, inventario consistente y la separación entre estado de solicitud y estado de pago.
 
 No sustituye las reglas de negocio en [business-rules.md](../project/business-rules.md). Las migraciones SQL, políticas RLS y funciones RPC deberán cumplir ambos documentos.
 
@@ -30,6 +30,8 @@ No sustituye las reglas de negocio en [business-rules.md](../project/business-ru
 - Los detalles de una solicitud muestran el nombre actual del producto y la etiqueta actual de la presentación.
 - El precio unitario efectivo aplicado se conserva como dato histórico.
 - El sistema conserva el estado actual de la solicitud y sus fechas relevantes, sin una tabla de auditoría de transiciones.
+- Cada solicitud tiene un token aleatorio para recuperar de manera limitada su información pública y enviar un comprobante sin crear una cuenta.
+- `pagos_solicitud` mantiene el estado del pago separado de la solicitud; la transferencia Bre-B se realiza fuera del sitio y su comprobante requiere revisión administrativa.
 
 ## Entidades y relaciones
 
@@ -40,6 +42,7 @@ productos 1 --- N imagenes_producto
 
 solicitudes 1 --- N detalles_solicitud
 presentaciones 1 --- N detalles_solicitud
+solicitudes 1 --- 1 pagos_solicitud
 
 auth.users 1 --- 0..1 usuarios_administrativos
 ```
@@ -136,6 +139,7 @@ La combinación `producto_id` y `posicion` será única. Supabase Storage es el 
 | --- | --- | --- |
 | `id` | entero generado | Clave primaria interna. |
 | `codigo` | texto | Obligatorio y único; inicia con formato `ES-00001`. |
+| `token_cliente` | UUID | Obligatorio y único; permite recuperar la solicitud y enviar comprobante con credencial no predecible. |
 | `nombre_cliente` | texto | Obligatorio y no vacío. |
 | `telefono` | texto | Obligatorio y no vacío; no se almacena como número. |
 | `ciudad` | texto | Opcional. |
@@ -172,6 +176,23 @@ La combinación `solicitud_id` y `presentacion_id` será única. Una solicitud n
 
 El valor total de productos se calculará sumando los subtotales de sus detalles. No se duplicará en `solicitudes` para evitar inconsistencias durante la edición de una solicitud Nueva.
 
+### `pagos_solicitud`
+
+| Columna | Tipo lógico | Reglas principales |
+| --- | --- | --- |
+| `solicitud_id` | entero | Obligatorio, único y referencia a `solicitudes`. |
+| `metodo` | texto controlado | `bre_b` cuando se procesa un comprobante o `externo` para una confirmación administrativa sin comprobante verificado en la plataforma. |
+| `estado` | texto controlado | `pendiente`, `comprobante_enviado`, `verificado`, `rechazado` o `validado_manualmente`. |
+| `monto` | entero | Obligatorio y mayor que cero; corresponde al total histórico de la solicitud. |
+| `comprobante_path` | texto | Ruta privada en Storage; solo existe cuando se recibe un comprobante. |
+| `comprobante_mime`, `comprobante_bytes` | metadatos | Restringidos a JPG, PNG, WebP o PDF de hasta 5 MiB. |
+| `enviado_en`, `revisado_en`, `revisado_por` | trazabilidad | Registran envío y revisión administrativa. |
+| `observacion_revision` | texto | Obligatoria cuando el comprobante es rechazado. |
+
+El archivo no se expone por una URL pública. La Edge Function valida el código, token y archivo antes de guardarlo en el bucket privado `comprobantes-pago`; el administrador lo consulta mediante URL firmada de corta duración.
+
+Al confirmar sin comprobante pendiente, la misma RPC que confirma la solicitud y aplica el inventario actualiza el pago a `metodo = externo` y `estado = validado_manualmente`. Este estado evita representar una validación externa como si se hubiera verificado un archivo en la plataforma.
+
 ## Integridad y conservación
 
 - Categorías, productos, presentaciones y usuarios administrativos se desactivan, no se eliminan desde la aplicación.
@@ -203,6 +224,7 @@ El valor total de productos se calculará sumando los subtotales de sus detalles
 - Supabase Auth identifica al administrador y las políticas RLS, permisos y funciones autorizan cada operación administrativa.
 - `obtener_catalogo_publico()` y `obtener_producto_publico(integer)` exponen solo el catálogo publicable; las tablas relacionadas permanecen cerradas a lectura anónima directa. Las RPC no aceptan escrituras.
 - Las reglas de Storage validan la autorización de carga, modificación y eliminación de imágenes; el cliente también validará tipo y tamaño antes de cargarlas.
+- La Edge Function `submit-payment-proof` valida código, token, elegibilidad, tipo, firma y tamaño del comprobante antes de utilizar su credencial de servidor para almacenar el archivo privado y registrar sus metadatos.
 
 ## Transacciones críticas
 
@@ -274,10 +296,8 @@ COMMIT
 
 La operación no podrá crear detalles, cambiar presentaciones ni actualizar precios históricos.
 
-## Pendientes para los incrementos siguientes
+## Pendientes de validación
 
-- Definir el bucket, las políticas de Storage y las URL de imágenes que utilizará el catálogo.
-- Definir las políticas RLS permitidas y los permisos de funciones para visitantes y administradores autenticados. Las cinco tablas del núcleo ya tienen RLS habilitado sin políticas permisivas.
-- Precisar la validación técnica de teléfonos sin excluir números legítimos.
-- Revisar el diseño con los datos reales iniciales de Esenciales.
-- Implementar y probar las funciones RPC de confirmación, entrega y cancelación antes de conectar esos flujos al cliente web.
+- Confirmar las instrucciones Bre-B reales y validar el flujo completo de comprobante privado en producción con datos controlados.
+- Revisar el diseño con datos e imágenes reales validados por ESENCIALES.
+- Mantener la validación de teléfonos sin excluir números legítimos y comprobarla en pruebas manuales representativas.

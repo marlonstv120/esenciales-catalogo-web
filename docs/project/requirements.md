@@ -105,7 +105,8 @@ El estado `Aprobado por el equipo` no sustituye una validación académica poste
 | RF-63 | El cliente debe poder enviar un único comprobante JPG, PNG, WebP o PDF de hasta 5 MiB para revisión, mediante una operación que vuelva a validar el código, el token y la elegibilidad. | MUST | Implementado; pendiente de validación manual integral | Ampliación aprobada por el equipo, 2026-10-01 |
 | RF-64 | Los comprobantes deben almacenarse de forma privada y solo un administrador activo debe poder consultarlos mediante una URL firmada de corta duración. | MUST | Implementado; pendiente de validación manual integral | ADR-010, 2026-10-01 |
 | RF-65 | El administrador debe poder rechazar un comprobante indicando el motivo o verificarlo; la verificación debe confirmar el pago, confirmar la solicitud y descontar el inventario aplicable en una sola transacción. | MUST | Implementado; pendiente de validación manual integral | ADR-010, 2026-10-01 |
-| RF-66 | El sistema debe mantener separado el estado del pago (`Pendiente`, `Comprobante enviado`, `Verificado` o `Rechazado`) del estado de la solicitud. | MUST | Implementado; pendiente de validación manual integral | Ampliación aprobada por el equipo, 2026-10-01 |
+| RF-66 | El sistema debe mantener separado el estado del pago (`Pendiente`, `Comprobante enviado`, `Verificado`, `Rechazado` o `Validado manualmente`) del estado de la solicitud. | MUST | Implementado; pendiente de validación manual integral | Ampliación aprobada por el equipo, 2026-10-01 |
+| RF-67 | El administrador debe poder confirmar una solicitud sin comprobante pendiente; el sistema debe registrar el pago como validado manualmente y confirmar la solicitud y el inventario en una sola transacción. | MUST | Implementado; pendiente de validación manual integral | Ajuste funcional, 2026-10-02 |
 
 ### Administración de solicitudes
 

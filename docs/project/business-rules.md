@@ -143,13 +143,13 @@ Cada solicitud conserva la fecha y hora de aceptación y las versiones de ambos 
 
 ### RN-27 - Pago manual y comprobante
 
-Una solicitud tiene un estado de pago independiente con los valores `Pendiente`, `Comprobante enviado`, `Verificado` y `Rechazado`. La transferencia Bre-B ocurre fuera del sitio; el comprobante es privado, solo se acepta para la solicitud recuperada con código y token, y su envío no confirma el pago automáticamente.
+Una solicitud tiene un estado de pago independiente con los valores `Pendiente`, `Comprobante enviado`, `Verificado`, `Rechazado` y `Validado manualmente`. La transferencia Bre-B ocurre fuera del sitio; el comprobante es privado, solo se acepta para la solicitud recuperada con código y token, y su envío no confirma el pago automáticamente. `Validado manualmente` representa una confirmación administrativa realizada sin verificar un comprobante en la plataforma.
 
 El pago inmediato solo se ofrece mientras la solicitud esté Nueva y todas sus líneas correspondan a presentaciones activas de venta inmediata con stock suficiente. Si contiene una línea bajo pedido, agotada, inactiva o no disponible, la solicitud completa no es elegible. El comprobante debe ser JPG, PNG, WebP o PDF y no superar 5 MiB.
 
 ### RN-28 - Confirmación de pago e inventario
 
-Solo un administrador autenticado puede verificar o rechazar un pago. Al verificarlo, la confirmación de pago, el cambio de solicitud a `Confirmada` y el descuento de inventario aplicable ocurren en una única transacción. Si falla una condición, no se confirma ninguna de las tres operaciones.
+Solo un administrador autenticado puede verificar o rechazar un pago. También puede confirmar manualmente una solicitud sin comprobante mientras el pago esté `Pendiente` o `Rechazado`; en ese caso el método queda registrado como `externo` y el estado como `Validado manualmente`. Tanto al verificar un comprobante como al confirmar manualmente, el registro del pago, el cambio de solicitud a `Confirmada` y el descuento de inventario aplicable ocurren en una única transacción. Si falla una condición, no se confirma ninguna operación.
 
 El rechazo exige un motivo y permite al cliente volver a enviar un comprobante mientras la solicitud continúe siendo elegible. Una solicitud con comprobante enviado o pago verificado no puede modificar sus líneas hasta resolver el estado correspondiente.
 

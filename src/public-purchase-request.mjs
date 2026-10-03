@@ -86,3 +86,9 @@ export function whatsappUrl(confirmation) {
   const message = `Hola, ESENCIALES.\n\nRegistré la solicitud ${confirmation?.codigo}.\n\nPRODUCTOS\n${lines}\n\nVALOR TOTAL DE PRODUCTOS\n$${Number(confirmation?.valor_total_productos).toLocaleString('es-CO')}\n\nQuisiera confirmar disponibilidad y entrega.`;
   return `https://wa.me/573174645670?text=${encodeURIComponent(message)}`;
 }
+
+export function paymentProofWhatsappUrl(request) {
+  const total = Number(request?.valor_total_productos).toLocaleString('es-CO');
+  const message = `Hola, ESENCIALES.\n\nRegistré la solicitud ${request?.codigo} por $${total} y ya envié el comprobante de la transferencia desde la página.\n\nQuedo atento(a) a la verificación y coordinación de la entrega.`;
+  return `https://wa.me/573174645670?text=${encodeURIComponent(message)}`;
+}

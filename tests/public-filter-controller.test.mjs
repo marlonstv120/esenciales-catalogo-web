@@ -87,3 +87,50 @@ test('adding the only presentation from home keeps the visitor on home', async (
   assert.doesNotMatch(app.innerHTML, /El catálogo está vacío/);
   stop();
 });
+
+test('restores page scroll after a re-rendered cart drawer closes', async () => {
+  const listeners = {};
+  let drawer = null;
+  const app = {
+    innerHTML: '',
+    addEventListener(name, handler) { listeners[name] = handler; },
+    removeEventListener(name) { delete listeners[name]; },
+    querySelector(selector) { return selector === '[data-cart-drawer]' ? drawer : null; },
+    querySelectorAll() { return []; },
+    insertAdjacentHTML(_position, markup) {
+      if (markup.includes('data-cart-drawer')) drawer = { remove() { drawer = null; }, set outerHTML(_value) {} };
+    },
+  };
+  const storage = {
+    getItem(key) {
+      if (key !== 'esenciales.cart.v2') return null;
+      return JSON.stringify({ version: 2, items: [{ presentationId: 10, productId: 1, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, maxQuantity: 2, quantity: 1 }] });
+    },
+    setItem() {},
+  };
+  const windowListeners = {};
+  const windowRef = {
+    location: { pathname: '/catalogo', search: '', hash: '', href: 'http://localhost/catalogo', origin: 'http://localhost' },
+    localStorage: storage,
+    sessionStorage: storage,
+    matchMedia: () => ({ matches: false }),
+    addEventListener(name, handler) { windowListeners[name] = handler; },
+    removeEventListener(name) { delete windowListeners[name]; },
+  };
+  const documentRef = { body: { style: { overflow: '' } }, title: '', activeElement: null, querySelector: () => null, addEventListener() {}, removeEventListener() {} };
+  const product = { producto_id: 1, nombre: 'Brisa', categoria_nombre: 'Aromas', precio_referencia: 50000, disponibilidad: 'Disponible', presentaciones: [{ id: 10, etiqueta: '100 ml', estado: 'Disponible', precio_normal: 50000, maximo_solicitable: 2 }] };
+  const client = { rpc: async (name) => ({ data: name === 'obtener_producto_publico' ? product : [product], error: null }) };
+  const stop = startPublicCatalog({ app, client, route: { name: 'catalog' }, windowRef, documentRef });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  const open = { closest: (selector) => selector === '[data-cart-drawer-open]' ? open : null, focus() {} };
+  listeners.click({ target: open });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(documentRef.body.style.overflow, 'hidden');
+
+  const close = { closest: (selector) => selector === '[data-cart-drawer-close]' ? close : null };
+  listeners.click({ target: close });
+  assert.equal(documentRef.body.style.overflow, '');
+  assert.equal(drawer, null);
+  stop();
+});

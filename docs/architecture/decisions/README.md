@@ -17,3 +17,4 @@ Estados permitidos: `Proposed`, `Accepted`, `Superseded` y `Deprecated`.
 - [ADR-007: Servicios de backend con Supabase](ADR-007-servicios-backend-con-supabase.md)
 - [ADR-008: Lectura pública del catálogo mediante RPC](ADR-008-lectura-publica-del-catalogo-mediante-rpc.md)
 - [ADR-009: Despliegue continuo con GitHub Pages](ADR-009-despliegue-continuo-con-github-pages.md)
+- [ADR-010: Comprobantes de pago manual privados](ADR-010-comprobantes-de-pago-manual-privados.md)

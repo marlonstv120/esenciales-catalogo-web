@@ -1998,7 +1998,6 @@ input[type="radio"]:focus {
 .presentation-editor .field > small { display: none; }
 
 .image-editor__header { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 0.75rem; }
-.image-editor__header .secondary-button { flex: 0 0 auto; }
 .image-gallery-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(4.25rem, 1fr));
@@ -2057,15 +2056,13 @@ input[type="radio"]:focus {
 .image-gallery-empty small { max-width: 26rem; }
 .image-gallery-detail { margin-top: 0.75rem; }
 .image-editor__preview {
-  display: grid;
-  aspect-ratio: 4 / 3;
-  min-height: 10rem;
-  place-items: center;
+  display: block;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: #fdfaf4;
 }
+.image-gallery-detail .product-image-preview { display: block; width: 100%; height: auto; max-height: 38rem; object-fit: contain; }
 .image-editor__preview--select { width: 100%; color: var(--color-text-muted); cursor: pointer; }
 .image-editor__preview--select:hover { border-color: var(--color-border-strong); background: var(--color-surface); }
 .image-editor__preview--select:disabled { cursor: wait; }
@@ -2320,7 +2317,6 @@ input[type="radio"]:focus {
   .image-editor__actions > button { flex-basis: 100%; }
   .image-gallery-list { display: flex; margin-inline: -0.875rem; padding: 0.25rem 0.875rem 0.5rem; overflow-x: auto; scroll-snap-type: x proximity; }
   .image-gallery-list > li { flex: 0 0 4.75rem; scroll-snap-align: start; }
-  .image-editor__header .secondary-button { width: 100%; }
   .image-gallery-detail__meta { align-items: flex-start; flex-direction: column; gap: 0.125rem; }
   .image-gallery-detail__meta span { text-align: left; }
 }

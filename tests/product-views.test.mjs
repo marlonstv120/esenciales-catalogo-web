@@ -112,7 +112,9 @@ test('renders ordered thumbnails, cover action and the six image limit', () => {
   const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, images, image: images[0] });
   assert.match(view, /2 de 6 imágenes/);
   assert.match(view, /Usar como portada/);
-  assert.match(view, /data-image-move="previous"/);
+  assert.doesNotMatch(view, /Agregar imágenes/);
+  assert.doesNotMatch(view, /data-image-move/);
+  assert.doesNotMatch(view, /Anterior|Siguiente/);
   assert.ok(view.indexOf('data-image-select-id="1"') < view.indexOf('data-image-select-id="2"'));
 });
 

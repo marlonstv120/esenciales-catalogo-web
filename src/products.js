@@ -11,6 +11,21 @@ const productColumns = 'id, categoria_id, nombre, descripcion, marca, genero, fa
 const presentationColumns = 'id, producto_id, etiqueta, precio_normal, precio_promocional, stock, modo_disponibilidad, activo';
 
 const trimOrNull = (value) => value?.trim() || null;
+const presentationUnits = new Set(['ml', 'oz']);
+
+export function splitPresentationLabel(label = '') {
+  const value = String(label).trim();
+  const match = value.match(/^(.*?)\s+(ml|oz)$/i);
+  return match && match[1].trim()
+    ? { value: match[1].trim(), unit: match[2].toLowerCase() }
+    : { value, unit: '' };
+}
+
+export function formatPresentationLabel(value, unit = '') {
+  const label = String(value || '').trim();
+  const normalizedUnit = String(unit).toLowerCase();
+  return presentationUnits.has(normalizedUnit) ? `${label} ${normalizedUnit}`.trim() : label;
+}
 
 export function effectivePrice(presentation) {
   const normal = Number(presentation?.precio_normal);
@@ -33,10 +48,11 @@ export function normalizeProduct(values) {
 }
 
 export function normalizePresentation(values) {
+  const { etiqueta_valor, etiqueta_unidad, ...presentation } = values;
   const modo_disponibilidad = values.modo_disponibilidad;
   return {
-    ...values,
-    etiqueta: values.etiqueta?.trim(),
+    ...presentation,
+    etiqueta: etiqueta_valor === undefined ? values.etiqueta?.trim() : formatPresentationLabel(etiqueta_valor, etiqueta_unidad),
     precio_normal: Number(copDigits(values.precio_normal)),
     precio_promocional: copDigits(values.precio_promocional) === '' ? null : Number(copDigits(values.precio_promocional)),
     stock: modo_disponibilidad === 'bajo_pedido' ? 0 : Number(values.stock),

@@ -35,6 +35,15 @@ test('keeps product and presentation actions separated and makes perfume family 
   assert.match(presentation, /Cancelar edición/);
 });
 
+test('shows saving feedback while product and presentation forms are busy', () => {
+  const product = productFormView({ product: { activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }, saving: true });
+  const presentation = presentationFormView({ presentation: {}, saving: true });
+
+  assert.match(product, /Guardando\.\.\./);
+  assert.match(presentation, /Guardando\.\.\./);
+  assert.match(presentation, /disabled/);
+});
+
 test('shows agotado from immediate-sale stock zero', () => {
   assert.match(presentationRowView({ ...validPresentation, stock: 0 }), /Agotado/);
 });

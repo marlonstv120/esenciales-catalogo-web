@@ -3,7 +3,7 @@ import { createCategory, deleteCategory, listCategories, updateCategory } from '
 import { categoryDrawerView } from './category-views.mjs';
 import { productImageEditorView } from './product-image-views.mjs';
 import { presentationFormView, presentationRowView, productFormView } from './product-views.mjs';
-import { listProducts, savePresentation, saveProduct } from './products.js';
+import { formatPresentationLabel, listProducts, savePresentation, saveProduct, splitPresentationLabel } from './products.js';
 import { filterInventory, sortInventory } from './inventory-utils.mjs';
 import { inventoryDashboardView } from './inventory-views.mjs';
 import { supabase } from './supabase.js';
@@ -82,24 +82,31 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration, openRo
     const category = state.categories.find((item) => String(item.id) === String(values.categoria_id));
     if (category?.nombre.toLocaleLowerCase('es') === 'perfumes / lociones' && !values.familia_olfativa?.trim()) { state = { ...state, productValues: values, productError: 'Ingresa la familia olfativa para Perfumes / Lociones.' }; draw(); return; }
     state = { ...state, productBusy: true, productValues: values, productError: '' }; draw();
-    const { data, error } = await saveProduct(supabase, state.editor?.id, values);
+    let result;
+    try { result = await saveProduct(supabase, state.editor?.id, values); } catch { state = { ...state, productBusy: false, productValues: values, productError: 'No fue posible guardar. Revisa tu conexión e inténtalo de nuevo.' }; draw(); return; }
+    const { data, error } = result;
     if (error) { state = { ...state, productBusy: false, productValues: values, productError: databaseError(error) }; draw(); return; }
     const existing = state.editor || {};
     if (!existing.id) draftSaver.clear();
     const product = { ...existing, ...data, categorias: state.categories.find((item) => String(item.id) === String(data.categoria_id)), presentaciones: existing.presentaciones || [], imagenes_producto: existing.imagenes_producto || [] };
     state = { ...state, editor: product, productValues: {}, productBusy: false, productDirty: false, productError: '', saved: true, image: currentImage(product), imageAlt: currentImage(product)?.texto_alternativo || product.nombre, imageAltDirty: false };
     state.products = state.products.some((item) => item.id === product.id) ? state.products.map((item) => item.id === product.id ? product : item) : [product, ...state.products];
+    draw();
     showNotice('Producto guardado correctamente.');
   }
   async function saveCurrentPresentation(form) {
     if (state.presentationBusy || !state.editor?.id) return;
-    const values = { ...formValues(form), producto_id: state.editor.id, activo: form.elements.activo.checked };
+    const formData = formValues(form);
+    const values = { ...formData, etiqueta: formatPresentationLabel(formData.etiqueta_valor, formData.etiqueta_unidad), producto_id: state.editor.id, activo: form.elements.activo.checked };
     state = { ...state, presentationBusy: true, presentationValues: values, presentationError: '' }; draw();
-    const { data, error } = await savePresentation(supabase, state.presentation?.id, values);
+    let result;
+    try { result = await savePresentation(supabase, state.presentation?.id, values); } catch { state = { ...state, presentationBusy: false, presentationValues: values, presentationError: 'No fue posible guardar. Revisa tu conexión e inténtalo de nuevo.' }; draw(); return; }
+    const { data, error } = result;
     if (error) { state = { ...state, presentationBusy: false, presentationValues: values, presentationError: databaseError(error) }; draw(); return; }
     const presentations = state.presentation?.id ? state.editor.presentaciones.map((item) => item.id === data.id ? data : item) : [...(state.editor.presentaciones || []), data];
     const editor = { ...state.editor, presentaciones: presentations };
     state = { ...state, editor, products: state.products.map((item) => item.id === editor.id ? editor : item), presentation: null, presentationValues: {}, presentationError: '', presentationBusy: false, presentationDirty: false };
+    draw();
     showNotice('Presentación guardada correctamente.');
   }
   async function saveImage(file, altText) {
@@ -130,6 +137,26 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration, openRo
   async function deleteCurrentCategory() { const category = state.categoryDrawer.selected; if (!category || state.categoryDrawer.busy) return; if (state.products.some((product) => String(product.categoria_id) === String(category.id))) { state = { ...state, categoryDrawer: { ...state.categoryDrawer, confirmDelete: false, error: 'No se puede eliminar esta categoría porque tiene productos relacionados. Reasígnalos primero o desactiva la categoría.' } }; draw(); return; } state = { ...state, categoryDrawer: { ...state.categoryDrawer, busy: true, error: '' } }; draw(); const { error } = await deleteCategory(supabase, category.id); if (error) { state = { ...state, categoryDrawer: { ...state.categoryDrawer, busy: false, confirmDelete: false, error: 'No fue posible eliminar la categoría. Verifica que no tenga productos relacionados.' } }; draw(); return; } state = { ...state, categories: state.categories.filter((item) => item.id !== category.id), categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } }; showNotice('Categoría eliminada correctamente.'); }
   function trapFocus(event, dialog) { if (event.key !== 'Tab') return; const nodes = [...dialog.querySelectorAll('button, input, select, textarea, [href]')].filter((node) => !node.disabled); const first = nodes[0]; const last = nodes.at(-1); if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); } }
   function bind() {
+    const presentationLabel = outlet.querySelector('#presentation-label');
+    if (presentationLabel) {
+      const { value, unit } = splitPresentationLabel(presentationLabel.value);
+      const group = document.createElement('div');
+      group.className = 'presentation-label-control';
+      presentationLabel.before(group);
+      presentationLabel.name = 'etiqueta_valor';
+      presentationLabel.value = value;
+      presentationLabel.placeholder = 'Ej. 100';
+      presentationLabel.inputMode = 'decimal';
+      group.append(presentationLabel);
+
+      const unitSelect = document.createElement('select');
+      unitSelect.name = 'etiqueta_unidad';
+      unitSelect.className = 'presentation-label-control__unit';
+      unitSelect.setAttribute('aria-label', 'Unidad de presentación');
+      unitSelect.innerHTML = '<option value="">Sin unidad</option><option value="ml">ml</option><option value="oz">oz</option>';
+      unitSelect.value = unit || (value ? '' : 'ml');
+      group.append(unitSelect);
+    }
     outlet.querySelector('[data-products-retry], [data-inventory-retry]')?.addEventListener('click', load);
     outlet.querySelector('[data-product-create]')?.addEventListener('click', () => { const draft = readDraft(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT); setEditor({ activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }); if (draft) { state = { ...state, productValues: draft.values, productDirty: true }; } draw(); if (draft) showNotice('Recuperamos los cambios que estabas realizando.', 'info'); outlet.querySelector('#product-name')?.focus(); });
     outlet.querySelectorAll('[data-product-edit]').forEach((button) => button.addEventListener('click', (event) => { event.stopPropagation(); const product = state.products.find((item) => String(item.id) === button.dataset.productEdit); if (product) { setEditor(product); draw(); } }));

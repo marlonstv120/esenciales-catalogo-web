@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classificationLabel, effectivePrice, listProducts, normalizePresentation, normalizeProduct } from '../src/products.js';
+import { classificationLabel, effectivePrice, formatPresentationLabel, listProducts, normalizePresentation, normalizeProduct, splitPresentationLabel } from '../src/products.js';
 import { productFormView } from '../src/product-views.mjs';
 
 test('normalizes aromatic family and excludes legacy product reference from writes', () => {
@@ -30,6 +30,17 @@ test('normalizes formatted COP presentation prices before persistence', () => {
     modo_disponibilidad: 'venta_inmediata',
     etiqueta: undefined,
   });
+});
+
+test('formats presentation labels with the selected unit or no suffix', () => {
+  assert.equal(formatPresentationLabel(' 100 ', 'ml'), '100 ml');
+  assert.equal(formatPresentationLabel('1', 'oz'), '1 oz');
+  assert.equal(formatPresentationLabel('Tamaño especial', ''), 'Tamaño especial');
+});
+
+test('splits existing unit labels and preserves labels without a unit', () => {
+  assert.deepEqual(splitPresentationLabel('100 ML'), { value: '100', unit: 'ml' });
+  assert.deepEqual(splitPresentationLabel('Tamaño por confirmar'), { value: 'Tamaño por confirmar', unit: '' });
 });
 
 test('uses a valid promotion as the effective price', () => {

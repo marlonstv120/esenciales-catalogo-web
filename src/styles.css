@@ -2046,6 +2046,30 @@ input[type="radio"]:focus {
 .presentation-list .icon-button { grid-column: 2; grid-row: 1; }
 .presentation-list li .secondary-button { grid-column: 2; }
 .presentation-editor { background: var(--color-surface-warm); }
+.presentation-label-control {
+  display: flex;
+  min-width: 0;
+}
+.presentation-label-control > input,
+.presentation-label-control > select {
+  min-width: 0;
+  border-radius: 0;
+}
+.presentation-label-control > input {
+  flex: 1 1 auto;
+  border-right: 0;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+.presentation-label-control__unit {
+  flex: 0 0 7.25rem;
+  padding-right: 2rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.presentation-label-control:focus-within > input,
+.presentation-label-control:focus-within > select {
+  position: relative;
+  z-index: 1;
+}
 .presentation-editor fieldset { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1rem 0; padding: 0.75rem; border: 1px solid var(--color-border); }
 
 /* Category drawer */

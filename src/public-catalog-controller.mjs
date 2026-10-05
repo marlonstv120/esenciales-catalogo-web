@@ -10,6 +10,7 @@ import { applyPriceReview, clearPurchaseConfirmation, emptyRequestForm, loadPurc
 import { loadPublicPurchaseRequest, loadPurchaseRequestAccess, publicRequestUrl, savePurchaseRequestAccess, submitPaymentProof, tokenFromLocation } from './public-payment.mjs';
 import { cartDrawerView, legalModalView, loadingView, mobileMenuDrawerView, presentationSelectorView, publicShellView, renderPublicRoute } from './public-views.mjs';
 import { startPublicHeaderScroll } from './public-header-scroll.mjs';
+import { findColombianMunicipalities, loadColombianMunicipalities } from './colombia-municipalities.mjs';
 
 export function getDocumentMetadata(route, product = null) {
   if (route.name === 'product' && product?.nombre) return { title: `${product.nombre} | ESENCIALES`, description: `Consulta presentaciones y disponibilidad de ${product.nombre}.` };
@@ -29,7 +30,7 @@ const focusable = 'button:not([disabled]), [href], input:not([disabled]), select
 export function startPublicCatalog({ app, client, route, windowRef = window, documentRef = document }) {
   const requestDraft = createDraftSaver(windowRef.sessionStorage, purchaseRequestDraftMetadata().key, purchaseRequestDraftMetadata());
   const restoredRequestForm = loadPurchaseRequestDraft(windowRef.sessionStorage);
-  let active = true; let requestId = 0; let cartValidationId = 0; let currentRoute = route; let currentProduct = null; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null; let legalModal = null; let cartDrawerState = { open: false, step: 'cart', error: null }; let cartDrawerNeedsFocus = false; let cartState = { ready: false }; let requestForm = restoredRequestForm || emptyRequestForm(); let requestState = { form: requestForm, errors: {}, error: null, busy: false, priceReview: null }; let attemptId = null; let confirmation = null; let paymentRequest = null; let paymentState = { step: 'summary', file: null, busy: false, error: null }; let mobileMenuOpen = false; let previousBodyOverflow = ''; let pageScrollLocked = false; let touchStartY = null;
+  let active = true; let requestId = 0; let cartValidationId = 0; let currentRoute = route; let currentProduct = null; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null; let legalModal = null; let cartDrawerState = { open: false, step: 'cart', error: null }; let cartDrawerNeedsFocus = false; let cartState = { ready: false }; let requestForm = restoredRequestForm || emptyRequestForm(); let requestState = { form: requestForm, errors: {}, error: null, busy: false, priceReview: null }; let attemptId = null; let confirmation = null; let paymentRequest = null; let paymentState = { step: 'summary', file: null, busy: false, error: null }; let mobileMenuOpen = false; let previousBodyOverflow = ''; let pageScrollLocked = false; let touchStartY = null; let municipalities = []; let cityOptions = []; let activeCityOption = -1; let municipalitiesLoading = null;
   clearPurchaseConfirmation(windowRef.localStorage);
   const announce = (message) => { const region = app.querySelector('.public-live-region'); if (region) region.textContent = message; };
   const syncFooterSections = () => { const desktop = windowRef.matchMedia?.('(min-width: 64rem)').matches ?? Number(windowRef.innerWidth) >= 1024; app.querySelectorAll('[data-footer-section]').forEach((section) => { section.open = desktop; const summary = section.querySelector('summary'); if (summary) summary.tabIndex = desktop ? -1 : 0; }); };
@@ -89,6 +90,31 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     if (focusTrigger) queueMicrotask(() => trigger?.focus());
   };
   const showToast = (message, tone = 'success') => showNotification(message, { tone, documentRef });
+  const renderCityOptions = (input) => {
+    const list = input?.closest('.city-combobox')?.querySelector('[data-city-options]');
+    if (!input || !list) return;
+    cityOptions = findColombianMunicipalities(municipalities, input.value);
+    activeCityOption = -1;
+    list.replaceChildren(...cityOptions.map((option, index) => {
+      const item = documentRef.createElement('li'); item.id = `request-city-option-${index}`; item.setAttribute('role', 'option'); item.dataset.cityOption = String(index); item.textContent = option.value; return item;
+    }));
+    list.hidden = !cityOptions.length;
+    input.setAttribute('aria-expanded', String(Boolean(cityOptions.length)));
+    input.removeAttribute('aria-activedescendant');
+  };
+  const loadMunicipalities = () => {
+    if (municipalities.length) return Promise.resolve(municipalities);
+    municipalitiesLoading ||= loadColombianMunicipalities(windowRef.sessionStorage).then((items) => { municipalities = items; return items; }).catch(() => { municipalitiesLoading = null; announce('No pudimos cargar la lista de municipios. Inténtalo de nuevo.'); return []; });
+    return municipalitiesLoading;
+  };
+  const selectCityOption = (input, index) => {
+    const option = cityOptions[index]; if (!input || !option) return;
+    input.value = option.value;
+    const list = input.closest('.city-combobox')?.querySelector('[data-city-options]');
+    list?.replaceChildren(); if (list) list.hidden = true;
+    input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant');
+    updateRequestDraft(input.closest('[data-request-form]'));
+  };
   const closeOverlay = () => { const trigger = overlayTrigger; selectorProduct = null; filterPanelOpen = false; legalModal = null; overlayTrigger = null; syncPageScrollLock(); if (currentRoute.name === 'catalog') renderCatalog(parseCatalogFilters(windowRef.location.search)); else if (currentRoute.name === 'cart') renderCart(); else renderRoute(currentRoute); queueMicrotask(() => trigger?.focus()); };
   const trapFocus = (event) => {
     if (event.key !== 'Tab') return;
@@ -213,7 +239,9 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     if (cartDrawerOpenTrigger) { closeMobileMenu(); cartDrawerState = { open: true, step: confirmation ? 'confirmation' : 'cart', error: null }; cartDrawerNeedsFocus = true; overlayTrigger = cartDrawerOpenTrigger; renderDrawer(); revalidateDrawerCart(); return; }
     if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-close]')) { closeCartDrawer({ focusTrigger: true }); return; }
     if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-back]')) { cartDrawerState = { ...cartDrawerState, step: cartDrawerState.step === 'payment' ? 'confirmation' : 'cart', error: null }; renderDrawer(); return; }
-    if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-continue]')) { cartDrawerState = { ...cartDrawerState, step: 'form', error: null }; renderDrawer(); return; }
+    if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-continue]')) { cartDrawerState = { ...cartDrawerState, step: 'form', error: null }; renderDrawer(); loadMunicipalities(); return; }
+    const cityOption = event.target.closest?.('[data-city-option]');
+    if (cityOption) { const input = cityOption.closest('[data-request-form]')?.querySelector('[data-city-input]'); selectCityOption(input, Number(cityOption.dataset.cityOption)); input?.focus(); return; }
     if ((selectorProduct || filterPanelOpen || legalModal) && !event.target.closest?.('[data-presentation-selector], [data-filter-panel], [data-filter-toggle], [data-legal-modal-dialog], [data-legal-modal]')) { closeOverlay(); return; }
     const legal = event.target.closest?.('[data-legal-modal]'); if (legal) { overlayTrigger = legal; legalModal = legal.dataset.legalModal; if (currentRoute.name === 'cart') renderCart(); else renderRoute(currentRoute); return; }
     if (event.target.closest?.('[data-legal-close]')) { closeOverlay(); return; }
@@ -248,6 +276,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
       event.preventDefault();
       const data = new FormData(event.target);
       requestForm = { nombre: data.get('nombre'), telefono: data.get('telefono'), ciudad: data.get('ciudad'), observaciones: data.get('observaciones'), aceptaTerminos: data.get('aceptaTerminos') === 'on', aceptaPoliticaDatos: data.get('aceptaPoliticaDatos') === 'on' };
+      if (requestForm.ciudad && !municipalities.some((item) => item.value === requestForm.ciudad)) { requestState = { ...requestState, form: requestForm, errors: { ciudad: municipalities.length ? 'Selecciona un municipio de la lista.' : 'Espera a que cargue la lista de municipios.' }, error: null, busy: false }; renderRequestSurface(); return; }
       requestState = { ...requestState, form: requestForm, errors: {}, error: null, busy: true };
       attemptId ||= globalThis.crypto?.randomUUID?.();
       if (!attemptId) { requestState = { ...requestState, busy: false, error: 'No fue posible iniciar el registro. Inténtalo de nuevo.' }; renderRequestSurface(); return; }
@@ -285,7 +314,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     addPresentation(currentProduct, presentation.dataset.detailPresentation, quantity.value);
   };
   const updateRequestDraft = (formElement) => { const data = new FormData(formElement); requestForm = { nombre: data.get('nombre'), telefono: data.get('telefono'), ciudad: data.get('ciudad'), observaciones: data.get('observaciones'), aceptaTerminos: data.get('aceptaTerminos') === 'on', aceptaPoliticaDatos: data.get('aceptaPoliticaDatos') === 'on' }; requestDraft.save(requestForm); attemptId = null; requestState = { ...requestState, form: requestForm, priceReview: null, error: null, errors: {} }; };
-  const onInput = (event) => { if (event.target.matches?.('[name="precioMinimo"], [name="precioMaximo"]')) event.target.value = formatCopInput(event.target.value); if (event.target.matches?.('[data-detail-quantity]')) syncDetailQuantity(event.target); if (event.target.matches?.('[data-request-form] [name="telefono"]')) event.target.value = event.target.value.replace(/[^0-9+() -]/g, ''); const form = event.target.closest?.('[data-request-form]'); if (form) updateRequestDraft(form); };
+  const onInput = (event) => { if (event.target.matches?.('[name="precioMinimo"], [name="precioMaximo"]')) event.target.value = formatCopInput(event.target.value); if (event.target.matches?.('[data-detail-quantity]')) syncDetailQuantity(event.target); if (event.target.matches?.('[data-request-form] [name="telefono"]')) event.target.value = event.target.value.replace(/[^0-9+() -]/g, ''); if (event.target.matches?.('[data-city-input]')) { if (municipalities.length) renderCityOptions(event.target); else loadMunicipalities().then(() => renderCityOptions(event.target)); } const form = event.target.closest?.('[data-request-form]'); if (form) updateRequestDraft(form); };
   const onChange = (event) => {
     if (event.target.matches?.('[data-payment-proof-input]')) { paymentState = { ...paymentState, file: event.target.files?.[0] || null, error: null }; if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest(); return; }
     if (event.target.matches?.('[data-filter-panel] input[name="categoria"]')) {
@@ -302,6 +331,10 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     if (event.target.matches?.('[data-cart-quantity]')) { const next = updateCartItemQuantity(cart, event.target.dataset.cartQuantity, event.target.value); if (next === cart) { if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, error: 'La cantidad debe respetar la disponibilidad actual de esta presentación.' }; renderDrawer(); } else announce('La cantidad debe respetar la disponibilidad actual de esta presentación.'); return; } cart = next; attemptId = null; requestState = { ...requestState, priceReview: null, error: null }; cartDrawerState = { ...cartDrawerState, error: null }; persistCart(); if (cartDrawerState.open) renderDrawer(); else renderRoute(currentRoute); announce('Cantidad actualizada.'); }
   };
   const onKeyDown = (event) => {
+    const cityInput = event.target.matches?.('[data-city-input]') ? event.target : null;
+    if (cityInput && ['ArrowDown', 'ArrowUp'].includes(event.key) && cityOptions.length) { event.preventDefault(); activeCityOption = (activeCityOption + (event.key === 'ArrowDown' ? 1 : cityOptions.length - 1)) % cityOptions.length; cityInput.setAttribute('aria-activedescendant', `request-city-option-${activeCityOption}`); cityInput.closest('.city-combobox')?.querySelectorAll('[data-city-option]').forEach((item, index) => item.setAttribute('aria-selected', String(index === activeCityOption))); return; }
+    if (cityInput && event.key === 'Enter' && activeCityOption >= 0) { event.preventDefault(); selectCityOption(cityInput, activeCityOption); return; }
+    if (cityInput && event.key === 'Escape' && cityOptions.length) { event.preventDefault(); cityInput.closest('.city-combobox')?.querySelector('[data-city-options]')?.setAttribute('hidden', ''); cityInput.setAttribute('aria-expanded', 'false'); return; }
     if (event.key === 'Escape' && mobileMenuOpen) { event.preventDefault(); closeMobileMenu({ focusTrigger: true }); return; }
     if (event.key === 'Escape' && legalModal) { event.preventDefault(); closeOverlay(); return; }
     if (event.key === 'Escape' && cartDrawerState.open) { event.preventDefault(); closeCartDrawer({ focusTrigger: true }); return; }

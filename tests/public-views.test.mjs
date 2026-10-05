@@ -163,6 +163,10 @@ test('drawer request step keeps a compact heading, telephone semantics, and fiel
   assert.match(view, /name="telefono"[^>]*aria-invalid="true"/);
   assert.match(view, /class="public-request-form__error" id="request-telefono-error"/);
   assert.match(view, /name="aceptaTerminos"[^>]*aria-invalid="true"/);
+  assert.match(view, /Ciudad o municipio/);
+  assert.match(view, /role="combobox"/);
+  assert.match(view, /aria-autocomplete="list"/);
+  assert.match(view, /data-city-options/);
 });
 test('cart provides an accessible request form and legal modal links', () => {
   const view = cartView({ version: 2, items: [{ presentationId: 2, name: 'Brisa', label: '100 ml', status: 'Disponible', price: 50000, maxQuantity: 3, quantity: 1 }] }, { ready: true, requestState: { form: {}, errors: {} } });

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { imagePath, removeImage, replaceImage, updateImageAlt, uploadImage, validateImage } from '../src/images.js';
+import { imagePath, orderProductImages, removeImage, replaceImage, updateImageAlt, uploadImage, validateImage } from '../src/images.js';
 
 const imageFile = (overrides = {}) => ({ type: 'image/jpeg', size: 1024, ...overrides });
 
@@ -14,6 +14,7 @@ function client({ uploadError, insertError, updateError, deleteError, removeErro
   return {
     calls,
     from: () => query,
+    rpc: async (name, values) => { calls.rpc = { name, values }; return { data: values.p_imagen_ids.map((id, posicion) => ({ id, posicion })), error: null }; },
     storage: {
       from: () => ({
         upload: async (path, file, options) => { calls.uploads.push({ path, file, options }); return { error: uploadError }; },
@@ -36,8 +37,21 @@ test('builds a unique product image path with the MIME extension', () => {
 
 test('removes a newly uploaded object when its image record cannot be saved', async () => {
   const api = client({ insertError: { message: 'database failed' } });
-  await assert.rejects(uploadImage(api, 8, imageFile(), 'Producto 8', () => 'uuid-1'), /database failed/);
+  await assert.rejects(uploadImage(api, 8, imageFile(), 'Producto 8', 0, () => 'uuid-1'), /database failed/);
   assert.deepEqual(api.calls.removes, [['productos/8/uuid-1.jpg']]);
+});
+
+test('stores a new image in the requested gallery position', async () => {
+  const api = client();
+  await uploadImage(api, 8, imageFile(), 'Producto 8', 3, () => 'uuid-4');
+  assert.equal(api.calls.inserts[0].posicion, 3);
+});
+
+test('orders a complete product gallery through the transactional RPC', async () => {
+  const api = client();
+  const images = await orderProductImages(api, 8, [7, 4, 9]);
+  assert.deepEqual(api.calls.rpc, { name: 'ordenar_imagenes_producto', values: { p_producto_id: 8, p_imagen_ids: [7, 4, 9] } });
+  assert.deepEqual(images.map((image) => image.posicion), [0, 1, 2]);
 });
 
 test('replaces the database reference before removing the previous object', async () => {

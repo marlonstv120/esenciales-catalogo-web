@@ -57,22 +57,23 @@ test('keeps a promotional price after a database constraint error', () => {
   assert.match(view, /La promocion debe ser menor al precio normal/);
 });
 
-test('uses the full empty image area as an accessible file selector', () => {
-  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: null });
+test('uses the empty gallery area as an accessible multiple file selector', () => {
+  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, images: [] });
   assert.match(view, /data-image-select/);
-  assert.match(view, /Agregar imagen/);
+  assert.match(view, /Agregar fotografías/);
   assert.match(view, /JPG, PNG o WebP/);
-  assert.match(view, /id="product-image-file" class="visually-hidden" type="file"/);
+  assert.match(view, /id="product-image-file" class="visually-hidden" type="file"[^>]*multiple/);
   assert.doesNotMatch(view, /Imagen no disponible/);
   assert.doesNotMatch(view, /data-image-upload/);
   assert.doesNotMatch(view, /name="texto_alternativo"/);
 });
 
-test('groups image actions and summarizes alternative text for an existing image', () => {
-  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { id: 3, url: 'https://example.test/aroma.jpg' } });
+test('groups gallery actions and summarizes alternative text for the selected image', () => {
+  const image = { id: 3, posicion: 0, url: 'https://example.test/aroma.jpg' };
+  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, images: [image], image });
   assert.match(view, /image-editor__image-actions/);
-  assert.match(view, /Cambiar imagen/);
-  assert.match(view, /Retirar imagen/);
+  assert.match(view, /Portada del catálogo/);
+  assert.match(view, /Eliminar/);
   assert.match(view, /Texto alternativo/);
   assert.match(view, /Se usa para describir la imagen/);
   assert.match(view, /data-image-alt-edit/);
@@ -80,7 +81,8 @@ test('groups image actions and summarizes alternative text for an existing image
 });
 
 test('renders compact inline controls while editing alternative text', () => {
-  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { id: 3, url: 'https://example.test/aroma.jpg' }, altEditing: true });
+  const image = { id: 3, posicion: 0, url: 'https://example.test/aroma.jpg' };
+  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, images: [image], image, altEditing: true });
   assert.match(view, /name="texto_alternativo"/);
   assert.match(view, /Si lo dejas vacío, se utilizará «Aroma»/);
   assert.match(view, /data-image-alt-cancel/);
@@ -89,16 +91,29 @@ test('renders compact inline controls while editing alternative text', () => {
 });
 
 test('keeps the fallback available when an existing image fails to load', () => {
-  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { url: 'https://example.test/aroma.jpg' } });
+  const image = { id: 3, posicion: 0, url: 'https://example.test/aroma.jpg' };
+  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, images: [image], image });
   assert.match(view, /data-image-placeholder hidden/);
-  assert.match(view, /Cambiar imagen/);
   assert.match(view, /data-image-select/);
 });
 
 test('disables saving an unchanged alternative text', () => {
-  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, image: { id: 3, url: 'https://example.test/aroma.jpg' }, altEditing: true });
+  const image = { id: 3, posicion: 0, url: 'https://example.test/aroma.jpg' };
+  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, images: [image], image, altEditing: true });
   assert.match(view, /data-image-alt-save/);
   assert.match(view, /data-image-alt-save disabled/);
+});
+
+test('renders ordered thumbnails, cover action and the six image limit', () => {
+  const images = [
+    { id: 2, posicion: 1, url: 'https://example.test/2.jpg' },
+    { id: 1, posicion: 0, url: 'https://example.test/1.jpg' },
+  ];
+  const view = productImageEditorView({ product: { id: 4, nombre: 'Aroma' }, images, image: images[0] });
+  assert.match(view, /2 de 6 imágenes/);
+  assert.match(view, /Usar como portada/);
+  assert.match(view, /data-image-move="previous"/);
+  assert.ok(view.indexOf('data-image-select-id="1"') < view.indexOf('data-image-select-id="2"'));
 });
 
 test('offers public product link only for a visible product with a valid id', () => {

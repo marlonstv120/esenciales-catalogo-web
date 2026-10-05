@@ -28,7 +28,7 @@ export function imagePath(productId, file, uuid = () => crypto.randomUUID()) {
   return `${BUCKET}/${productId}/${uuid()}.${extensions[file.type]}`;
 }
 
-export async function uploadImage(client, productId, file, altText, uuid) {
+export async function uploadImage(client, productId, file, altText, position = 0, uuid) {
   const path = imagePath(productId, file, uuid);
   const storage = client.storage.from(BUCKET);
   const { error: uploadError } = await storage.upload(path, file, { contentType: file.type, upsert: false });
@@ -39,7 +39,7 @@ export async function uploadImage(client, productId, file, altText, uuid) {
     url: storage.getPublicUrl(path).data.publicUrl,
     identificador_externo: path,
     texto_alternativo: altText?.trim() || null,
-    posicion: 0,
+    posicion: position,
   };
   const { data, error } = await client.from('imagenes_producto').insert(record).select().single();
   if (!error) return data;
@@ -50,6 +50,15 @@ export async function uploadImage(client, productId, file, altText, uuid) {
     throw operationError(error, cleanupError.cleanupPath);
   }
   throw operationError(error);
+}
+
+export async function orderProductImages(client, productId, imageIds) {
+  const { data, error } = await client.rpc('ordenar_imagenes_producto', {
+    p_producto_id: productId,
+    p_imagen_ids: imageIds,
+  });
+  if (error) throw operationError(error);
+  return data;
 }
 
 export async function replaceImage(client, image, file, altText, uuid) {

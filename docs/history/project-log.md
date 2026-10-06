@@ -1,5 +1,40 @@
 # Bitácora del proyecto
 
+## Registro incorporado el 2026-10-04
+
+### Validación final cualitativa y mejoras administrativas
+
+- Se registran recorridos funcionales de tres usuarios externos al equipo, todos desde dispositivos móviles. Las conversaciones se conservan como evidencia de respaldo y no se incorporan como figuras del informe.
+- Un usuario comprobó que una presentación no disponible no podía agregarse al carrito; otro completó el recorrido hasta la etapa de pago sin enviar comprobante; el tercero navegó por categorías, utilizó el carrito y registró una solicitud.
+- Algunas categorías sin productos cargados mostraron correctamente el catálogo sin resultados. El tercer usuario informó que necesitó dos intentos para registrar su solicitud; el comportamiento no pudo reproducirse después y se conserva como observación aislada, no como falla persistente.
+- El propietario probó la administración y reportó que el indicador `Guardando...` podía permanecer activo aunque los datos sí se almacenaran. La implementación se corrigió para finalizar el estado de carga después del guardado y, ante un error informado por la operación, conservar los valores, rehabilitar la acción y permitir el reintento.
+- A solicitud del propietario se incorporó un selector de unidad junto al valor de la presentación, con las opciones `Sin unidad`, `ml` y `oz`.
+- La comprobación posterior de ambas correcciones se sustenta en la implementación y en las pruebas automatizadas; no se conserva una conversación de nueva aceptación expresa por el propietario después del cambio.
+- La ejecución vigente de `npm run test:auth` aprobó 152 pruebas y `npm run build` compiló 82 módulos. La consulta de migraciones mostró 24 versiones alineadas entre local y remoto hasta `20261002000200`.
+- La suite pgTAP vigente contiene 272 verificaciones planificadas, pero no pudo repetirse porque la infraestructura local requerida no estaba disponible. Se conserva como último resultado ejecutado y documentado el conjunto anterior de 238 pruebas aprobadas, sin atribuirlo a los casos Bre-B agregados después.
+
+### Referencias
+
+- [Validación final con usuarios seleccionados y propietario](../../informe/05-evidencias/validacion-final-usuarios-propietario.md).
+- [Plan de evidencias](../academic/report/EVIDENCE_PLAN.md).
+
+## Registro incorporado el 2026-10-03
+
+### Validación funcional controlada y cierre técnico del OE3
+
+- Se documenta la prueba manual controlada de la solicitud `ES-00082`; la fecha exacta de ejecución no fue suministrada y no se infiere de este registro.
+- El recorrido utilizó el producto `9 Pm`, presentación `100 ml`, cantidad `1` y valor de `$90.000` en un celular real.
+- Se verificaron catálogo, detalle, carrito, registro, código de solicitud, instrucciones de pago, envío de comprobante privado, recepción y revisión administrativa, aprobación, descuento de inventario de `3` a `2`, cancelación y restitución de `2` a `3`.
+- También se comprobaron los comportamientos de las líneas bajo pedido. No existe captura de la restitución de `2` a `3`; el resultado se conserva únicamente en el registro textual de la prueba.
+- La evidencia manual, las pruebas automatizadas y el despliegue público proporcionan la base técnica del tercer objetivo específico. La validación posterior con usuarios externos y propietario se documenta por separado.
+- Las instrucciones, la llave o alias, el QR Bre-B y las versiones legales fueron aprobados por el propietario. Esta aprobación de contenido se diferencia de la validación funcional del sistema.
+
+### Referencias
+
+- [Registro de validación ES-00082](../../informe/05-evidencias/validacion-es-00082.md).
+- [Plan de evidencias](../academic/report/EVIDENCE_PLAN.md).
+- [Borrador del informe académico](../academic/report/REPORT_DRAFT.md).
+
 ## 2026-10-01
 
 ### Ampliacion de pago manual Bre-B y ajuste academico
@@ -496,7 +531,7 @@ Incorporación de la entrevista de levantamiento de requerimientos realizada al 
 - Se actualiza el caso de estudio con los canales Instagram, Facebook Marketplace, WhatsApp y ventas directas, y con la gestión manual del catálogo y el inventario.
 - Se documenta que las necesidades sobre pagos, clientes, ventas, costos, direcciones, reportes y estados comerciales no modifican automáticamente el MVP.
 - El briefing compara cada necesidad con el alcance vigente y señala coberturas completas, parciales, conflictos y elementos externos al MVP.
-- Daniel Steven Contreras Lopez valida el briefing, sus criterios de éxito y sus delimitaciones el 10 de septiembre de 2026.
+- Daniel Steven Contreras Lopez valida el briefing, sus criterios de éxito y sus delimitaciones el 14 de septiembre de 2026.
 - Se confirma el descuento de inventario al pasar una solicitud a `Confirmada`; dirección y barrio se recopilan por WhatsApp; y costos internos, pagos, módulo de clientes y reportes de ventas permanecen fuera del MVP.
 
 ### Pendientes

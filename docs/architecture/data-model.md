@@ -2,7 +2,7 @@
 
 ## Estado
 
-Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo fue materializado en `20260924000100_create_catalog_core.sql`; las políticas administrativas, Storage y las RPC de lectura pública se implementaron en migraciones posteriores. Las migraciones de solicitudes materializan restricciones, RLS, registro transaccional, edición limitada y transiciones administrativas. La migración `20261001000400_add_bre_b_payment_proofs.sql` agrega el token público de la solicitud, `pagos_solicitud`, el bucket privado de comprobantes y las RPC asociadas al pago manual Bre-B. El cliente consulta el catálogo mediante `obtener_catalogo_publico()` y `obtener_producto_publico(integer)`, manteniendo las tablas cerradas a `anon`.
+Diseño técnico propuesto el 5 de septiembre de 2026 y adaptado a Supabase el 7 de septiembre de 2026. El núcleo de catálogo fue materializado en `20260924000100_create_catalog_core.sql`; las políticas administrativas, Storage y las RPC de lectura pública se implementaron en migraciones posteriores. Las migraciones de solicitudes materializan restricciones, RLS, registro transaccional, edición limitada y transiciones administrativas. La migración `20261001000400_add_bre_b_payment_proofs.sql` agrega el token público de la solicitud, `pagos_solicitud`, el bucket privado de comprobantes y las RPC asociadas al pago manual Bre-B. La migración `20261002000200_complete_purchase_request_payment_flow.sql` completa la confirmación externa con `metodo = externo` y `estado = validado_manualmente`. El cliente consulta el catálogo mediante `obtener_catalogo_publico()` y `obtener_producto_publico(integer)`, manteniendo las tablas cerradas a `anon`.
 
 ## Propósito
 
@@ -274,6 +274,23 @@ COMMIT
 
 Bloquear la solicitud evita una confirmación duplicada. Bloquear las presentaciones evita que confirmaciones concurrentes lleven el stock por debajo de cero.
 
+### Verificación de un comprobante y confirmación
+
+La RPC administrativa de verificación integra el pago y la confirmación sin confundir el estado de ambas entidades.
+
+```text
+BEGIN
+Bloquear solicitud y registro de pago
+Comprobar solicitud Nueva y comprobante enviado
+Bloquear y revalidar las presentaciones involucradas
+Comprobar stock suficiente para todas las líneas de venta inmediata
+Marcar el pago como Verificado y registrar la revisión
+Confirmar la solicitud, registrar cantidades descontadas y reducir inventario
+COMMIT
+```
+
+Si cualquier validación falla, no se verifica el pago, no se confirma la solicitud y no se descuenta inventario parcialmente.
+
 ### Cancelación de una solicitud confirmada
 
 Una función RPC exclusiva para administradores ejecuta estas operaciones dentro de una transacción de PostgreSQL.
@@ -305,8 +322,9 @@ COMMIT
 
 La operación no podrá crear detalles, cambiar presentaciones ni actualizar precios históricos.
 
-## Pendientes de validación
+## Validación y pendientes
 
-- Confirmar las instrucciones Bre-B reales y validar el flujo completo de comprobante privado en producción con datos controlados.
-- Revisar el diseño con datos e imágenes reales validados por ESENCIALES.
-- Mantener la validación de teléfonos sin excluir números legítimos y comprobarla en pruebas manuales representativas.
+- El flujo completo de comprobante privado se validó con la solicitud controlada `ES-00082`; incluyó revisión administrativa, confirmación, descuento y posterior restitución del inventario.
+- Las instrucciones, la llave o alias y el QR Bre-B fueron aprobados por el propietario.
+- Permanece pendiente revisar la carga definitiva con el conjunto completo de datos e imágenes reales de ESENCIALES.
+- Debe mantenerse la validación de teléfonos sin excluir números legítimos y comprobarla en pruebas manuales representativas.

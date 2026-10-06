@@ -1,5 +1,5 @@
 # Wireframes
 
-Exporte aqui cada wireframe aprobado como un archivo PNG independiente por pantalla o estado relevante.
+Esta carpeta conserva los wireframes exportados por pantalla o estado relevante para comparar la estructura propuesta con la interfaz final.
 
-Los bocetos y exportaciones estan pendientes. No elimine este aviso hasta que existan evidencias reales revisadas por el equipo.
+Las piezas existentes cubren acceso y recuperación administrativa, catálogo, carrito, datos y confirmación de la solicitud. Antes del informe final debe seleccionarse únicamente la comparación visual que aporte al análisis y evitar figuras redundantes.

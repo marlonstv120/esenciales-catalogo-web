@@ -1045,8 +1045,25 @@ input[type="radio"]:focus-visible {
 .public-featured .public-section__heading > a svg { flex: 0 0 auto; transition: transform 160ms ease; }
 .public-featured .public-section__heading > a:hover svg { transform: translateX(3px); }
 .public-featured .public-section__heading > a:active svg { transform: translateX(2px); }
-.public-featured .public-product-grid { display: grid; justify-content: stretch; gap: 0.75rem; }
-.public-featured .public-product-card { width: auto; max-width: none; }
+.public-featured .public-product-grid {
+  display: flex;
+  justify-content: stretch;
+  gap: 0.75rem;
+  padding-block: 0.125rem 0.75rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-padding-inline: 0.125rem;
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-brand-bronze) var(--color-surface-subtle);
+}
+.public-featured .public-product-card {
+  flex: 0 0 calc(100% - 2rem);
+  width: auto;
+  max-width: none;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
 .public-featured .public-product-image { aspect-ratio: 4 / 5; }
 
 .public-page-heading { margin-bottom: 1.5rem; }
@@ -1557,6 +1574,8 @@ input[type="radio"]:focus-visible {
   .catalog-toolbar__actions { justify-content: start; }
   .catalog-filter-panel { inset: 0 0 0 auto; width: min(100%, 32rem); }
   .public-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .public-featured .public-product-grid { gap: 1rem; }
+  .public-featured .public-product-card { flex-basis: calc((100% - 1rem) / 2); }
   .public-cart-item { grid-template-columns: 7rem minmax(0, 1fr) auto; padding: 1rem; }
   .public-cart-item__image { width: 7rem; }
   .public-cart-item__actions { grid-column: auto; grid-template-columns: auto auto auto; align-self: end; padding: 0; border: 0; }
@@ -1596,6 +1615,8 @@ input[type="radio"]:focus-visible {
 
 @media (min-width: 64rem) {
   .public-product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; }
+  .public-featured .public-product-grid { gap: 1.25rem; }
+  .public-featured .public-product-card { flex-basis: calc((100% - 3.75rem) / 4); }
   .public-selector { left: auto; }
   .public-cart__layout { grid-template-columns: minmax(0, 1fr) 19rem; }
   .public-cart__summary { position: sticky; top: 1rem; }

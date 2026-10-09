@@ -7,6 +7,17 @@ test('catalog has one grid, an independent add action, price and textual availab
 test('catalog exposes persistent filters, search controls and tags without an order control', () => { const filters = { busqueda: 'brisa', categoria: 1, disponibilidades: ['en-stock'], generos: ['hombre'], clasificaciones: [], precioMinimo: '30000', precioMaximo: '', orden: 'precio-asc' }; const view = catalogView([row], [row], filters); assert.match(view, /Filtros \(5\)/); assert.match(view, /data-clear-search/); assert.match(view, /aria-label="Borrar búsqueda"/); assert.match(view, /Disponibilidad/); assert.match(view, /Limpiar filtros/); assert.match(view, /Filtros aplicados/); assert.match(view, /Quitar filtro/); assert.doesNotMatch(view, /catalog-order|Ordenar|Menor precio|Mayor precio/); });
 test('no-results state occupies the catalog width with clear recovery copy', () => { const filters = { busqueda: 'sin coincidencias', categoria: null, disponibilidades: [], generos: [], clasificaciones: [], precioMinimo: '', precioMaximo: '', orden: 'destacados' }; const view = catalogView([row], [], filters); assert.match(view, /public-empty-state--no-results/); assert.match(view, /No encontramos resultados con estos criterios/); assert.match(view, /explorar el catálogo completo de ESENCIALES/); assert.match(view, /Restablecer y ver todo/); });
 test('home categories lead to the shared catalog filters and featured data is not hidden by name', () => { assert.match(homeView([row]), /href="\/catalogo\?genero=mujer"/); assert.match(homeView([{ ...row, nombre: 'prubea' }]), /prubea/); });
+test('home only includes the featured products in its featured carousel', () => {
+  const view = homeView([row, { ...row, producto_id: 5, nombre: 'Oculto', destacado: false }]);
+
+  assert.match(view, /public-featured/);
+  assert.match(view, /public-product-card--featured/);
+  assert.match(view, />Brisa</);
+  assert.doesNotMatch(view, />Oculto</);
+});
+test('home omits the featured section when there are no featured products', () => {
+  assert.doesNotMatch(homeView([{ ...row, destacado: false }]), /public-featured|Productos destacados/);
+});
 test('home presents the editorial category filters and required brand sections', () => {
   const view = homeView([row]);
 

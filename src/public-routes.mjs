@@ -9,7 +9,7 @@ export function getPublicRoute(pathname, basePath = APP_BASE_PATH) {
   if (pathname === '/admin' || /^\/admin\/(productos?|inventario)$/.test(pathname)) return { name: 'admin' };
 
   const match = pathname.match(/^\/producto\/(\d+)$/);
-  const requestMatch = pathname.match(/^\/solicitud\/(ES-[0-9]+)$/);
+  const requestMatch = pathname.match(/^\/solicitud\/(VM-[0-9]+)$/);
   if (requestMatch) return { name: 'request', code: requestMatch[1] };
   if (!match) return { name: 'not-found' };
 

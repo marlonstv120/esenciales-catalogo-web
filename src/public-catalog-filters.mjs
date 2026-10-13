@@ -1,6 +1,6 @@
 const valid = {
-  generos: ['hombre', 'mujer', 'unisex'],
-  clasificaciones: ['original', 'uno_a_uno', 'inspiracion'],
+  generos: ['toyota', 'chevrolet', 'mazda', 'nissan', 'renault', 'ford', 'hyundai', 'bmw', 'mercedes-benz', 'honda', 'mecanica', 'automatica'],
+  clasificaciones: ['nuevo', 'usado', 'seminuevo', 'original', 'uno_a_uno', 'inspiracion'],
   disponibilidades: ['en-stock', 'bajo-pedido', 'agotado', 'no-disponible'],
   ordenes: ['destacados', 'precio-asc', 'precio-desc', 'nombre'],
 };

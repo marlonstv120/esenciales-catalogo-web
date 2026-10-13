@@ -22,12 +22,18 @@ test('keeps admin routes and Auth invitation or recovery links out of public rou
   assert.equal(getApplicationArea({ pathname: '/', href: 'http://localhost/' }), 'public');
 });
 
+test('resolves purchase request codes with the VM prefix', () => {
+  assert.deepEqual(getPublicRoute('/solicitud/VM-00001'), { name: 'request', code: 'VM-00001' });
+  assert.deepEqual(getPublicRoute('/solicitud/XX-00001'), { name: 'not-found' });
+  assert.deepEqual(getPublicRoute('/solicitud/VM-abc'), { name: 'not-found' });
+});
+
 test('resolves public and admin routes below the GitHub Pages project path', () => {
-  const basePath = '/esenciales-catalogo-web/';
-  assert.deepEqual(getPublicRoute('/esenciales-catalogo-web/catalogo', basePath), { name: 'catalog' });
-  assert.deepEqual(getPublicRoute('/esenciales-catalogo-web/producto/12', basePath), { name: 'product', productId: 12 });
+  const basePath = '/vehimarcas-catalogo-web/';
+  assert.deepEqual(getPublicRoute('/vehimarcas-catalogo-web/catalogo', basePath), { name: 'catalog' });
+  assert.deepEqual(getPublicRoute('/vehimarcas-catalogo-web/producto/12', basePath), { name: 'product', productId: 12 });
   assert.equal(getApplicationArea({
-    pathname: '/esenciales-catalogo-web/admin',
-    href: 'https://marlonstv120.github.io/esenciales-catalogo-web/admin',
+    pathname: '/vehimarcas-catalogo-web/admin',
+    href: 'https://marlonstv120.github.io/vehimarcas-catalogo-web/admin',
   }, basePath), 'admin');
 });

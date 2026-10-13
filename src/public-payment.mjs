@@ -1,4 +1,4 @@
-const PAYMENT_ACCESS_KEY = 'esenciales.purchase-request-access.v1';
+const PAYMENT_ACCESS_KEY = 'vehimarcas.purchase-request-access.v1';
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
 const safeSubmissionErrors = new Set([

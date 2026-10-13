@@ -57,7 +57,7 @@ Deno.serve(async (request) => {
     const code = String(form.get('code') ?? '').trim();
     const token = String(form.get('token') ?? '').trim();
     const file = form.get('file');
-    if (!/^ES-[0-9]+$/.test(code) || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token) || !(file instanceof File)) {
+    if (!/^VM-[0-9]+$/.test(code) || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token) || !(file instanceof File)) {
       return response({ error: 'No pudimos validar esta solicitud.' }, 400, origin);
     }
     if (file.size < 1 || file.size > MAX_FILE_BYTES) return response({ error: 'El archivo supera el máximo de 5 MiB.' }, 400, origin);

@@ -36,3 +36,10 @@ docs/sources/
 graphify-out/
 docs/superpowers/
 /AGENTS.md
+
+# Local raw media inputs (curated copies live in public/assets)
+/Bancos/
+/Quienes somos/
+
+# Runtime uploads
+/server/uploads/

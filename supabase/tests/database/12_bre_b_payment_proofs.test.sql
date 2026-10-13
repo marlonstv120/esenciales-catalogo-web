@@ -17,30 +17,30 @@ insert into public.categorias (nombre) values ('Pago Bre-B prueba');
 insert into public.productos (categoria_id, nombre, descripcion) select id, 'Producto pago Bre-B', 'Producto para pruebas de pagos' from public.categorias where nombre = 'Pago Bre-B prueba';
 insert into public.presentaciones (producto_id, etiqueta, precio_normal, stock, modo_disponibilidad) select id, 'Unidad pago Bre-B', 100000, 2, 'venta_inmediata' from public.productos where nombre = 'Producto pago Bre-B';
 insert into public.solicitudes (codigo, identificador_intento, nombre_cliente, telefono, terminos_version, politica_datos_version, aceptado_en) values
-  ('ES-12001', '12121212-0000-0000-0000-000000000001', 'Cliente pago uno', '3000000001', 'terminos-v1', 'politica-datos-v1', now()),
-  ('ES-12002', '12121212-0000-0000-0000-000000000002', 'Cliente pago dos', '3000000002', 'terminos-v1', 'politica-datos-v1', now());
+  ('VM-12001', '12121212-0000-0000-0000-000000000001', 'Cliente pago uno', '3000000001', 'terminos-v1', 'politica-datos-v1', now()),
+  ('VM-12002', '12121212-0000-0000-0000-000000000002', 'Cliente pago dos', '3000000002', 'terminos-v1', 'politica-datos-v1', now());
 insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario)
-select s.id, p.id, 1, 100000 from public.solicitudes s cross join public.presentaciones p where s.codigo in ('ES-12001', 'ES-12002') and p.etiqueta = 'Unidad pago Bre-B';
-insert into public.pagos_solicitud (solicitud_id, monto) select s.id, 100000 from public.solicitudes s where s.codigo in ('ES-12001', 'ES-12002');
-select set_config('test.solicitud_pago_uno', (select id::text from public.solicitudes where codigo = 'ES-12001'), true);
-select set_config('test.solicitud_pago_dos', (select id::text from public.solicitudes where codigo = 'ES-12002'), true);
-select set_config('test.token_pago_uno', (select token_cliente::text from public.solicitudes where codigo = 'ES-12001'), true);
+select s.id, p.id, 1, 100000 from public.solicitudes s cross join public.presentaciones p where s.codigo in ('VM-12001', 'VM-12002') and p.etiqueta = 'Unidad pago Bre-B';
+insert into public.pagos_solicitud (solicitud_id, monto) select s.id, 100000 from public.solicitudes s where s.codigo in ('VM-12001', 'VM-12002');
+select set_config('test.solicitud_pago_uno', (select id::text from public.solicitudes where codigo = 'VM-12001'), true);
+select set_config('test.solicitud_pago_dos', (select id::text from public.solicitudes where codigo = 'VM-12002'), true);
+select set_config('test.token_pago_uno', (select token_cliente::text from public.solicitudes where codigo = 'VM-12001'), true);
 
 select is((select estado from public.pagos_solicitud where solicitud_id = current_setting('test.solicitud_pago_uno')::integer), 'pendiente', 'El pago inicia pendiente');
 select ok((select token_cliente is not null from public.solicitudes where id = current_setting('test.solicitud_pago_uno')::integer), 'La solicitud recibe token de cliente');
 select isnt((select token_cliente from public.solicitudes where id = current_setting('test.solicitud_pago_uno')::integer), (select token_cliente from public.solicitudes where id = current_setting('test.solicitud_pago_dos')::integer), 'Los tokens de cliente son unicos');
 
 set local role anon;
-select is((public.obtener_solicitud_publica_segura('ES-12001', current_setting('test.token_pago_uno')::uuid)->>'codigo'), 'ES-12001', 'Codigo y token autorizan la consulta limitada');
-select ok((public.obtener_solicitud_publica_segura('ES-12001', current_setting('test.token_pago_uno')::uuid) ? 'lineas'), 'La consulta publica devuelve lineas y montos historicos');
-select ok(not (public.obtener_solicitud_publica_segura('ES-12001', current_setting('test.token_pago_uno')::uuid) ? 'token_cliente'), 'La consulta publica no devuelve la credencial ni metadata privada');
-select is((public.obtener_solicitud_publica_segura('ES-12001', current_setting('test.token_pago_uno')::uuid)->>'elegible_pago')::boolean, true, 'Una solicitud de venta inmediata es elegible para pago');
-select throws_ok($$select public.obtener_solicitud_publica_segura('ES-12001', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')$$, '22023', null, 'Un token incorrecto no permite consulta publica');
+select is((public.obtener_solicitud_publica_segura('VM-12001', current_setting('test.token_pago_uno')::uuid)->>'codigo'), 'VM-12001', 'Codigo y token autorizan la consulta limitada');
+select ok((public.obtener_solicitud_publica_segura('VM-12001', current_setting('test.token_pago_uno')::uuid) ? 'lineas'), 'La consulta publica devuelve lineas y montos historicos');
+select ok(not (public.obtener_solicitud_publica_segura('VM-12001', current_setting('test.token_pago_uno')::uuid) ? 'token_cliente'), 'La consulta publica no devuelve la credencial ni metadata privada');
+select is((public.obtener_solicitud_publica_segura('VM-12001', current_setting('test.token_pago_uno')::uuid)->>'elegible_pago')::boolean, true, 'Una solicitud de venta inmediata es elegible para pago');
+select throws_ok($$select public.obtener_solicitud_publica_segura('VM-12001', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')$$, '22023', null, 'Un token incorrecto no permite consulta publica');
 
 set local role postgres;
 update public.presentaciones set modo_disponibilidad = 'bajo_pedido', stock = 0 where etiqueta = 'Unidad pago Bre-B';
 set local role anon;
-select is((public.obtener_solicitud_publica_segura('ES-12001', current_setting('test.token_pago_uno')::uuid)->>'elegible_pago')::boolean, false, 'Una solicitud con Bajo pedido no es elegible para pago');
+select is((public.obtener_solicitud_publica_segura('VM-12001', current_setting('test.token_pago_uno')::uuid)->>'elegible_pago')::boolean, false, 'Una solicitud con Bajo pedido no es elegible para pago');
 set local role postgres;
 update public.presentaciones set modo_disponibilidad = 'venta_inmediata', stock = 2 where etiqueta = 'Unidad pago Bre-B';
 

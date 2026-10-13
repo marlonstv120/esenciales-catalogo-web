@@ -3,7 +3,7 @@
 | Campo | Registro |
 | --- | --- |
 | Fecha | 14 de septiembre de 2026 |
-| Organizacion | ESENCIALES |
+| Organizacion | VEHIMARCAS del Valle |
 | Cargo de la persona entrevistada | Propietario y administrador principal |
 | Objetivo | Identificar las necesidades y dificultades actuales en la gestion del catalogo, el inventario, los clientes y las ventas. |
 | Tecnica de registro | Notas sintetizadas por el equipo; no corresponden a una transcripcion literal. |
@@ -27,4 +27,4 @@
 
 ## Validacion posterior
 
-El briefing derivado fue validado por la persona propietaria de ESENCIALES el 14 de septiembre de 2026. Consulte el [briefing validado](../../docs/project/briefing-esenciales.md) para conocer la sintesis completa, los criterios de exito y las delimitaciones.
+El briefing derivado fue validado por la persona propietaria de VEHIMARCAS del Valle el 14 de septiembre de 2026. Consulte el [briefing validado](../../docs/project/briefing-vehimarcas.md) para conocer la sintesis completa, los criterios de exito y las delimitaciones.

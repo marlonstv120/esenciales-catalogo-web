@@ -4,7 +4,7 @@ import { renderPublicRoute } from '../src/public-views.mjs';
 import { attachImageFallbacks, getDocumentMetadata } from '../src/public-catalog-controller.mjs';
 
 test('renders route states and retry affordances from public load results', () => {
-  assert.match(renderPublicRoute({ name: 'home' }, { data: [], error: null }), /Tu aroma, siempre contigo\./);
+  assert.match(renderPublicRoute({ name: 'home' }, { data: [], error: null }), /Porque tener carro propio Sí es posible/);
   assert.match(renderPublicRoute({ name: 'product', productId: 4 }, { data: null, error: 'No fue posible cargar el producto.' }), /data-public-retry/);
   assert.match(renderPublicRoute({ name: 'product', productId: 4 }, { data: null, error: null }), /No encontrado/);
   assert.match(renderPublicRoute({ name: 'cart' }), /Carrito/);
@@ -12,8 +12,8 @@ test('renders route states and retry affordances from public load results', () =
 
 test('maps route titles and image failures to accessible page metadata and fallback copy', () => {
   assert.deepEqual(getDocumentMetadata({ name: 'product' }, { nombre: 'Brisa' }), {
-    title: 'Brisa | ESENCIALES',
-    description: 'Consulta presentaciones y disponibilidad de Brisa.',
+    title: 'Brisa | VEHIMARCAS del Valle',
+    description: 'Consulta ficha técnica, imágenes y disponibilidad de Brisa.',
   });
 
   let imageHidden = false;

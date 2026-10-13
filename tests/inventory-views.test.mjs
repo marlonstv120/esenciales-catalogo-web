@@ -4,7 +4,7 @@ import { inventoryDashboardView } from '../src/inventory-views.mjs';
 
 const product = {
   id: 1, nombre: 'Producto con un nombre deliberadamente largo', marca: 'Marca', activo: true,
-  clasificacion: 'uno_a_uno', categorias: { nombre: 'Perfumes / Lociones' }, presentaciones: [], imagenes_producto: [],
+  clasificacion: 'uno_a_uno', categorias: { nombre: 'Vehículos' }, presentaciones: [], imagenes_producto: [],
 };
 
 const filters = { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: '', page: 1 };
@@ -18,7 +18,7 @@ test('renders a compact inventory row with a single accessible manage action', (
   assert.doesNotMatch(html, /Ver todos/);
   assert.doesNotMatch(html, /Stock bajo/);
   assert.doesNotMatch(html, /filter-count/);
-  assert.match(html, />1\.1</);
+  assert.match(html, />Usado</);
   assert.match(html, /title="Sin precio válido">—/);
   assert.match(html, /data-categories-open/);
   assert.match(html, /data-inventory-drawer-open/);

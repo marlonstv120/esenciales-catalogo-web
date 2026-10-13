@@ -34,8 +34,8 @@ Las migraciones son la autoridad del esquema implementado. No se mantienen copia
 - Supabase Auth gestiona el correo electrónico, las credenciales y la sesión del administrador.
 - Supabase Auth gestiona el envío del enlace y el flujo de recuperación de contraseña administrativa.
 - `usuarios_administrativos` autoriza qué usuarios de Supabase Auth pueden administrar el sistema.
-- `genero` admite `hombre`, `mujer`, `unisex` o valor nulo.
-- `familia_olfativa` es obligatoria en Perfumes / Lociones y opcional en las demás categorías.
+- `genero` almacena el año de referencia del vehículo (p. ej. `2024`); no es un valor controlado.
+- `modelo` almacena la especificación del vehículo y es opcional.
 - Los detalles de una solicitud muestran el nombre actual del producto y la etiqueta actual de la presentación.
 - El precio unitario efectivo aplicado se conserva como dato histórico.
 - El sistema conserva el estado actual de la solicitud y sus fechas relevantes, sin una tabla de auditoría de transiciones.
@@ -81,7 +81,7 @@ La autenticación se realiza con el correo y la contraseña administrados por Su
 | `creado_en` | fecha con zona horaria | Obligatorio. |
 | `actualizado_en` | fecha con zona horaria | Obligatorio. |
 
-La instalación inicial incluirá Perfumes / Lociones, Splash, Cremas, Humidificadores y Otros productos.
+La instalación inicial incluirá SUV & Camionetas, Automóviles y Pick-ups & 4x4, junto con el inventario reproducible de vehículos del seed.
 
 ### `productos`
 
@@ -92,9 +92,9 @@ La instalación inicial incluirá Perfumes / Lociones, Splash, Cremas, Humidific
 | `nombre` | texto | Obligatorio y no vacío. |
 | `descripcion` | texto | Obligatoria y no vacía. |
 | `marca` | texto | Opcional. |
-| `genero` | texto controlado | `hombre`, `mujer`, `unisex` o nulo. |
-| `familia_olfativa` | texto | Obligatoria para Perfumes / Lociones; opcional en otras categorías. |
-| `clasificacion` | texto controlado | `original`, `uno_a_uno`, `inspiracion` o nulo. |
+| `genero` | texto | Año de referencia del vehículo (p. ej. `2024`); opcional. |
+| `modelo` | texto | Modelo / especificación del vehículo; opcional. |
+| `clasificacion` | texto | Estado comercial del vehículo: `nuevo`, `usado`, `seminuevo` o nulo. |
 | `destacado` | booleano | Obligatorio; valor inicial `false`. |
 | `activo` | booleano | Obligatorio; valor inicial `true`. |
 | `creado_en` | fecha con zona horaria | Obligatorio. |
@@ -112,12 +112,12 @@ No se incluye una columna `publicado`: la publicación se deriva de las condicio
 | `precio_normal` | entero | Obligatorio; mayor que cero. |
 | `precio_promocional` | entero | Opcional; mayor que cero y menor que `precio_normal`. |
 | `stock` | entero | Obligatorio; no negativo. |
-| `modo_disponibilidad` | texto controlado | `venta_inmediata`, `bajo_pedido` o `no_disponible`. |
+| `modo_disponibilidad` | texto controlado | `venta_inmediata`, `bajo_pedido`, `no_disponible` o `vendido`. |
 | `activo` | booleano | Obligatorio; valor inicial `true`. |
 | `creado_en` | fecha con zona horaria | Obligatorio. |
 | `actualizado_en` | fecha con zona horaria | Obligatorio. |
 
-Una presentación con `modo_disponibilidad = bajo_pedido` debe tener `stock = 0`.
+Una presentación con `modo_disponibilidad = bajo_pedido` debe tener `stock = 0`. Una presentación `vendido` tampoco lleva stock (el formulario admin lo fuerza a cero), no admite solicitudes de cotización y se publica con el estado "Vendido".
 
 Los estados públicos no se almacenan porque se derivan así:
 
@@ -125,6 +125,7 @@ Los estados públicos no se almacenan porque se derivan así:
 venta_inmediata y stock > 0  -> Disponible
 venta_inmediata y stock = 0  -> Agotado
 bajo_pedido                  -> Bajo pedido
+vendido                      -> Vendido
 no_disponible                -> No disponible
 ```
 
@@ -147,7 +148,7 @@ La combinación `producto_id` y `posicion` será única. Supabase Storage es el 
 | Columna | Tipo lógico | Reglas principales |
 | --- | --- | --- |
 | `id` | entero generado | Clave primaria interna. |
-| `codigo` | texto | Obligatorio y único; inicia con formato `ES-00001`. |
+| `codigo` | texto | Obligatorio y único; inicia con formato `VM-00001`. |
 | `token_cliente` | UUID | Obligatorio y único; permite recuperar la solicitud y enviar comprobante con credencial no predecible. |
 | `nombre_cliente` | texto | Obligatorio y no vacío. |
 | `telefono` | texto | Obligatorio y no vacío; no se almacena como número. |
@@ -213,13 +214,13 @@ Al confirmar sin comprobante pendiente, la misma RPC que confirma la solicitud y
 ## Reglas que debe garantizar PostgreSQL
 
 - Relaciones entre las tablas mediante claves foráneas.
-- Valores permitidos para género, clasificación, modo de disponibilidad y estado.
+- Modos de disponibilidad y estados de solicitud con valores permitidos; el año y el estado comercial del vehículo se validan en la aplicación.
 - Precios positivos y precio promocional menor que el normal cuando exista.
 - Stock y cantidades descontadas no negativos.
 - Cantidades entre uno y 99.
 - Stock igual a cero para presentaciones bajo pedido.
 - Unicidad de código de solicitud y posición de imagen por producto.
-- Familia olfativa obligatoria para los productos de Perfumes / Lociones.
+- Modelo / especificación del vehículo opcional en todas las categorías.
 - Unicidad de presentación por detalle de solicitud.
 - Versiones de términos y política no vacías y fecha de aceptación obligatoria en cada solicitud.
 - Cálculo consistente del subtotal.
@@ -324,7 +325,7 @@ La operación no podrá crear detalles, cambiar presentaciones ni actualizar pre
 
 ## Validación y pendientes
 
-- El flujo completo de comprobante privado se validó con la solicitud controlada `ES-00082`; incluyó revisión administrativa, confirmación, descuento y posterior restitución del inventario.
+- El flujo completo de comprobante privado se validó con la solicitud controlada `VM-00082`; incluyó revisión administrativa, confirmación, descuento y posterior restitución del inventario.
 - Las instrucciones, la llave o alias y el QR Bre-B fueron aprobados por el propietario.
-- Permanece pendiente revisar la carga definitiva con el conjunto completo de datos e imágenes reales de ESENCIALES.
+- Permanece pendiente revisar la carga definitiva con el conjunto completo de datos e imágenes reales de VEHIMARCAS del Valle.
 - Debe mantenerse la validación de teléfonos sin excluir números legítimos y comprobarla en pruebas manuales representativas.

@@ -8,29 +8,29 @@ import {
 } from '../src/category-views.mjs';
 
 test('renders category name, textual status, and available action', () => {
-  const view = categoriesView([{ id: 1, nombre: 'Splash', activo: true }]);
+  const view = categoriesView([{ id: 1, nombre: 'SUV & Camionetas', activo: true }]);
 
-  assert.match(view, /Splash/);
+  assert.match(view, /SUV &amp; Camionetas/);
   assert.match(view, /Activa/);
   assert.match(view, /Desactivar/);
   assert.match(view, /data-category-edit="1"/);
 });
 
 test('renders an accessible searchable category drawer with textual states', () => {
-  const view = categoryDrawerView({ categories: [{ id: 1, nombre: 'Splash', activo: true }, { id: 2, nombre: 'Cremas', activo: false }], query: 'spl' });
+  const view = categoryDrawerView({ categories: [{ id: 1, nombre: 'SUV & Camionetas', activo: true }, { id: 2, nombre: 'Sedanes', activo: false }], query: 'suv' });
   assert.match(view, /role="dialog"/);
   assert.match(view, /aria-modal="true"/);
   assert.match(view, /Buscar categoría/);
-  assert.match(view, /Splash/);
+  assert.match(view, /SUV/);
   assert.match(view, /Activa/);
-  assert.doesNotMatch(view, /Cremas/);
+  assert.doesNotMatch(view, /Sedanes/);
   assert.match(view, /data-category-drawer-close/);
   assert.match(view, /viewBox="0 0 24 24"/);
   assert.match(view, /stroke="currentColor"/);
 });
 
 test('renders category edit controls, state and destructive confirmation', () => {
-  const view = categoryDrawerView({ mode: 'edit', selected: { id: 2, nombre: 'Cremas', activo: false }, confirmDelete: true });
+  const view = categoryDrawerView({ mode: 'edit', selected: { id: 2, nombre: 'Sedanes', activo: false }, confirmDelete: true });
   assert.match(view, /<span>Volver a categorías<\/span>/);
   assert.match(view, /name="activo"/);
   assert.match(view, /Eliminar categoría/);
@@ -39,15 +39,15 @@ test('renders category edit controls, state and destructive confirmation', () =>
 });
 
 test('renders activation for an inactive category', () => {
-  const view = categoriesView([{ id: 2, nombre: 'Cremas', activo: false }]);
+  const view = categoriesView([{ id: 2, nombre: 'Sedanes', activo: false }]);
 
   assert.match(view, /Inactiva/);
   assert.match(view, /data-category-activate="2"/);
 });
 
 test('marks category details and action variants for responsive styling', () => {
-  const activeView = categoriesView([{ id: 1, nombre: 'Splash', activo: true }]);
-  const inactiveView = categoriesView([{ id: 2, nombre: 'Cremas', activo: false }]);
+  const activeView = categoriesView([{ id: 1, nombre: 'SUV & Camionetas', activo: true }]);
+  const inactiveView = categoriesView([{ id: 2, nombre: 'Sedanes', activo: false }]);
 
   assert.match(activeView, /class="category-details"/);
   assert.match(activeView, /class="table-action table-action--edit"/);
@@ -56,16 +56,16 @@ test('marks category details and action variants for responsive styling', () => 
 });
 
 test('renders a labeled required category form and preserves its value', () => {
-  const view = categoryFormView({ nombre: 'Cremas', error: 'Ese nombre ya existe.' });
+  const view = categoryFormView({ nombre: 'Sedanes', error: 'Ese nombre ya existe.' });
 
   assert.match(view, /<label for="category-name">Nombre de la categoría<\/label>/);
   assert.match(view, /id="category-name"[^>]*required/);
-  assert.match(view, /value="Cremas"/);
+  assert.match(view, /value="Sedanes"/);
   assert.match(view, /role="alert">Ese nombre ya existe/);
 });
 
 test('renders a deactivation warning and confirmation controls', () => {
-  const view = deactivationDialogView({ id: 1, nombre: 'Splash' });
+  const view = deactivationDialogView({ id: 1, nombre: 'SUV & Camionetas' });
 
   assert.match(view, /sus productos se ocultarán del catálogo público/);
   assert.match(view, /data-category-confirm-deactivate="1"/);
@@ -73,7 +73,7 @@ test('renders a deactivation warning and confirmation controls', () => {
 });
 
 test('marks a pending deactivation as busy and disables confirmation', () => {
-  const view = deactivationDialogView({ id: 1, nombre: 'Splash' }, { busy: true });
+  const view = deactivationDialogView({ id: 1, nombre: 'SUV & Camionetas' }, { busy: true });
 
   assert.match(view, /aria-busy="true"/);
   assert.match(view, /data-category-confirm-deactivate="1"[^>]*disabled/);

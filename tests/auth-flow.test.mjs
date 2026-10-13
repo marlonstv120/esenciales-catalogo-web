@@ -12,8 +12,8 @@ import {
 test('returns Auth recovery and invitation flows to the admin route', () => {
   assert.equal(getAdminAuthReturnUrl('http://localhost:5173'), 'http://localhost:5173/admin');
   assert.equal(
-    getAdminAuthReturnUrl('https://marlonstv120.github.io', '/esenciales-catalogo-web/'),
-    'https://marlonstv120.github.io/esenciales-catalogo-web/admin',
+    getAdminAuthReturnUrl('https://marlonstv120.github.io', '/vehimarcas-catalogo-web/'),
+    'https://marlonstv120.github.io/vehimarcas-catalogo-web/admin',
   );
 });
 

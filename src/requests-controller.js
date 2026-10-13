@@ -1,4 +1,4 @@
-import { filterPurchaseRequests, listPurchaseRequests, rejectPaymentProof, savePurchaseRequest, transitionPurchaseRequest, verifyPaymentAndConfirm } from './requests.js';
+import { filterPurchaseRequests, listPurchaseRequests, savePurchaseRequest, transitionPurchaseRequest } from './requests.js';
 import { purchaseRequestDetailView, purchaseRequestsView } from './request-views.mjs';
 import { supabase } from './supabase.js';
 import { showNotification } from './notifications.mjs';
@@ -64,8 +64,6 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     outlet.querySelector('[data-request-edit-actions]')?.toggleAttribute('hidden', !state.dirty);
     outlet.querySelector('[data-request-save]')?.toggleAttribute('disabled', disabled);
     outlet.querySelector('[data-request-discard]')?.toggleAttribute('disabled', disabled);
-    outlet.querySelector('[data-payment-verify]')?.toggleAttribute('disabled', Boolean(state.operation) || state.dirty);
-    outlet.querySelector('[data-payment-dirty-hint]')?.toggleAttribute('hidden', !state.dirty);
     outlet.querySelectorAll('[data-request-transition]').forEach((button) => button.toggleAttribute('disabled', Boolean(state.operation) || state.dirty));
     outlet.querySelector('[data-request-dirty-hint]')?.toggleAttribute('hidden', !state.dirty);
     state.values?.lineas.forEach((line) => {
@@ -84,7 +82,7 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     state = { ...state, loading: true, error: '' }; draw();
     const { data, error } = await listPurchaseRequests(supabase);
     if (!isCurrentGeneration()) return;
-    state = { ...state, requests: data || [], loading: false, error: error ? 'No fue posible cargar las solicitudes. Inténtalo de nuevo.' : '', quantityErrors: {} };
+    state = { ...state, requests: data || [], loading: false, error: error ? (error.message || 'No fue posible cargar las solicitudes. Inténtalo de nuevo.') : '', quantityErrors: {} };
     draw();
   }
   async function refreshAvailability() {
@@ -120,55 +118,23 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     if (state.dirty) { showNotice('Guarda o descarta los cambios antes de cambiar el estado.', 'info'); return; }
     const labels = { confirm: 'confirmar', deliver: 'marcar como entregada', cancel: 'cancelar' };
     if (!window.confirm(`¿Confirmas ${labels[transitionName]} esta solicitud?`)) return;
-    state = { ...state, operation: transitionName, error: '' }; draw();
+    const previous = selectedRequest();
+    const nextStatus = { confirm: 'confirmada', deliver: 'entregada', cancel: 'cancelada' }[transitionName];
+    state = nextStatus && previous
+      ? { ...state, operation: transitionName, error: '', values: null, requests: state.requests.map((item) => item.id === previous.id ? { ...item, estado: nextStatus } : item) }
+      : { ...state, operation: transitionName, error: '' };
+    draw();
     const { error } = await transitionPurchaseRequest(supabase, state.selectedId, transitionName);
     if (!isCurrentGeneration()) return;
-    if (error) { state = { ...state, operation: '' }; draw(); showNotice(requestError(error), 'error'); return; }
+    if (error) {
+      state = previous ? { ...state, operation: '', requests: state.requests.map((item) => item.id === previous.id ? previous : item) } : { ...state, operation: '' };
+      draw();
+      showNotice(requestError(error), 'error');
+      return;
+    }
     state = { ...state, operation: '', dirty: false, values: null };
     await load();
     showNotice('Estado de la solicitud actualizado correctamente.');
-  }
-  async function rejectProof() {
-    if (state.operation || !state.selectedId) return;
-    const reason = window.prompt('Indica la razón del rechazo del comprobante:');
-    if (reason === null) return;
-    state = { ...state, operation: 'rejectingPayment', error: '' }; draw();
-    const { error } = await rejectPaymentProof(supabase, state.selectedId, reason);
-    if (!isCurrentGeneration()) return;
-    if (error) { state = { ...state, operation: '' }; draw(); showNotice(requestError(error), 'error'); return; }
-    state = { ...state, operation: '', dirty: false, values: null };
-    await load();
-    showNotice('Comprobante rechazado.');
-  }
-  async function verifyPayment() {
-    if (state.operation || !state.selectedId) return;
-    if (state.dirty) { showNotice('Guarda o descarta los cambios antes de confirmar la solicitud.', 'info'); return; }
-    if (!window.confirm('¿Confirmas que verificaste el pago? Esta acción también confirmará la solicitud y descontará el inventario inmediato.')) return;
-    state = { ...state, operation: 'verifyingPayment', error: '' }; draw();
-    const { error } = await verifyPaymentAndConfirm(supabase, state.selectedId);
-    if (!isCurrentGeneration()) return;
-    if (error) { state = { ...state, operation: '' }; draw(); showNotice(requestError(error), 'error'); return; }
-    state = { ...state, operation: '', dirty: false, values: null };
-    await load();
-    showNotice('Pago verificado y solicitud confirmada.');
-  }
-  async function openProof() {
-    const request = selectedRequest();
-    const payment = Array.isArray(request?.pagos_solicitud) ? request.pagos_solicitud[0] : request?.pagos_solicitud;
-    if (!payment?.comprobante_path) return;
-    const { data, error } = await supabase.storage.from('comprobantes-pago').createSignedUrl(payment.comprobante_path, 60);
-    if (error || !data?.signedUrl) { showNotice('No fue posible abrir el comprobante.', 'error'); return; }
-    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
-  }
-  function closeDetail() {
-    if (state.dirty && !window.confirm('Hay cambios sin guardar. ¿Quieres volver de todas formas?')) return;
-    state = { ...state, selectedId: null, values: null, error: '', dirty: false, operation: '', quantityErrors: {} }; draw();
-  }
-  function discardChanges() {
-    const request = selectedRequest();
-    if (!request) return;
-    state = { ...state, values: valuesFor(request), dirty: false, quantityErrors: {}, error: '' };
-    draw();
   }
   function openRequest(requestId) {
     const request = state.requests.find((item) => String(item.id) === String(requestId));
@@ -203,9 +169,6 @@ export async function renderRequestsScreen({ outlet, isCurrentGeneration }) {
     outlet.querySelectorAll('[data-request-line-remove]').forEach((button) => button.addEventListener('click', () => { captureValues(); const values = { ...state.values, lineas: state.values.lineas.filter((line) => String(line.id) !== button.dataset.requestLineRemove) }; state = { ...state, values, dirty: hasUnsavedChanges(selectedRequest(), values), quantityErrors: quantityErrorsFor(values.lineas), error: '' }; draw(); }));
     outlet.querySelector('#request-edit-form')?.addEventListener('submit', (event) => { event.preventDefault(); event.currentTarget.checkValidity() ? save(event.currentTarget) : event.currentTarget.reportValidity(); });
     outlet.querySelectorAll('[data-request-transition]').forEach((button) => button.addEventListener('click', () => transition(button.dataset.requestTransition)));
-    outlet.querySelector('[data-payment-reject]')?.addEventListener('click', rejectProof);
-    outlet.querySelector('[data-payment-verify]')?.addEventListener('click', verifyPayment);
-    outlet.querySelector('[data-payment-proof-open]')?.addEventListener('click', openProof);
   }
   await load();
   return {

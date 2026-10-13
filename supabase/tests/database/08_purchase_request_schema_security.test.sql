@@ -30,14 +30,14 @@ insert into public.solicitudes (
   codigo, identificador_intento, nombre_cliente, telefono, ciudad, observaciones,
   terminos_version, politica_datos_version, aceptado_en
 ) values (
-  'ES-00001', '44444444-4444-4444-4444-444444444444', 'Cliente de prueba', '+57 300 0000000', 'Cali', 'Sin observaciones',
+  'VM-00001', '44444444-4444-4444-4444-444444444444', 'Cliente de prueba', '+57 300 0000000', 'Cali', 'Sin observaciones',
   'terminos-v1', 'politica-datos-v1', now()
 );
 insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario)
 select s.id, p.id, 2, 100000
 from public.solicitudes s
 cross join public.presentaciones p
-where s.codigo = 'ES-00001' and p.etiqueta = 'Unidad solicitud';
+where s.codigo = 'VM-00001' and p.etiqueta = 'Unidad solicitud';
 
 select results_eq(
   $$select subtotal from public.detalles_solicitud$$,
@@ -45,31 +45,31 @@ select results_eq(
   'El subtotal se calcula desde cantidad y precio unitario'
 );
 select throws_ok(
-  $$insert into public.solicitudes (codigo, identificador_intento, nombre_cliente, telefono, terminos_version, politica_datos_version, aceptado_en) values ('ES-00002', '55555555-5555-5555-5555-555555555555', '', '3000000000', 'terminos-v1', 'politica-datos-v1', now())$$,
+  $$insert into public.solicitudes (codigo, identificador_intento, nombre_cliente, telefono, terminos_version, politica_datos_version, aceptado_en) values ('VM-00002', '55555555-5555-5555-5555-555555555555', '', '3000000000', 'terminos-v1', 'politica-datos-v1', now())$$,
   '23514', null, 'Una solicitud exige nombre no vacio'
 );
 select throws_ok(
   $$insert into public.solicitudes (codigo, identificador_intento, nombre_cliente, telefono, terminos_version, politica_datos_version, aceptado_en) values ('Solicitud-2', '55555555-5555-5555-5555-555555555555', 'Cliente', '3000000000', 'terminos-v1', 'politica-datos-v1', now())$$,
-  '23514', null, 'El codigo conserva el formato ES-numerico'
+  '23514', null, 'El codigo conserva el formato VM-numerico'
 );
 select throws_ok(
-  $$insert into public.solicitudes (codigo, identificador_intento, nombre_cliente, telefono, terminos_version, politica_datos_version, aceptado_en) values ('ES-00002', '44444444-4444-4444-4444-444444444444', 'Cliente', '3000000000', 'terminos-v1', 'politica-datos-v1', now())$$,
+  $$insert into public.solicitudes (codigo, identificador_intento, nombre_cliente, telefono, terminos_version, politica_datos_version, aceptado_en) values ('VM-00002', '44444444-4444-4444-4444-444444444444', 'Cliente', '3000000000', 'terminos-v1', 'politica-datos-v1', now())$$,
   '23505', null, 'El identificador de intento es unico'
 );
 select throws_ok(
-  $$update public.solicitudes set estado = 'pendiente' where codigo = 'ES-00001'$$,
+  $$update public.solicitudes set estado = 'pendiente' where codigo = 'VM-00001'$$,
   '23514', null, 'El estado de solicitud esta controlado'
 );
 select throws_ok(
-  $$insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario) select s.id, p.id, 0, 100000 from public.solicitudes s cross join public.presentaciones p where s.codigo = 'ES-00001' and p.etiqueta = 'Unidad solicitud'$$,
+  $$insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario) select s.id, p.id, 0, 100000 from public.solicitudes s cross join public.presentaciones p where s.codigo = 'VM-00001' and p.etiqueta = 'Unidad solicitud'$$,
   '23514', null, 'La cantidad debe estar entre uno y noventa y nueve'
 );
 select throws_ok(
-  $$insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario, cantidad_descontada) select s.id, p.id, 2, 100000, 3 from public.solicitudes s cross join public.presentaciones p where s.codigo = 'ES-00001' and p.etiqueta = 'Unidad solicitud'$$,
+  $$insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario, cantidad_descontada) select s.id, p.id, 2, 100000, 3 from public.solicitudes s cross join public.presentaciones p where s.codigo = 'VM-00001' and p.etiqueta = 'Unidad solicitud'$$,
   '23514', null, 'La cantidad descontada no supera la solicitada'
 );
 select throws_ok(
-  $$insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario) select s.id, p.id, 1, 100000 from public.solicitudes s cross join public.presentaciones p where s.codigo = 'ES-00001' and p.etiqueta = 'Unidad solicitud'$$,
+  $$insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario) select s.id, p.id, 1, 100000 from public.solicitudes s cross join public.presentaciones p where s.codigo = 'VM-00001' and p.etiqueta = 'Unidad solicitud'$$,
   '23505', null, 'No se repite una presentacion dentro de la solicitud'
 );
 
@@ -86,7 +86,7 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub', '77777777-7777-7777-7777-777777777777', true);
 select results_eq(
   $$select codigo from public.solicitudes$$,
-  $$values ('ES-00001'::text)$$,
+  $$values ('VM-00001'::text)$$,
   'El administrador activo consulta solicitudes'
 );
 select results_eq(

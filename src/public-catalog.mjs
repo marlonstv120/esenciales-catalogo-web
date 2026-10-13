@@ -18,6 +18,14 @@ export async function loadFilteredCatalog(client, filters) {
   return { data: data || [], error: error ? 'No fue posible cargar el catálogo.' : null };
 }
 
+export async function loadPublicDeliveries(client) {
+  const { data, error } = await client.rpc('obtener_entregas_publicas');
+  return {
+    data: Array.isArray(data) ? data : [],
+    error: error ? 'No fue posible cargar las entregas.' : null,
+  };
+}
+
 export async function loadPublicProduct(client, productId) {
   const id = Number(productId);
   if (!Number.isInteger(id) || id < 1) {
@@ -33,7 +41,7 @@ export async function loadPublicProduct(client, productId) {
   };
 }
 
-const publicStatus = { Disponible: 'en-stock', 'Bajo pedido': 'bajo-pedido', Agotado: 'agotado', 'No disponible': 'no-disponible' };
+const publicStatus = { Disponible: 'en-stock', 'Bajo pedido': 'bajo-pedido', Agotado: 'agotado', 'No disponible': 'no-disponible', Vendido: 'vendido' };
 
 export function refineCatalogRows(rows, filters) {
   const matching = filters.disponibilidades.length

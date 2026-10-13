@@ -23,7 +23,7 @@ test('lists requests newest first and calls the protected edit RPC', () => {
 });
 
 test('filters requests by state and client, code, or phone', () => {
-  const requests = [{ codigo: 'ES-00001', nombre_cliente: 'Ana', telefono: '3000000000', estado: 'nueva' }, { codigo: 'ES-00002', nombre_cliente: 'Luis', telefono: '3100000000', estado: 'confirmada' }];
+  const requests = [{ codigo: 'VM-00001', nombre_cliente: 'Ana', telefono: '3000000000', estado: 'nueva' }, { codigo: 'VM-00002', nombre_cliente: 'Luis', telefono: '3100000000', estado: 'confirmada' }];
   assert.deepEqual(filterPurchaseRequests(requests, { query: 'ana' }), [requests[0]]);
   assert.deepEqual(filterPurchaseRequests(requests, { query: '00002', status: 'confirmada' }), [requests[1]]);
 });

@@ -1,7 +1,7 @@
 // Source: public Colombia municipality catalogue maintained at github.com/marcovega/colombia-json.
 // The catalogue is cached for the session so searching never makes requests per keystroke.
 const SOURCE_URL = 'https://raw.githubusercontent.com/marcovega/colombia-json/master/colombia.json';
-const CACHE_KEY = 'esenciales:colombia-municipalities:v1';
+const CACHE_KEY = 'vehimarcas:colombia-municipalities:v1';
 
 function normalize(value) {
   return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es-CO').trim();

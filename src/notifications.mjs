@@ -1,3 +1,5 @@
+import { uiIcon } from './ui-icons.mjs';
+
 const DEFAULT_DURATION = 4500;
 
 export function showNotification(message, { tone = 'success', duration = DEFAULT_DURATION, documentRef = document } = {}) {
@@ -20,7 +22,7 @@ export function showNotification(message, { tone = 'success', duration = DEFAULT
   close.type = 'button';
   close.className = 'app-toast__close';
   close.setAttribute('aria-label', 'Cerrar notificación');
-  close.textContent = '×';
+  close.innerHTML = uiIcon('x', { size: 14 });
   const dismiss = () => toast.remove();
   close.addEventListener('click', dismiss);
   toast.append(text, close);

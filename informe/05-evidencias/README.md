@@ -13,6 +13,6 @@ El [plan de evidencias](../../docs/academic/report/EVIDENCE_PLAN.md) indica el e
 
 ## Registros disponibles
 
-- [Validación funcional de la solicitud ES-00082](validacion-es-00082.md): recorrido manual controlado, resultados y límites de la evidencia visual.
+- [Validación funcional de la solicitud VM-00082](validacion-vm-00082.md): recorrido manual controlado, resultados y límites de la evidencia visual.
 - [Validación final con usuarios seleccionados y propietario](validacion-final-usuarios-propietario.md): recorridos móviles, observaciones administrativas y correcciones derivadas.
 - `catalogo-final.png`: captura de la interfaz pública vigente utilizada en la comparación con el wireframe.

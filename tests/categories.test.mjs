@@ -9,7 +9,7 @@ import {
 
 function fakeClient() {
   const calls = [];
-  const result = { data: [{ id: 1, nombre: 'Splash', activo: true }], error: null };
+  const result = { data: [{ id: 1, nombre: 'SUV & Camionetas', activo: true }], error: null };
 
   const query = {
     select(columns) {
@@ -80,9 +80,9 @@ test('targets a category identifier when deleting it', () => {
 test('trims a new category name before saving it', () => {
   const client = fakeClient();
 
-  createCategory(client, '  Splash  ');
+  createCategory(client, '  SUV & Camionetas  ');
 
-  assert.deepEqual(client.calls[1], { method: 'insert', payload: { nombre: 'Splash', activo: true } });
+  assert.deepEqual(client.calls[1], { method: 'insert', payload: { nombre: 'SUV & Camionetas', activo: true } });
 });
 
 test('preserves an inactive state when creating a category', () => {
@@ -106,11 +106,11 @@ test('does not submit an empty category name', () => {
 test('trims a renamed category and targets its identifier', () => {
   const client = fakeClient();
 
-  updateCategory(client, 7, { nombre: '  Cremas  ', activo: false });
+  updateCategory(client, 7, { nombre: '  Sedanes  ', activo: false });
 
   assert.deepEqual(client.calls, [
     { method: 'from', table: 'categorias' },
-    { method: 'update', payload: { nombre: 'Cremas', activo: false } },
+    { method: 'update', payload: { nombre: 'Sedanes', activo: false } },
     { method: 'eq', column: 'id', value: 7 },
     { method: 'select', columns: 'id, nombre, activo' },
     { method: 'single' },

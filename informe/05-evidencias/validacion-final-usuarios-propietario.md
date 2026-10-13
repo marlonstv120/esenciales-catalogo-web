@@ -5,7 +5,7 @@
 - **Tipo de validación:** funcional y cualitativa sobre la versión desplegada.
 - **Participantes externos:** tres usuarios ajenos al equipo académico.
 - **Dispositivo de los usuarios externos:** celular.
-- **Participante del negocio:** propietario de ESENCIALES e integrante del equipo académico.
+- **Participante del negocio:** propietario de VEHIMARCAS del Valle e integrante del equipo académico.
 - **Fecha exacta de ejecución:** no suministrada.
 - **Evidencia de respaldo:** conversaciones conservadas en `pruebas-usuarios/`.
 
@@ -19,7 +19,7 @@ Las conversaciones se conservan como soporte de la validación y no se utilizan 
 | Usuario 2 | Consultó el catálogo y el producto, agregó al carrito, registró una solicitud y llegó hasta la etapa de pago sin enviar comprobante. | Completó el recorrido previsto sin reportar inconvenientes. |
 | Usuario 3 | Ingresó desde las categorías de la página principal, utilizó el carrito y registró una solicitud. | Algunas categorías mostraron el catálogo sin resultados porque no tenían productos cargados. Indicó que necesitó dos intentos para registrar la solicitud. El equipo revisó después ese comportamiento y no logró reproducirlo, por lo que se conserva como observación aislada y no como falla persistente confirmada. |
 
-## Propietario de ESENCIALES
+## Propietario de VEHIMARCAS del Valle
 
 El propietario probó funciones administrativas de productos y presentaciones. Su participación durante el desarrollo no se confunde con la aprobación previa del briefing ni con la aprobación posterior de los contenidos Bre-B.
 
@@ -39,7 +39,7 @@ No se conserva una conversación posterior en la que el propietario vuelva a eje
 - `pruebas-usuarios/WhatsApp Image 2026-10-04 at 10.39.13 PM.jpeg`.
 - `pruebas-usuarios/WhatsApp Image 2026-10-04 at 10.39.12 PM (3).jpeg`.
 - `pruebas-usuarios/WhatsApp Image 2026-10-04 at 10.39.12 PM (2).jpeg`.
-- `pruebas-usuarios/propietario-esenciales-feedback.jpeg`.
-- `pruebas-usuarios/propietario-esenciales-feedback2.jpeg`.
+- `pruebas-usuarios/propietario-vehimarcas-feedback.jpeg`.
+- `pruebas-usuarios/propietario-vehimarcas-feedback2.jpeg`.
 
 Los nombres de archivo se utilizan solo para localizar el respaldo y no se toman como prueba de la fecha exacta de ejecución.

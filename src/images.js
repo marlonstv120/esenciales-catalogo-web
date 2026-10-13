@@ -1,10 +1,20 @@
 const BUCKET = 'productos';
-const MAX_SIZE = 5 * 1024 * 1024;
-const extensions = {
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_VIDEO_SIZE = 5 * 1024 * 1024;
+
+const imageExtensions = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
 };
+
+const videoExtensions = {
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
+  'video/quicktime': 'mov',
+};
+
+const extensions = { ...imageExtensions, ...videoExtensions };
 
 function operationError(error, cleanupPath) {
   const message = error?.message || 'No fue posible completar la operacion de imagen.';
@@ -18,9 +28,17 @@ async function removeObject(client, path) {
   if (error) throw operationError(error, path);
 }
 
+export function mediaType(file) {
+  if (imageExtensions[file?.type]) return 'imagen';
+  if (videoExtensions[file?.type]) return 'video';
+  return null;
+}
+
 export function validateImage(file) {
-  if (!file || !extensions[file.type]) throw new Error('Selecciona una imagen JPEG, PNG o WebP.');
-  if (file.size > MAX_SIZE) throw new Error('La imagen no puede superar 5 MiB.');
+  const tipo = mediaType(file);
+  if (!tipo) throw new Error('Selecciona una imagen JPEG, PNG o WebP, o un video MP4, WebM o MOV.');
+  if (tipo === 'video' && file.size > MAX_VIDEO_SIZE) throw new Error('El video no puede superar 5 MiB.');
+  if (tipo === 'imagen' && file.size > MAX_IMAGE_SIZE) throw new Error('La imagen no puede superar 5 MiB.');
 }
 
 export function imagePath(productId, file, uuid = () => crypto.randomUUID()) {
@@ -30,19 +48,24 @@ export function imagePath(productId, file, uuid = () => crypto.randomUUID()) {
 
 export async function uploadImage(client, productId, file, altText, position = 0, uuid) {
   const path = imagePath(productId, file, uuid);
+  const tipo = mediaType(file);
   const storage = client.storage.from(BUCKET);
-  const { error: uploadError } = await storage.upload(path, file, { contentType: file.type, upsert: false });
+  const { data: uploadData, error: uploadError } = await storage.upload(path, file, { contentType: file.type, upsert: false });
   if (uploadError) throw operationError(uploadError);
+
+  const publicUrl = uploadData?.url || storage.getPublicUrl(path)?.data?.publicUrl || path;
 
   const record = {
     producto_id: productId,
-    url: storage.getPublicUrl(path).data.publicUrl,
+    url: publicUrl,
     identificador_externo: path,
+    tipo,
     texto_alternativo: altText?.trim() || null,
     posicion: position,
   };
   const { data, error } = await client.from('imagenes_producto').insert(record).select().single();
-  if (!error) return data;
+  if (!error && data) return data;
+  if (!error) return { id: Date.now(), ...record };
 
   try {
     await removeObject(client, path);
@@ -70,6 +93,7 @@ export async function replaceImage(client, image, file, altText, uuid) {
   const record = {
     url: storage.getPublicUrl(path).data.publicUrl,
     identificador_externo: path,
+    tipo: mediaType(file),
     texto_alternativo: altText?.trim() || null,
   };
   const { data, error } = await client.from('imagenes_producto').update(record).eq('id', image.id).select().single();

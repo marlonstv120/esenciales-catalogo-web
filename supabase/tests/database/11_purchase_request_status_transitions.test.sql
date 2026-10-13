@@ -23,28 +23,28 @@ select id, 'Sin stock transicion', 70000, 0, 'venta_inmediata' from public.produ
 
 insert into public.solicitudes (codigo, identificador_intento, nombre_cliente, telefono, terminos_version, politica_datos_version, aceptado_en)
 values
-  ('ES-11001', '11111111-1111-1111-1111-111111111111', 'Cliente mixta', '3000000001', 'terminos-v1', 'politica-datos-v1', now()),
-  ('ES-11002', '22222222-2222-2222-2222-222222222222', 'Cliente nueva', '3000000002', 'terminos-v1', 'politica-datos-v1', now()),
-  ('ES-11003', '33333333-3333-3333-3333-333333333333', 'Cliente sin stock', '3000000003', 'terminos-v1', 'politica-datos-v1', now()),
-  ('ES-11004', '44444444-4444-4444-4444-444444444444', 'Cliente entrega', '3000000004', 'terminos-v1', 'politica-datos-v1', now());
+  ('VM-11001', '11111111-1111-1111-1111-111111111111', 'Cliente mixta', '3000000001', 'terminos-v1', 'politica-datos-v1', now()),
+  ('VM-11002', '22222222-2222-2222-2222-222222222222', 'Cliente nueva', '3000000002', 'terminos-v1', 'politica-datos-v1', now()),
+  ('VM-11003', '33333333-3333-3333-3333-333333333333', 'Cliente sin stock', '3000000003', 'terminos-v1', 'politica-datos-v1', now()),
+  ('VM-11004', '44444444-4444-4444-4444-444444444444', 'Cliente entrega', '3000000004', 'terminos-v1', 'politica-datos-v1', now());
 
 insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario)
 select s.id, p.id, case when p.etiqueta = 'Inmediata transicion' then 2 else 3 end, p.precio_normal
 from public.solicitudes s
 join public.presentaciones p on p.etiqueta in ('Inmediata transicion', 'Bajo pedido transicion')
-where s.codigo = 'ES-11001'
+where s.codigo = 'VM-11001'
 union all
-select s.id, p.id, 1, p.precio_normal from public.solicitudes s join public.presentaciones p on p.etiqueta = 'Inmediata transicion' where s.codigo in ('ES-11002', 'ES-11004')
+select s.id, p.id, 1, p.precio_normal from public.solicitudes s join public.presentaciones p on p.etiqueta = 'Inmediata transicion' where s.codigo in ('VM-11002', 'VM-11004')
 union all
-select s.id, p.id, 1, p.precio_normal from public.solicitudes s join public.presentaciones p on p.etiqueta = 'Sin stock transicion' where s.codigo = 'ES-11003';
+select s.id, p.id, 1, p.precio_normal from public.solicitudes s join public.presentaciones p on p.etiqueta = 'Sin stock transicion' where s.codigo = 'VM-11003';
 
 insert into public.pagos_solicitud (solicitud_id, monto)
-select s.id, sum(d.subtotal)::integer from public.solicitudes s join public.detalles_solicitud d on d.solicitud_id = s.id where s.codigo in ('ES-11001', 'ES-11002', 'ES-11003', 'ES-11004') group by s.id;
+select s.id, sum(d.subtotal)::integer from public.solicitudes s join public.detalles_solicitud d on d.solicitud_id = s.id where s.codigo in ('VM-11001', 'VM-11002', 'VM-11003', 'VM-11004') group by s.id;
 
-select set_config('test.mixta', (select id::text from public.solicitudes where codigo = 'ES-11001'), true);
-select set_config('test.nueva', (select id::text from public.solicitudes where codigo = 'ES-11002'), true);
-select set_config('test.sin_stock', (select id::text from public.solicitudes where codigo = 'ES-11003'), true);
-select set_config('test.entrega', (select id::text from public.solicitudes where codigo = 'ES-11004'), true);
+select set_config('test.mixta', (select id::text from public.solicitudes where codigo = 'VM-11001'), true);
+select set_config('test.nueva', (select id::text from public.solicitudes where codigo = 'VM-11002'), true);
+select set_config('test.sin_stock', (select id::text from public.solicitudes where codigo = 'VM-11003'), true);
+select set_config('test.entrega', (select id::text from public.solicitudes where codigo = 'VM-11004'), true);
 
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values ('77777777-7777-7777-7777-777777777777', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'transiciones@prueba.local', '', now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, now(), now());

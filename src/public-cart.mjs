@@ -1,4 +1,5 @@
-const CART_KEY = 'esenciales.cart.v2';
+const CART_KEY = 'vehimarcas.cart.v2';
+const LEGACY_CART_KEY = 'vehimarcas.cart.v1';
 
 function safeQuantity(value) {
   const quantity = Number(value);
@@ -19,7 +20,8 @@ export function emptyCart() { return { version: 2, items: [] }; }
 
 export function loadCart(storage = globalThis.localStorage) {
   try {
-    const value = JSON.parse(storage?.getItem(CART_KEY) || 'null');
+    const raw = storage?.getItem(CART_KEY) || storage?.getItem(LEGACY_CART_KEY);
+    const value = JSON.parse(raw || 'null');
     if (!value || value.version !== 2 || !Array.isArray(value.items)) return emptyCart();
     const items = value.items.filter((item) => Number.isInteger(Number(item.presentationId)) && safeQuantity(item.quantity) && safeMaximum(item.maxQuantity) && Number(item.quantity) <= Number(item.maxQuantity) && Number.isInteger(Number(item.price)) && item.price > 0).map((item) => ({ ...item, selected: item.selected !== false }));
     return { version: 2, items };

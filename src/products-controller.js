@@ -3,7 +3,10 @@ import { createCategory, deleteCategory, listCategories, updateCategory } from '
 import { categoryDrawerView } from './category-views.mjs';
 import { productImageEditorView } from './product-image-views.mjs';
 import { presentationFormView, presentationRowView, productFormView } from './product-views.mjs';
-import { formatPresentationLabel, listProducts, savePresentation, saveProduct, splitPresentationLabel } from './products.js';
+import { formatPresentationLabel, listProducts, productIsSold, savePresentation, saveProduct, splitPresentationLabel } from './products.js';
+import { deleteDelivery, findDeliveryByProduct, orderedDeliveryMedia, saveDelivery } from './deliveries.js';
+import { removeDeliveryMedia, retryDeliveryMediaCleanup, uploadDeliveryMedia, validateDeliveryMedia } from './delivery-media.js';
+import { saleGalleryView } from './delivery-views.mjs';
 import { filterInventory, sortInventory } from './inventory-utils.mjs';
 import { inventoryDashboardView } from './inventory-views.mjs';
 import { supabase } from './supabase.js';
@@ -12,19 +15,38 @@ import { createDraftSaver, readDraft } from './form-drafts.mjs';
 import { showNotification } from './notifications.mjs';
 
 const emptyFilters = { query: '', category: '', brand: '', gender: '', classification: '', family: '', status: '', featured: false, availability: '', minPrice: '', maxPrice: '', order: 'newest', page: 1 };
-const NEW_PRODUCT_DRAFT_KEY = 'esenciales:draft:admin:producto:nuevo';
+const NEW_PRODUCT_DRAFT_KEY = 'vehimarcas:draft:admin:producto:nuevo';
 const NEW_PRODUCT_DRAFT = { version: 1, form: 'admin-product-new' };
-const MAX_PRODUCT_IMAGES = 6;
-const initialState = () => ({ products: [], categories: [], loading: true, loadError: '', filters: { ...emptyFilters }, filtersPanelOpen: false, categoriesPanelOpen: false, editor: null, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, presentation: null, presentationValues: {}, presentationError: '', presentationBusy: false, presentationDirty: false, image: null, imageAlt: '', imageAltDirty: false, imageAltEditing: false, imageBusy: false, imageError: '', cleanupPath: '', categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } });
+const MAX_PRODUCT_IMAGES = 14;
+const initialState = () => ({ products: [], categories: [], loading: true, loadError: '', filters: { ...emptyFilters }, filtersPanelOpen: false, categoriesPanelOpen: false, editor: null, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, presentation: null, presentationValues: {}, presentationError: '', presentationBusy: false, presentationDirty: false, image: null, imageAlt: '', imageAltDirty: false, imageAltEditing: false, imageBusy: false, imageError: '', cleanupPath: '', categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false }, sale: { delivery: null, values: {}, error: '', busy: false, saleDirty: false, mediaBusy: false, mediaError: '', cleanupPath: '' } });
 
 const formValues = (form) => Object.fromEntries(new FormData(form));
-const databaseError = (error) => error?.code === '23514' ? 'Verifica la familia olfativa para perfumes, el precio, la promoción, el stock y la disponibilidad.' : error?.code === '23505' ? 'Ya existe un registro con ese nombre.' : 'No fue posible guardar. Inténtalo de nuevo.';
+const databaseError = (error) => {
+  console.error('[databaseError]', error);
+  if (error?.code === '23514') return `Verifica los datos del vehículo (restricción: ${error?.message || 'CHECK'}).`;
+  if (error?.code === '23505') return 'Ya existe un registro con ese nombre.';
+  if (error?.code === '42501' || error?.code === 'P0001') return error?.message || 'No tienes permisos para realizar esta acción.';
+  return error?.message || 'No fue posible guardar. Inténtalo de nuevo.';
+};
 const orderedImages = (product) => [...(product?.imagenes_producto || [])].sort((a, b) => a.posicion - b.posicion || a.id - b.id);
 const currentImage = (product) => orderedImages(product)[0] || null;
 
+const saleValues = (delivery, product) => delivery
+  ? { titulo: delivery.titulo || '', descripcion: delivery.descripcion || '', publicado: delivery.publicado !== false }
+  : { titulo: product?.nombre || '', descripcion: '', publicado: true };
+const resetSale = (product) => ({ delivery: null, values: saleValues(null, product), error: '', busy: false, saleDirty: false, mediaBusy: false, mediaError: '', cleanupPath: '' });
+const saleDatabaseError = (error) => {
+  console.error('[saleGalleryError]', error);
+  if (error?.code === '23514') return 'Verifica los datos de la galería de la venta.';
+  if (error?.code === '23505') return 'Este vehículo ya tiene una galería registrada.';
+  if (error?.code === '23503') return 'El vehículo seleccionado ya no está disponible.';
+  if (error?.code === '42501' || error?.code === 'P0001') return error?.message || 'No tienes permisos para realizar esta acción.';
+  return error?.message || 'No fue posible guardar la galería. Inténtalo de nuevo.';
+};
+
 export async function renderProductsScreen({ outlet, isCurrentGeneration, openRoot = false }) {
   let state = initialState();
-  const hasUnsavedChanges = () => state.productDirty || state.presentationDirty;
+  const hasUnsavedChanges = () => state.productDirty || state.presentationDirty || state.sale.saleDirty;
   const draftSaver = createDraftSaver(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT);
   let previousBodyOverflow = '';
   const filterKeys = ['query', 'category', 'brand', 'gender', 'classification', 'family', 'status', 'availability', 'minPrice', 'maxPrice', 'order', 'page'];
@@ -32,13 +54,25 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration, openRo
   const filteredProducts = () => sortInventory(filterInventory(state.products, state.filters), state.filters.order);
   const setEditor = (product) => {
     const image = currentImage(product);
-    state = { ...state, editor: product, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, presentation: null, presentationValues: {}, presentationError: '', presentationDirty: false, image, imageAlt: image?.texto_alternativo || product?.nombre || '', imageAltEditing: false, imageError: '', cleanupPath: '' };
+    state = { ...state, editor: product, productValues: {}, productError: '', productBusy: false, productDirty: false, saved: false, presentation: null, presentationValues: {}, presentationError: '', presentationDirty: false, image, imageAlt: image?.texto_alternativo || product?.nombre || '', imageAltEditing: false, imageError: '', cleanupPath: '', sale: resetSale(product) };
   };
   const categoriesPanel = () => state.categoriesPanelOpen ? categoryDrawerView({ categories: state.categories, ...state.categoryDrawer }) : '';
   const productManagement = () => {
     if (!state.editor) return '';
     const list = state.editor.presentaciones?.length ? `<ul class="presentation-list">${state.editor.presentaciones.map(presentationRowView).join('')}</ul>` : '<p class="empty-state">Aún no hay presentaciones. Agrega la primera para registrar precio, stock y disponibilidad.</p>';
-    return `<div class="product-management-grid">${productImageEditorView({ product: state.editor, images: orderedImages(state.editor), image: state.image, altText: state.imageAlt, altChanged: state.imageAltDirty, altEditing: state.imageAltEditing, busy: state.imageBusy, error: state.imageError, cleanupPath: state.cleanupPath, maxImages: MAX_PRODUCT_IMAGES })}<section class="presentations-section"><header><div><h3>Presentaciones</h3><p>Precio, stock y disponibilidad se administran por presentación.</p></div><button class="secondary-button" type="button" data-presentation-create>Agregar presentación</button></header>${list}${state.presentation ? presentationFormView({ presentation: state.presentation, values: state.presentationValues, error: state.presentationError, saving: state.presentationBusy }) : ''}</section></div>`;
+    const gallery = saleGalleryView({
+      delivery: state.sale.delivery,
+      values: state.sale.values,
+      error: state.sale.error,
+      saving: state.sale.busy,
+      sold: productIsSold(state.editor),
+      productName: state.editor.nombre,
+      media: orderedDeliveryMedia(state.sale.delivery),
+      mediaBusy: state.sale.mediaBusy,
+      mediaError: state.sale.mediaError,
+      cleanupPath: state.sale.cleanupPath,
+    });
+    return `<div class="product-management-grid">${productImageEditorView({ product: state.editor, images: orderedImages(state.editor), image: state.image, altText: state.imageAlt, altChanged: state.imageAltDirty, altEditing: state.imageAltEditing, busy: state.imageBusy, error: state.imageError, cleanupPath: state.cleanupPath, maxImages: MAX_PRODUCT_IMAGES })}<section class="presentations-section"><header><div><h3>Presentaciones</h3><p>Precio, stock y disponibilidad se administran por presentación.</p></div><button class="secondary-button" type="button" data-presentation-create>Agregar presentación</button></header>${list}${state.presentation ? presentationFormView({ presentation: state.presentation, values: state.presentationValues, error: state.presentationError, saving: state.presentationBusy }) : ''}</section></div>${gallery}`;
   };
   const syncPageScrollLock = () => {
     const body = outlet.ownerDocument?.body;
@@ -68,11 +102,90 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration, openRo
     outlet.querySelector('[data-inventory-drawer-open]')?.focus();
   };
   const showNotice = (message, tone = 'success') => showNotification(message, { tone, documentRef: outlet.ownerDocument });
+  const openProductEditor = (product) => { setEditor(product); draw(); void loadSaleGallery(product?.id); };
+  async function loadSaleGallery(productId) {
+    if (!productId || !state.editor || String(state.editor.id) !== String(productId)) return;
+    if (!productIsSold(state.editor)) return;
+    const { data, error } = await findDeliveryByProduct(supabase, productId);
+    if (!isCurrentGeneration() || !state.editor || String(state.editor.id) !== String(productId)) return;
+    state = { ...state, sale: { ...state.sale, delivery: error ? null : data, values: saleValues(data, state.editor), error: error ? 'No fue posible cargar la galería de esta venta.' : '' } };
+    draw();
+  }
+  async function saveCurrentSale(form) {
+    if (state.sale.busy || !state.editor?.id || !productIsSold(state.editor)) return;
+    const values = { ...formValues(form), publicado: form.elements.publicado.checked, titulo: String(form.elements.titulo.value || '').trim() };
+    if (!values.titulo) { state = { ...state, sale: { ...state.sale, values, error: 'Escribe un título para la galería.' } }; draw(); return; }
+    state = { ...state, sale: { ...state.sale, busy: true, values, error: '' } }; draw();
+    let result;
+    try { result = await saveDelivery(supabase, state.sale.delivery?.id, { ...values, producto_id: state.editor.id }); }
+    catch { state = { ...state, sale: { ...state.sale, busy: false, values, error: 'No fue posible guardar. Revisa tu conexión e inténtalo de nuevo.' } }; draw(); return; }
+    const { data, error } = result;
+    if (error) { state = { ...state, sale: { ...state.sale, busy: false, values, error: saleDatabaseError(error) } }; draw(); return; }
+    const delivery = { ...(state.sale.delivery || {}), ...data, archivos_entrega: state.sale.delivery?.archivos_entrega || [] };
+    state = { ...state, sale: { ...state.sale, delivery, values, busy: false, saleDirty: false, error: '' } };
+    draw();
+    showNotice('Galería de la venta guardada correctamente.');
+  }
+  async function saveSaleMedia(files) {
+    if (state.sale.mediaBusy || !state.editor?.id || !productIsSold(state.editor) || !files?.length) return;
+    const selectedFiles = [...files];
+    try { selectedFiles.forEach(validateDeliveryMedia); }
+    catch (error) { state = { ...state, sale: { ...state.sale, mediaError: error.message } }; draw(); showNotice(error.message, 'error'); return; }
+    state = { ...state, sale: { ...state.sale, mediaBusy: true, mediaError: '', cleanupPath: '' } }; draw();
+    // La galería se crea sola al subir el primer archivo si aún no existe.
+    let delivery = state.sale.delivery;
+    if (!delivery?.id) {
+      let created;
+      try { created = await saveDelivery(supabase, undefined, { producto_id: state.editor.id, titulo: state.sale.values.titulo || state.editor.nombre, descripcion: state.sale.values.descripcion || '', publicado: state.sale.values.publicado !== false }); }
+      catch { state = { ...state, sale: { ...state.sale, mediaBusy: false, mediaError: 'No fue posible preparar la galería. Revisa tu conexión e inténtalo de nuevo.' } }; draw(); return; }
+      if (created.error || !created.data) { state = { ...state, sale: { ...state.sale, mediaBusy: false, mediaError: saleDatabaseError(created.error) } }; draw(); return; }
+      delivery = { ...created.data, archivos_entrega: [] };
+    }
+    const media = [...orderedDeliveryMedia(delivery)];
+    const uploaded = [];
+    let uploadError = null;
+    try {
+      const start = media.reduce((highest, item) => Math.max(highest, item.posicion), -1) + 1;
+      for (const [index, file] of selectedFiles.entries()) {
+        const record = await uploadDeliveryMedia(supabase, delivery.id, file, state.sale.values.titulo || state.editor.nombre, start + index);
+        uploaded.push(record);
+        media.push(record);
+      }
+    } catch (error) { uploadError = error; }
+    const nextDelivery = { ...delivery, archivos_entrega: media };
+    state = { ...state, sale: { ...state.sale, delivery: nextDelivery, mediaBusy: false, mediaError: uploadError ? `${uploaded.length ? `${uploaded.length} archivo(s) se cargaron. ` : ''}${uploadError.message}` : '', cleanupPath: uploadError?.cleanupPath || '' } };
+    draw();
+    if (uploaded.length) showNotice(`${uploaded.length} archivo${uploaded.length === 1 ? '' : 's'} cargado${uploaded.length === 1 ? '' : 's'} correctamente.`);
+    if (uploadError) showNotice('No fue posible completar toda la carga.', 'error');
+  }
+  async function removeCurrentSaleMedia(mediaId) {
+    const media = orderedDeliveryMedia(state.sale.delivery).find((item) => String(item.id) === String(mediaId));
+    if (!media || state.sale.mediaBusy || !window.confirm('¿Eliminar este archivo de la galería? Esta acción no se puede deshacer.')) return;
+    state = { ...state, sale: { ...state.sale, mediaBusy: true, mediaError: '' } }; draw();
+    try {
+      await removeDeliveryMedia(supabase, media);
+      const delivery = { ...state.sale.delivery, archivos_entrega: orderedDeliveryMedia(state.sale.delivery).filter((item) => String(item.id) !== String(mediaId)) };
+      state = { ...state, sale: { ...state.sale, delivery, mediaBusy: false, mediaError: '' } };
+      showNotice('Archivo eliminado correctamente.');
+    } catch (error) { state = { ...state, sale: { ...state.sale, mediaBusy: false, mediaError: error.message, cleanupPath: error.cleanupPath || '' } }; }
+    draw();
+  }
+  async function deleteCurrentSaleGallery() {
+    const delivery = state.sale.delivery;
+    if (!delivery?.id || state.sale.busy || !window.confirm(`¿Eliminar la galería «${delivery.titulo}»? Se borrarán también sus fotos y videos.`)) return;
+    state = { ...state, sale: { ...state.sale, busy: true, error: '' } }; draw();
+    try { await deleteDelivery(supabase, delivery.id); }
+    catch { state = { ...state, sale: { ...state.sale, busy: false, error: 'No fue posible eliminar la galería.' } }; draw(); return; }
+    state = { ...state, sale: resetSale(state.editor) };
+    draw();
+    showNotice('Galería eliminada correctamente.');
+  }
   async function load() {
     state = { ...state, loading: true, loadError: '' }; draw();
     const [{ data: products, error: productsError }, { data: categories, error: categoriesError }] = await Promise.all([listProducts(supabase), listCategories(supabase)]);
     if (!isCurrentGeneration()) return;
-    state = { ...state, products: products || [], categories: categories || [], loading: false, loadError: productsError || categoriesError ? 'No fue posible cargar el inventario completo. Inténtalo de nuevo.' : '' };
+    const loadError = !productsError && !categoriesError ? '' : (productsError?.message || categoriesError?.message || 'No fue posible cargar el inventario completo. Inténtalo de nuevo.');
+    state = { ...state, products: products || [], categories: categories || [], loading: false, loadError };
     const draft = !openRoot && !state.editor && readDraft(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT);
     if (draft) state = { ...state, editor: { activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }, productValues: draft.values, productDirty: true };
     draw();
@@ -81,8 +194,6 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration, openRo
   async function saveCurrent(form) {
     if (state.productBusy) return;
     const values = { ...formValues(form), destacado: form.elements.destacado.checked, activo: form.elements.activo.checked };
-    const category = state.categories.find((item) => String(item.id) === String(values.categoria_id));
-    if (category?.nombre.toLocaleLowerCase('es') === 'perfumes / lociones' && !values.familia_olfativa?.trim()) { state = { ...state, productValues: values, productError: 'Ingresa la familia olfativa para Perfumes / Lociones.' }; draw(); return; }
     state = { ...state, productBusy: true, productValues: values, productError: '' }; draw();
     let result;
     try { result = await saveProduct(supabase, state.editor?.id, values); } catch { state = { ...state, productBusy: false, productValues: values, productError: 'No fue posible guardar. Revisa tu conexión e inténtalo de nuevo.' }; draw(); return; }
@@ -94,6 +205,7 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration, openRo
     state = { ...state, editor: product, productValues: {}, productBusy: false, productDirty: false, productError: '', saved: true, image: currentImage(product), imageAlt: currentImage(product)?.texto_alternativo || product.nombre, imageAltDirty: false };
     state.products = state.products.some((item) => item.id === product.id) ? state.products.map((item) => item.id === product.id ? product : item) : [product, ...state.products];
     draw();
+    void loadSaleGallery(product.id);
     showNotice('Producto guardado correctamente.');
   }
   async function saveCurrentPresentation(form) {
@@ -109,6 +221,7 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration, openRo
     const editor = { ...state.editor, presentaciones: presentations };
     state = { ...state, editor, products: state.products.map((item) => item.id === editor.id ? editor : item), presentation: null, presentationValues: {}, presentationError: '', presentationBusy: false, presentationDirty: false };
     draw();
+    void loadSaleGallery(editor.id);
     showNotice('Presentación guardada correctamente.');
   }
   async function saveImages(files) {
@@ -128,14 +241,14 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration, openRo
     const images = [...orderedImages(state.editor), ...uploaded];
     const editor = { ...state.editor, imagenes_producto: images };
     const image = uploaded.at(-1) || state.image || images[0] || null;
-    state = { ...state, editor, products: state.products.map((item) => item.id === editor.id ? editor : item), image, imageAlt: image?.texto_alternativo || editor.nombre || '', imageAltDirty: false, imageAltEditing: false, imageBusy: false, imageError: uploadError ? `${uploaded.length ? `${uploaded.length} imagen(es) se guardaron. ` : ''}${uploadError.message}` : '', cleanupPath: uploadError?.cleanupPath || '' };
+    state = { ...state, editor, products: state.products.map((item) => item.id === editor.id ? editor : item), image, imageAlt: image?.texto_alternativo || editor.nombre || '', imageAltDirty: false, imageAltEditing: false, imageBusy: false, imageError: uploadError ? `${uploaded.length ? `${uploaded.length} archivo(s) se guardaron. ` : ''}${uploadError.message}` : '', cleanupPath: uploadError?.cleanupPath || '' };
     draw();
-    if (uploaded.length) showNotice(`${uploaded.length} imagen${uploaded.length === 1 ? '' : 'es'} agregada${uploaded.length === 1 ? '' : 's'} correctamente.`);
+    if (uploaded.length) showNotice(`${uploaded.length} archivo${uploaded.length === 1 ? '' : 's'} agregado${uploaded.length === 1 ? '' : 's'} correctamente.`);
     if (uploadError) showNotice('No fue posible completar toda la carga.', 'error');
-    if (files.length > available) showNotice(`Solo se admiten ${MAX_PRODUCT_IMAGES} imágenes por producto.`, 'info');
+    if (files.length > available) showNotice(`Solo se admiten ${MAX_PRODUCT_IMAGES} archivos por vehículo.`, 'info');
   }
   async function reorderImages(images, selectedId = state.image?.id) { if (state.imageBusy) return; state = { ...state, imageBusy: true, imageError: '' }; draw(); try { const ordered = await orderProductImages(supabase, state.editor.id, images.map((item) => item.id)); const editor = { ...state.editor, imagenes_producto: ordered }; const image = ordered.find((item) => item.id === selectedId) || ordered[0] || null; state = { ...state, editor, products: state.products.map((item) => item.id === editor.id ? editor : item), image, imageAlt: image?.texto_alternativo || editor.nombre || '', imageBusy: false, imageAltEditing: false }; } catch (error) { state = { ...state, imageBusy: false, imageError: error.message }; } draw(); outlet.querySelector(`[data-image-select-id="${state.image?.id}"]`)?.focus(); }
-  async function removeCurrentImage() { if (!state.image || state.imageBusy || !window.confirm('¿Eliminar esta imagen de la galería? Esta acción no se puede deshacer.')) return; const removed = state.image; state = { ...state, imageBusy: true, imageError: '' }; draw(); try { await removeImage(supabase, removed); const remaining = orderedImages(state.editor).filter((item) => item.id !== removed.id); let images = remaining; if (remaining.length) images = await orderProductImages(supabase, state.editor.id, remaining.map((item) => item.id)); const editor = { ...state.editor, imagenes_producto: images }; const image = images[0] || null; state = { ...state, image, imageAlt: image?.texto_alternativo || editor.nombre || '', imageBusy: false, imageAltEditing: false, editor, products: state.products.map((item) => item.id === editor.id ? editor : item) }; showNotice('Imagen eliminada correctamente.'); } catch (error) { state = { ...state, imageBusy: false, imageError: error.message, cleanupPath: error.cleanupPath || '' }; } draw(); (state.image ? outlet.querySelector(`[data-image-select-id="${state.image.id}"]`) : outlet.querySelector('[data-image-select]'))?.focus(); }
+  async function removeCurrentImage() { if (!state.image || state.imageBusy || !window.confirm('¿Eliminar este archivo de la galería? Esta acción no se puede deshacer.')) return; const removed = state.image; state = { ...state, imageBusy: true, imageError: '' }; draw(); try { await removeImage(supabase, removed); const remaining = orderedImages(state.editor).filter((item) => item.id !== removed.id); let images = remaining; if (remaining.length) images = await orderProductImages(supabase, state.editor.id, remaining.map((item) => item.id)); const editor = { ...state.editor, imagenes_producto: images }; const image = images[0] || null; state = { ...state, image, imageAlt: image?.texto_alternativo || editor.nombre || '', imageBusy: false, imageAltEditing: false, editor, products: state.products.map((item) => item.id === editor.id ? editor : item) }; showNotice('Archivo eliminado correctamente.'); } catch (error) { state = { ...state, imageBusy: false, imageError: error.message, cleanupPath: error.cleanupPath || '' }; } draw(); (state.image ? outlet.querySelector(`[data-image-select-id="${state.image.id}"]`) : outlet.querySelector('[data-image-select]'))?.focus(); }
   async function updateCurrentImageAlt(altText) { if (!state.image || state.imageBusy) return; state = { ...state, imageBusy: true, imageError: '' }; draw(); try { const image = await updateImageAlt(supabase, state.image, altText); const editor = { ...state.editor, imagenes_producto: state.editor.imagenes_producto.map((item) => item.id === image.id ? image : item) }; state = { ...state, image, imageAlt: altText || editor.nombre || '', imageAltDirty: false, imageAltEditing: false, imageBusy: false, editor, products: state.products.map((item) => item.id === editor.id ? editor : item) }; showNotice('Texto alternativo guardado correctamente.'); } catch (error) { state = { ...state, imageBusy: false, imageError: error.message }; showNotice('No fue posible guardar el texto alternativo.', 'error'); } draw(); }
   async function saveCategory(form) { if (state.categoryDrawer.busy) return; const nombre = new FormData(form).get('nombre'); const activo = form.elements.activo.checked; const drawer = { ...state.categoryDrawer, busy: true, values: { nombre, activo }, error: '' }; state = { ...state, categoryDrawer: drawer }; draw(); const operation = drawer.selected ? updateCategory(supabase, drawer.selected.id, { nombre, activo }) : createCategory(supabase, nombre, activo); const { data, error } = await operation; if (error) { state = { ...state, categoryDrawer: { ...drawer, busy: false, error: databaseError(error) } }; draw(); return; } const categories = drawer.selected ? state.categories.map((item) => item.id === data.id ? data : item) : [...state.categories, data].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')); state = { ...state, categories, categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } }; draw(); showNotice('Categoría guardada correctamente.'); }
   async function deleteCurrentCategory() { const category = state.categoryDrawer.selected; if (!category || state.categoryDrawer.busy) return; if (state.products.some((product) => String(product.categoria_id) === String(category.id))) { state = { ...state, categoryDrawer: { ...state.categoryDrawer, confirmDelete: false, error: 'No se puede eliminar esta categoría porque tiene productos relacionados. Reasígnalos primero o desactiva la categoría.' } }; draw(); return; } state = { ...state, categoryDrawer: { ...state.categoryDrawer, busy: true, error: '' } }; draw(); const { error } = await deleteCategory(supabase, category.id); if (error) { state = { ...state, categoryDrawer: { ...state.categoryDrawer, busy: false, confirmDelete: false, error: 'No fue posible eliminar la categoría. Verifica que no tenga productos relacionados.' } }; draw(); return; } state = { ...state, categories: state.categories.filter((item) => item.id !== category.id), categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } }; showNotice('Categoría eliminada correctamente.'); }
@@ -149,22 +262,22 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration, openRo
       presentationLabel.before(group);
       presentationLabel.name = 'etiqueta_valor';
       presentationLabel.value = value;
-      presentationLabel.placeholder = 'Ej. 100';
-      presentationLabel.inputMode = 'decimal';
+      presentationLabel.placeholder = 'Ej. Automática 4x4, Mecánica 6 Vel, 2000';
+      presentationLabel.inputMode = 'text';
       group.append(presentationLabel);
 
       const unitSelect = document.createElement('select');
       unitSelect.name = 'etiqueta_unidad';
       unitSelect.className = 'presentation-label-control__unit';
-      unitSelect.setAttribute('aria-label', 'Unidad de presentación');
-      unitSelect.innerHTML = '<option value="">Sin unidad</option><option value="ml">ml</option><option value="oz">oz</option>';
-      unitSelect.value = unit || (value ? '' : 'ml');
+      unitSelect.setAttribute('aria-label', 'Unidad de especificación');
+      unitSelect.innerHTML = '<option value="">Sin unidad</option><option value="cc">cc</option><option value="l">L</option><option value="km">km</option><option value="hp">HP</option>';
+      unitSelect.value = unit || '';
       group.append(unitSelect);
     }
     outlet.querySelector('[data-products-retry], [data-inventory-retry]')?.addEventListener('click', load);
     outlet.querySelector('[data-product-create]')?.addEventListener('click', () => { const draft = readDraft(window.localStorage, NEW_PRODUCT_DRAFT_KEY, NEW_PRODUCT_DRAFT); setEditor({ activo: true, destacado: false, presentaciones: [], imagenes_producto: [] }); if (draft) { state = { ...state, productValues: draft.values, productDirty: true }; } draw(); if (draft) showNotice('Recuperamos los cambios que estabas realizando.', 'info'); outlet.querySelector('#product-name')?.focus(); });
-    outlet.querySelectorAll('[data-product-edit]').forEach((button) => button.addEventListener('click', (event) => { event.stopPropagation(); const product = state.products.find((item) => String(item.id) === button.dataset.productEdit); if (product) { setEditor(product); draw(); } }));
-    outlet.querySelectorAll('[data-product-open]').forEach((row) => { row.addEventListener('dblclick', (event) => { if (!event.target.closest('button, a, input, select')) { const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { setEditor(product); draw(); } } }); row.addEventListener('click', (event) => { if (!event.target.closest('button, a, input, select') && window.matchMedia('(max-width: 63.9375rem)').matches) { const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { setEditor(product); draw(); } } }); row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { setEditor(product); draw(); } } }); });
+    outlet.querySelectorAll('[data-product-edit]').forEach((button) => button.addEventListener('click', (event) => { event.stopPropagation(); const product = state.products.find((item) => String(item.id) === button.dataset.productEdit); if (product) { openProductEditor(product); } }));
+    outlet.querySelectorAll('[data-product-open]').forEach((row) => { row.addEventListener('dblclick', (event) => { if (!event.target.closest('button, a, input, select')) { const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { openProductEditor(product); } } }); row.addEventListener('click', (event) => { if (!event.target.closest('button, a, input, select') && window.matchMedia('(max-width: 63.9375rem)').matches) { const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { openProductEditor(product); } } }); row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); const product = state.products.find((item) => String(item.id) === row.dataset.productOpen); if (product) { openProductEditor(product); } } }); });
     outlet.querySelectorAll('[data-product-close]').forEach((button) => button.addEventListener('click', closeEditor));
     const captureProductValues = (form) => {
       const values = { ...formValues(form), destacado: form.elements.destacado.checked, activo: form.elements.activo.checked };
@@ -186,6 +299,15 @@ export async function renderProductsScreen({ outlet, isCurrentGeneration, openRo
     outlet.querySelector('[data-image-alt-edit]')?.addEventListener('click', () => { state = { ...state, imageAltEditing: true, imageAltDirty: false }; draw(); outlet.querySelector('#product-image-alt')?.focus(); });
     outlet.querySelector('[data-image-alt-cancel]')?.addEventListener('click', () => { state = { ...state, imageAlt: state.image?.texto_alternativo || state.editor.nombre || '', imageAltDirty: false, imageAltEditing: false }; draw(); });
     outlet.querySelector('[data-image-alt-save]')?.addEventListener('click', () => updateCurrentImageAlt(outlet.querySelector('#product-image-alt').value)); outlet.querySelector('[data-image-remove]')?.addEventListener('click', removeCurrentImage); outlet.querySelector('[data-image-preview]')?.addEventListener('error', (event) => { event.currentTarget.hidden = true; outlet.querySelector('[data-image-placeholder]')?.removeAttribute('hidden'); }); outlet.querySelector('[data-image-cleanup]')?.addEventListener('click', async () => { try { await retryImageCleanup(supabase, state.cleanupPath); state = { ...state, cleanupPath: '', imageError: '' }; } catch (error) { state = { ...state, imageError: error.message }; } draw(); });
+    const saleForm = outlet.querySelector('#sale-gallery-form');
+    saleForm?.addEventListener('input', () => { state.sale.saleDirty = true; });
+    saleForm?.addEventListener('change', () => { state.sale.saleDirty = true; });
+    saleForm?.addEventListener('submit', (event) => { event.preventDefault(); event.currentTarget.checkValidity() ? saveCurrentSale(event.currentTarget) : event.currentTarget.reportValidity(); });
+    outlet.querySelector('[data-sale-gallery-delete]')?.addEventListener('click', deleteCurrentSaleGallery);
+    outlet.querySelectorAll('[data-sale-media-select]').forEach((button) => button.addEventListener('click', () => outlet.querySelector('#sale-gallery-media-file')?.click()));
+    outlet.querySelector('#sale-gallery-media-file')?.addEventListener('change', (event) => saveSaleMedia(event.currentTarget.files));
+    outlet.querySelectorAll('[data-sale-media-remove]').forEach((button) => button.addEventListener('click', () => removeCurrentSaleMedia(button.dataset.saleMediaRemove)));
+    outlet.querySelector('[data-sale-media-cleanup]')?.addEventListener('click', async () => { try { await retryDeliveryMediaCleanup(supabase, state.sale.cleanupPath); state.sale.cleanupPath = ''; state.sale.mediaError = ''; } catch (error) { state.sale.mediaError = error.message; } draw(); });
     outlet.querySelector('[data-categories-open]')?.addEventListener('click', () => { state = { ...state, categoriesPanelOpen: true, filtersPanelOpen: false, categoryDrawer: { mode: 'list', selected: null, query: '', values: {}, error: '', message: '', busy: false, confirmDelete: false, dirty: false } }; draw(); outlet.querySelector('#category-search')?.focus(); });
     outlet.querySelectorAll('[data-category-drawer-close]').forEach((button) => button.addEventListener('click', closeCategoryDrawer)); outlet.querySelector('[data-category-drawer-create]')?.addEventListener('click', () => { state.categoryDrawer = { ...state.categoryDrawer, mode: 'create', selected: null, values: { activo: true }, error: '', dirty: false }; draw(); outlet.querySelector('#drawer-category-name')?.focus(); }); outlet.querySelectorAll('[data-category-drawer-edit]').forEach((button) => button.addEventListener('click', () => { const selected = state.categories.find((item) => String(item.id) === button.dataset.categoryDrawerEdit); state.categoryDrawer = { ...state.categoryDrawer, mode: 'edit', selected, values: {}, error: '', dirty: false }; draw(); outlet.querySelector('#drawer-category-name')?.focus(); }));
     outlet.querySelector('#category-search')?.addEventListener('input', (event) => { state.categoryDrawer.query = event.target.value; draw(); outlet.querySelector('#category-search')?.focus(); }); outlet.querySelector('#category-drawer-form')?.addEventListener('input', () => { state.categoryDrawer.dirty = true; }); outlet.querySelector('#category-drawer-form')?.addEventListener('change', () => { state.categoryDrawer.dirty = true; }); outlet.querySelector('#category-drawer-form')?.addEventListener('submit', (event) => { event.preventDefault(); event.currentTarget.checkValidity() ? saveCategory(event.currentTarget) : event.currentTarget.reportValidity(); }); outlet.querySelectorAll('[data-category-drawer-back]').forEach((button) => button.addEventListener('click', () => { if (state.categoryDrawer.dirty && !window.confirm('Hay cambios sin guardar. ¿Quieres volver?')) return; state.categoryDrawer = { ...state.categoryDrawer, mode: 'list', selected: null, values: {}, error: '', dirty: false, confirmDelete: false }; draw(); outlet.querySelector('#category-search')?.focus(); })); outlet.querySelector('[data-category-delete]')?.addEventListener('click', () => { state.categoryDrawer.confirmDelete = true; draw(); outlet.querySelector('[data-category-delete-cancel]')?.focus(); }); outlet.querySelector('[data-category-delete-cancel]')?.addEventListener('click', () => { state.categoryDrawer.confirmDelete = false; draw(); }); outlet.querySelector('[data-category-delete-confirm]')?.addEventListener('click', deleteCurrentCategory);

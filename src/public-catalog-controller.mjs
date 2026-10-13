@@ -17,7 +17,7 @@ export function getDocumentMetadata(route, product = null) {
   if (route.name === 'product' && product?.nombre) return { title: `${product.nombre} | VEHIMARCAS del Valle`, description: `Consulta ficha técnica, imágenes y disponibilidad de ${product.nombre}.` };
   if (route.name === 'catalog') return { title: 'Catálogo de Vehículos | VEHIMARCAS del Valle', description: 'Consulta el catálogo de vehículos de VEHIMARCAS del Valle.' };
   if (route.name === 'cart') return { title: 'Cotización | VEHIMARCAS del Valle', description: 'Vehículos seleccionados para cotización en VEHIMARCAS del Valle.' };
-  return { title: 'VEHIMARCAS del Valle | Compra y Venta de Vehículos', description: 'Tu plataforma confiable para la compra y venta de vehículos.' };
+  return { title: 'VEHIMARCAS | Compra y Venta de Vehículos', description: 'VEHIMARCAS DEL VALLE | Tu plataforma confiable para la compra y venta de vehículos. Explora camionetas SUV, pick-ups y sedanes en Colombia.' };
 }
 
 export function attachImageFallbacks(root) {

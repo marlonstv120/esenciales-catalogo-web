@@ -27,6 +27,16 @@ test('offers other availability options as catalog filters', () => {
   assert.match(view, /Disponibilidad: Agotado/);
 });
 test('home categories lead to the shared catalog filters and featured data is not hidden by name', () => { assert.match(homeView([row]), /href="\/catalogo\?categoria=1"/); assert.match(homeView([{ ...row, nombre: 'prubea' }]), /prubea/); });
+test('home only includes the featured products in its featured carousel', () => {
+  const view = homeView([row, { ...row, producto_id: 5, nombre: 'Oculto', destacado: false }]);
+  assert.match(view, /public-featured/);
+  assert.match(view, /public-product-card--featured/);
+  assert.match(view, />Brisa</);
+  assert.doesNotMatch(view, />Oculto</);
+});
+test('home omits the featured section when there are no featured products', () => {
+  assert.doesNotMatch(homeView([{ ...row, destacado: false }]), /public-featured|Productos destacados/);
+});
 test('home shows partner bank and insurer logos below the featured catalog', () => {
   const view = homeView([row]);
   const partnersIndex = view.search('<section class="home-partners"');

@@ -7,11 +7,11 @@
 
 El equipo necesita consultar el avance desde celulares y otros equipos sin ejecutar el servidor de desarrollo. El frontend se compila como archivos estáticos con Vite y consume PostgreSQL, Auth y Storage desde Supabase alojado, por lo que no requiere un servidor Node en producción.
 
-El profesor mostró GitHub Pages como alternativa válida para publicar el avance académico y recomendó desplegar pronto para facilitar la revisión continua. El sitio de proyecto queda bajo la subruta `/vehimarcas-catalogo-web/`, que debe ser considerada por recursos, rutas y retornos de autenticación.
+El profesor mostró GitHub Pages como alternativa válida para publicar el avance académico y recomendó desplegar pronto para facilitar la revisión continua. El sitio de proyecto queda bajo la subruta `/esenciales-catalogo-web/`, que debe ser considerada por recursos, rutas y retornos de autenticación.
 
 ## Decisión
 
-- GitHub Pages publicará el frontend de demostración en `https://marlonstv120.github.io/vehimarcas-catalogo-web/`.
+- GitHub Pages publicará el frontend de demostración en `https://marlonstv120.github.io/esenciales-catalogo-web/`.
 - Un workflow de GitHub Actions ejecutará las pruebas, compilará Vite y desplegará `dist` después de cada `push` a `main`.
 - `BASE_PATH` establecerá la base de Vite y una utilidad compartida normalizará rutas internas, recursos y retornos de Supabase Auth.
 - `404.html` reutilizará la entrada de la aplicación para permitir enlaces directos a rutas del cliente.

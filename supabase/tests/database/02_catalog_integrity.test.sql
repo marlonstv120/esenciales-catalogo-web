@@ -35,9 +35,9 @@ select lives_ok(
   $$insert into public.productos (categoria_id, nombre, descripcion, genero, clasificacion)
     values (
       (select id from public.categorias where nombre = 'Prueba'),
-      'Producto valido', 'Descripcion valida', '2024', 'seminuevo'
+      'Producto valido', 'Descripcion valida', 'unisex', 'original'
     )$$,
-  'Acepta vehiculo valido'
+  'Acepta producto valido'
 );
 
 select throws_ok(
@@ -62,45 +62,52 @@ select throws_ok(
   'Rechaza descripcion vacia'
 );
 
-select lives_ok(
+select throws_ok(
   $$insert into public.productos (categoria_id, nombre, descripcion, genero)
     values (
       (select id from public.categorias where nombre = 'Prueba'),
-      'Producto con anio', 'Descripcion', '2022'
+      'Producto', 'Descripcion', 'otro'
     )$$,
-  'Acepta anio de referencia en genero'
+  '23514',
+  null,
+  'Rechaza genero no permitido'
 );
 
-select lives_ok(
+select throws_ok(
   $$insert into public.productos (categoria_id, nombre, descripcion, clasificacion)
     values (
       (select id from public.categorias where nombre = 'Prueba'),
-      'Producto con estado', 'Descripcion', 'nuevo'
+      'Producto', 'Descripcion', 'premium'
     )$$,
-  'Acepta estado comercial en clasificacion'
+  '23514',
+  null,
+  'Rechaza clasificacion no permitida'
 );
 
 select lives_ok(
   $$insert into public.productos (categoria_id, nombre, descripcion)
     values (
       (select id from public.categorias where nombre = 'Prueba'),
-      'Producto sin modelo', 'Descripcion'
+      'Producto sin familia', 'Descripcion'
     )$$,
-  'Toda categoria admite modelo / especificacion ausente'
+  'Otras categorias admiten familia olfativa ausente'
 );
 
-select lives_ok(
-  $$insert into public.productos (categoria_id, nombre, descripcion, modelo)
+select throws_ok(
+  $$insert into public.productos (categoria_id, nombre, descripcion)
     values (
-      (select id from public.categorias where nombre = 'Prueba'),
-      'Con modelo', 'Descripcion', 'Hilux SRX'
+      (select id from public.categorias where nombre = 'Perfumes / Lociones'),
+      'Perfume incompleto', 'Descripcion'
     )$$,
-  'Acepta vehiculo con modelo / especificacion'
+  '23514',
+  null,
+  'Perfumes requieren familia olfativa'
 );
 
-select lives_ok(
-  $$update public.productos set modelo = 'Ranger 4x4' where nombre = 'Producto sin modelo'$$,
-  'Permite asignar modelo / especificacion a un vehiculo existente'
+select throws_ok(
+  $$update public.productos set categoria_id = (select id from public.categorias where nombre = 'Perfumes / Lociones') where nombre = 'Producto sin familia'$$,
+  '23514', null,
+  'Impide mover un producto sin familia olfativa a perfumes'
 );
 
 select throws_ok(
@@ -126,7 +133,7 @@ select lives_ok(
       (producto_id, etiqueta, precio_normal, stock, modo_disponibilidad)
     values (
       (select id from public.productos where nombre = 'Producto valido'),
-      'Automatica', 100000, 0, 'venta_inmediata'
+      '100 ml', 100000, 0, 'venta_inmediata'
     )$$,
   'Venta inmediata puede estar agotada'
 );
@@ -136,19 +143,9 @@ select lives_ok(
       (producto_id, etiqueta, precio_normal, precio_promocional, stock, modo_disponibilidad)
     values (
       (select id from public.productos where nombre = 'Producto valido'),
-      'Mecanica', 80000, 70000, 0, 'bajo_pedido'
+      '50 ml', 80000, 70000, 0, 'bajo_pedido'
     )$$,
   'Acepta bajo pedido sin stock y promocion valida'
-);
-
-select lives_ok(
-  $$insert into public.presentaciones
-      (producto_id, etiqueta, precio_normal, precio_promocional, stock, modo_disponibilidad)
-    values (
-      (select id from public.productos where nombre = 'Producto valido'),
-      'Vendida', 95000, null, 0, 'vendido'
-    )$$,
-  'Acepta el modo vendido sin stock'
 );
 
 select throws_ok(
@@ -156,7 +153,7 @@ select throws_ok(
       (producto_id, etiqueta, precio_normal, stock, modo_disponibilidad)
     values (
       (select id from public.productos where nombre = 'Producto valido'),
-      '4x4', 50000, 1, 'bajo_pedido'
+      '30 ml', 50000, 1, 'bajo_pedido'
     )$$,
   '23514', null, 'Rechaza bajo pedido con stock'
 );

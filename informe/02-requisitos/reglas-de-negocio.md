@@ -1,4 +1,4 @@
-# Reglas de negocio de VEHIMARCAS del Valle
+# Reglas de negocio de ESENCIALES
 
 Este documento presenta las reglas de negocio vigentes para la entrega academica. La version tecnica detallada y mantenida como fuente de verdad se encuentra en [`docs/project/business-rules.md`](../../docs/project/business-rules.md).
 
@@ -62,7 +62,7 @@ Los precios se manejan en pesos colombianos sin decimales. El precio normal debe
 
 ### RN-14 - Codigo unico
 
-Cada solicitud registrada recibe un codigo unico y legible con formato inicial `VM-00001`. Se permiten huecos y el numero puede crecer mas alla de cinco digitos.
+Cada solicitud registrada recibe un codigo unico y legible con formato inicial `ES-00001`. Se permiten huecos y el numero puede crecer mas alla de cinco digitos.
 
 ### RN-15 - Solicitud mixta
 
@@ -96,7 +96,7 @@ Destacado es una seleccion manual del administrador, no una medicion de ventas. 
 
 ### RN-22 - Clasificaciones comerciales
 
-Las clasificaciones `Nuevo`, `Usado` y `Semi-nuevo` se asignan solo cuando correspondan y no representan disponibilidad ni inventario.
+Las clasificaciones `Original`, `1.1` e `Inspiracion` se asignan solo cuando correspondan y no representan disponibilidad ni inventario.
 
 ### RN-23 - Presentacion valida
 
@@ -128,6 +128,6 @@ Solo un administrador autenticado puede rechazar o verificar un comprobante. El 
 
 - El sistema no es una pasarela de pagos y no procesa tarjetas.
 - No solicita credenciales bancarias, CVV ni codigos OTP.
-- No valida automaticamente que una transferencia haya llegado a la cuenta de VEHIMARCAS del Valle.
+- No valida automaticamente que una transferencia haya llegado a la cuenta de ESENCIALES.
 - No realiza reembolsos automaticos, facturacion, contabilidad ni gestion de cuentas por cobrar.
 - WhatsApp se conserva como canal voluntario para continuar la conversacion comercial.

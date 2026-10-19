@@ -1,5 +1,4 @@
 import { backButton } from './back-navigation.mjs';
-import { uiIcon } from './ui-icons.mjs';
 
 function escapeHtml(value) {
   return String(value)
@@ -31,7 +30,7 @@ function categoryRowView(category) {
 
 export function categoriesView(categories, state = {}) {
   if (state.loading) {
-    return '<section class="category-content" aria-busy="true" role="status"><div class="skeleton-stack"><span class="skeleton-line skeleton-line--100"></span><span class="skeleton-line skeleton-line--100"></span><span class="skeleton-line skeleton-line--100"></span></div></section>';
+    return '<section class="category-content" aria-busy="true"><p class="loading-state" role="status">Cargando categorías...</p></section>';
   }
 
   if (state.error) {
@@ -86,6 +85,8 @@ export function categoryWorkspaceView(content, message = '') {
     </main>`;
 }
 
+const icon = (paths) => `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+
 export function categoryDrawerView({ categories = [], mode = 'list', selected = null, query = '', values = {}, error = '', message = '', busy = false, confirmDelete = false } = {}) {
   const matches = categories.filter((category) => category.nombre.toLocaleLowerCase('es').includes(query.toLocaleLowerCase('es')));
   const v = { activo: selected?.activo ?? true, nombre: selected?.nombre ?? '', ...values };
@@ -94,10 +95,10 @@ export function categoryDrawerView({ categories = [], mode = 'list', selected = 
     <label class="toggle-field"><input type="checkbox" name="activo" ${v.activo !== false ? 'checked' : ''}> <span>Activa</span><small>Las categorías inactivas no se muestran en el catálogo público.</small></label>
     ${error ? `<p class="message message--error" role="alert">${escapeHtml(error)}</p>` : ''}
     <div class="category-drawer__actions"><button class="secondary-button" type="button" data-category-drawer-back ${busy ? 'disabled' : ''}>Cancelar</button><button class="primary-button" type="submit" ${busy ? 'disabled' : ''}>${busy ? 'Guardando...' : mode === 'create' ? 'Guardar categoría' : 'Guardar cambios'}</button></div>
-    ${mode === 'edit' ? `<button class="danger-link" type="button" data-category-delete ${busy ? 'disabled' : ''}>${uiIcon('trash-2', { size: 16 })}Eliminar categoría</button>` : ''}
-  </form>` : `<div class="category-drawer__list"><label class="category-search" for="category-search">${uiIcon('search')}<span class="visually-hidden">Buscar categoría</span><input id="category-search" type="search" value="${escapeHtml(query)}" placeholder="Buscar categoría"></label>
+    ${mode === 'edit' ? `<button class="danger-link" type="button" data-category-delete ${busy ? 'disabled' : ''}>${icon('<path d="M3 6h18M9 6V4h6v2m-7 0 1 14h6l1-14"/>')}Eliminar categoría</button>` : ''}
+  </form>` : `<div class="category-drawer__list"><label class="category-search" for="category-search">${icon('<circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/>')}<span class="visually-hidden">Buscar categoría</span><input id="category-search" type="search" value="${escapeHtml(query)}" placeholder="Buscar categoría"></label>
     ${error ? `<p class="message message--error" role="alert">${escapeHtml(error)}</p>` : ''}
-    ${!categories.length ? '<p class="empty-state">Aún no hay categorías.</p>' : !matches.length ? '<p class="empty-state">No hay categorías que coincidan con la búsqueda.</p>' : `<ul>${matches.map((category) => `<li><div><strong>${escapeHtml(category.nombre)}</strong><span class="inventory-status ${category.activo ? 'inventory-status--active' : 'inventory-status--inactive'}">${category.activo ? 'Activa' : 'Inactiva'}</span></div><button class="icon-button" type="button" data-category-drawer-edit="${escapeHtml(category.id)}" aria-label="Editar ${escapeHtml(category.nombre)}">${uiIcon('pencil')}</button></li>`).join('')}</ul>`}
+    ${!categories.length ? '<p class="empty-state">Aún no hay categorías.</p>' : !matches.length ? '<p class="empty-state">No hay categorías que coincidan con la búsqueda.</p>' : `<ul>${matches.map((category) => `<li><div><strong>${escapeHtml(category.nombre)}</strong><span class="inventory-status ${category.activo ? 'inventory-status--active' : 'inventory-status--inactive'}">${category.activo ? 'Activa' : 'Inactiva'}</span></div><button class="icon-button" type="button" data-category-drawer-edit="${escapeHtml(category.id)}" aria-label="Editar ${escapeHtml(category.nombre)}">${icon('<path d="m4 20 4-1 10-10-3-3L5 16l-1 4Z"/><path d="m13 7 3 3"/>')}</button></li>`).join('')}</ul>`}
   </div>`;
-  return `<div class="category-drawer-backdrop" data-category-drawer-close></div><aside class="category-drawer" role="dialog" aria-modal="true" aria-labelledby="category-drawer-title" aria-busy="${busy}"><header>${mode === 'list' ? '<h2 id="category-drawer-title">Categorías</h2>' : backButton({ label: 'Volver a categorías', className: 'category-drawer__back', attributes: 'data-category-drawer-back' })}<button class="icon-button" type="button" data-category-drawer-close aria-label="Cerrar categorías">${uiIcon('x')}</button></header>${message ? `<p class="message message--success" role="status">${escapeHtml(message)}</p>` : ''}${mode === 'list' ? `<button class="primary-button category-drawer__new" type="button" data-category-drawer-create>${uiIcon('plus', { size: 16 })} Nueva categoría</button>` : ''}${form}${confirmDelete ? `<section class="category-delete-confirmation" role="alertdialog" aria-modal="true" aria-labelledby="category-delete-title"><h3 id="category-delete-title">¿Eliminar categoría?</h3><p>Esta acción no se puede deshacer. Reasigna primero los productos relacionados.</p><div><button class="secondary-button" type="button" data-category-delete-cancel>Cancelar</button><button class="danger-button" type="button" data-category-delete-confirm ${busy ? 'disabled' : ''}>Eliminar categoría</button></div></section>` : ''}</aside>`;
+  return `<div class="category-drawer-backdrop" data-category-drawer-close></div><aside class="category-drawer" role="dialog" aria-modal="true" aria-labelledby="category-drawer-title" aria-busy="${busy}"><header>${mode === 'list' ? '<h2 id="category-drawer-title">Categorías</h2>' : backButton({ label: 'Volver a categorías', className: 'category-drawer__back', attributes: 'data-category-drawer-back' })}<button class="icon-button" type="button" data-category-drawer-close aria-label="Cerrar categorías">${icon('<path d="m6 6 12 12M18 6 6 18"/>')}</button></header>${message ? `<p class="message message--success" role="status">${escapeHtml(message)}</p>` : ''}${mode === 'list' ? '<button class="primary-button category-drawer__new" type="button" data-category-drawer-create>+ Nueva categoría</button>' : ''}${form}${confirmDelete ? `<section class="category-delete-confirmation" role="alertdialog" aria-modal="true" aria-labelledby="category-delete-title"><h3 id="category-delete-title">¿Eliminar categoría?</h3><p>Esta acción no se puede deshacer. Reasigna primero los productos relacionados.</p><div><button class="secondary-button" type="button" data-category-delete-cancel>Cancelar</button><button class="danger-button" type="button" data-category-delete-confirm ${busy ? 'disabled' : ''}>Eliminar categoría</button></div></section>` : ''}</aside>`;
 }

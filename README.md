@@ -1,68 +1,139 @@
-# VEHIMARCAS del Valle
+# Esenciales
 
-Aplicación web Full Stack para la publicación y administración del catálogo de vehículos de **VEHIMARCAS del Valle** ("Tu plataforma confiable para la compra y venta de vehículos"). El sistema permite consultar camionetas SUV, pick-ups y sedanes sin registro, filtrar por marca, tipo, año, precio, transmisión y estado, preparar solicitudes de cotización o compra y continuar libremente la atención comercial por WhatsApp.
+Aplicacion web para publicar y administrar el catalogo de productos de ESENCIALES. El sistema permite consultar productos sin registro, preparar un carrito, registrar solicitudes de compra y continuar voluntariamente la conversacion comercial por WhatsApp. Las solicitudes elegibles pueden usar pago manual por Bre-B con comprobante privado y revision administrativa.
 
 ## Funcionalidades principales
 
-- **Catálogo de vehículos:** Búsqueda rápida y filtros por marca, tipo de vehículo (SUV, Sedán, Pick-up, etc.), año, rango de precio, transmisión (Mecánica/Automática) y estado (Nuevo/Usado).
-- **Ficha detallada de vehículo:** Galería de fotos en alta resolución, ficha técnica completa (Marca, Modelo, Año, Kilometraje, Transmisión, Combustible, Estado y Precio) y botón de contacto por WhatsApp / Cotización.
-- **Carrito / Solicitud de cotización:** Selección de vehículos de interés, resumen de cotización y registro de solicitud.
-- **Acceso administrativo:** Panel protegido con Supabase Auth para gestionar inventario de vehículos, imágenes y solicitudes recibidas.
+- Catalogo publico con busqueda y filtros combinables.
+- Productos, categorias, imagenes y presentaciones con precio y disponibilidad.
+- Carrito local con cantidades, seleccion de lineas y revision de precios.
+- Registro idempotente de solicitudes con aceptacion de documentos legales.
+- Continuacion voluntaria por WhatsApp despues del registro.
+- Pago manual opcional por Bre-B para solicitudes elegibles.
+- Acceso administrativo mediante Supabase Auth.
+- Gestion de catalogo, inventario, solicitudes y comprobantes.
+- Confirmacion y cancelacion transaccional con control de inventario.
 
-## Tecnologías
+El pago ocurre fuera del sitio. La aplicacion no solicita tarjetas, claves bancarias, CVV ni codigos OTP y no valida transferencias automaticamente.
 
-- **Frontend:** HTML5, CSS3 vanilla (sistema de diseño automotriz moderno con colores cobalto, azul marino y acento deportivo naranja/rojo) y JavaScript ES Modules sin frameworks pesados.
-- **Build Tool:** Vite.
-- **Backend & Base de datos:** Supabase (PostgreSQL, Auth, Storage, RPC).
-- **Pruebas:** `node:test` para pruebas unitarias de controladores e interfaz.
+## Tecnologias
 
-## Instalación y ejecución
+- HTML5, CSS3 y JavaScript sin framework de interfaz.
+- Vite para desarrollo y compilacion.
+- Supabase PostgreSQL, Auth, Storage, RPC y Edge Functions.
+- GitHub Actions y GitHub Pages para despliegue.
+- `node:test` para pruebas del cliente y pgTAP para la base de datos.
 
-La aplicación administra el catálogo a través de una API local (**Node.js + Express + PostgreSQL**). El frontend la usa cuando no se configuran credenciales de Supabase (`VITE_SUPABASE_URL`).
+## Requisitos
 
-Requisitos:
+- Node.js 24 o una version compatible con las dependencias declaradas.
+- npm.
+- Variables publicas de un proyecto Supabase para ejecutar la aplicacion conectada.
+- Supabase CLI y acceso autorizado al proyecto para operaciones de base de datos.
+- Docker Desktop solo cuando se utilice el entorno local completo de Supabase.
 
-- **Node.js** (18 o superior)
-- **PostgreSQL** corriendo en `localhost:5432` (o ajusta `DATABASE_URL` en `.env`)
+## Instalacion
+
+Instale las dependencias bloqueadas por `package-lock.json`:
 
 ```bash
-npm install
+npm ci
+```
+
+Copie `.env.example` como `.env.local` y complete:
+
+```text
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Estas variables son publicas para el cliente. Nunca incluya `service_role`, contrasenas u otros secretos en variables con prefijo `VITE_`.
+
+## Desarrollo
+
+```bash
 npm run dev
 ```
 
-`npm run dev` hace todo en un solo comando:
+Vite mostrara la URL local, normalmente `http://localhost:5173`.
 
-1. Prepara la base de datos local `vehimarcas` (idempotente, no borra datos).
-2. Arranca la API en **http://localhost:3000** (`node server/index.js`).
-3. Arranca Vite con recarga en caliente en **http://localhost:5173**.
-
-| Página | URL |
-| --- | --- |
-| Catálogo público | http://localhost:5173 |
-| Panel de administración | http://localhost:5173/admin |
-
-> La API y la base de datos solo funcionan en local. Exportando el panel: si abres el panel sin la API corriendo verás un aviso de conexión (no datos de ejemplo) y no podrás guardar cambios. Usa `npm run dev` para levantar todo.
-
-Pasos por separado (opcional):
-
-```bash
-npm run db:setup    # crea la base y aplica migraciones + seed (una vez o cuando cambien)
-npm run server      # API local en http://localhost:3000
-npm run dev:frontend # solo Vite en http://localhost:5173
-```
-
-Credenciales de acceso al panel (entorno local / demo): `admin@vehimarcas.com`.
-
-## Construcción para producción
+## Build
 
 ```bash
 npm run build
+npm run preview
 ```
 
-El servidor local (`node server/index.js`) también sirve la compilación (`dist/`) en http://localhost:3000.
+La salida se genera en `dist/` y no se versiona.
 
 ## Pruebas
+
+Pruebas Node del cliente:
 
 ```bash
 npm run test:auth
 ```
+
+Pruebas pgTAP de PostgreSQL contra el proyecto Supabase enlazado:
+
+```bash
+npm run supabase:test-db
+```
+
+Suite completa configurada:
+
+```bash
+npm test
+```
+
+El script completo incluye las pruebas remotas de base de datos y requiere acceso autorizado e infraestructura disponible.
+
+## Base de datos y Supabase
+
+El backend reproducible se encuentra en `supabase/`:
+
+- `supabase/migrations/`: esquema, restricciones, RLS, permisos y RPC versionadas.
+- `supabase/functions/`: Edge Functions, incluido el envio privado de comprobantes.
+- `supabase/tests/database/`: pruebas pgTAP de estructura, seguridad y reglas transaccionales.
+- `supabase/seed.sql`: categorias iniciales y datos reproducibles de desarrollo.
+- `supabase/config.toml`: configuracion del entorno local.
+
+No se editan migraciones ya aplicadas. Los cambios de base de datos se agregan mediante nuevas migraciones y se revisan antes de enviarlos:
+
+```bash
+npm run supabase:status
+npm run supabase:push:dry
+npm run supabase:push
+```
+
+La arquitectura y los contratos se describen en [`docs/architecture/`](docs/architecture/).
+
+## Estructura del proyecto
+
+```text
+.github/    flujo de despliegue en GitHub Pages
+docs/       documentacion tecnica y registro historico
+ia/         registro academico del uso de inteligencia artificial
+informe/    entregables y evidencias academicas
+public/     assets publicos y versiones legales
+src/        aplicacion web
+supabase/   migraciones, funciones, configuracion, seed y pruebas SQL
+tests/      pruebas automatizadas del cliente
+```
+
+Los archivos raíz `index.html`, `vite.config.mjs`, `package.json` y `package-lock.json` configuran la aplicacion y su entorno de desarrollo.
+
+## Documentacion academica
+
+- [`informe/`](informe/README.md) organiza briefing, requisitos, diseno, arquitectura y evidencias de la entrega.
+- [`ia/`](ia/README.md) conserva el registro academico revisado del uso de inteligencia artificial.
+
+## Seguridad
+
+- El visitante no tiene acceso directo a las tablas del catalogo, solicitudes o pagos.
+- Las operaciones publicas y administrativas sensibles se validan en PostgreSQL.
+- La administracion exige Supabase Auth y autorizacion adicional mediante RLS y funciones protegidas.
+- Los comprobantes se guardan en un bucket privado y se consultan mediante URLs firmadas de corta duracion.
+- Los secretos administrativos no pertenecen al frontend ni al repositorio.
+
+Consulte [`docs/README.md`](docs/README.md) para navegar la documentacion vigente.

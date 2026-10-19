@@ -30,11 +30,11 @@ select col_type_is('public', 'productos', 'id', 'integer', 'Id de producto usa i
 select has_pk('public', 'productos', 'Producto tiene clave primaria');
 select has_fk('public', 'productos', 'Producto referencia categoria');
 select has_column('public', 'productos', 'descripcion', 'Producto tiene descripcion');
-select has_column('public', 'productos', 'genero', 'Producto tiene anio de referencia opcional');
-select has_column('public', 'productos', 'clasificacion', 'Producto tiene estado comercial opcional');
+select has_column('public', 'productos', 'genero', 'Producto tiene genero opcional');
+select has_column('public', 'productos', 'clasificacion', 'Producto tiene clasificacion opcional');
 select has_column('public', 'productos', 'destacado', 'Producto tiene indicador destacado');
 select has_index('public', 'productos', 'productos_categoria_id_idx', 'FK de producto tiene indice');
-select has_column('public', 'productos', 'modelo', 'Producto conserva modelo / especificacion');
+select has_column('public', 'productos', 'familia_olfativa', 'Producto conserva familia olfativa');
 select hasnt_column('public', 'productos', 'referencia', 'Producto no almacena referencia interna');
 select has_trigger('public', 'productos', 'productos_actualizar_fecha', 'Producto actualiza su marca de tiempo');
 

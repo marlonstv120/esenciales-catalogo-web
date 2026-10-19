@@ -33,33 +33,33 @@ from public.productos where nombre = 'Producto edicion solicitud';
 insert into public.solicitudes (
   codigo, identificador_intento, nombre_cliente, telefono, terminos_version, politica_datos_version, aceptado_en
 ) values (
-  'VM-10001', '10101010-1010-1010-1010-101010101010', 'Cliente inicial', '3000000000', 'terminos-v1', 'politica-datos-v1', now()
+  'ES-10001', '10101010-1010-1010-1010-101010101010', 'Cliente inicial', '3000000000', 'terminos-v1', 'politica-datos-v1', now()
 ), (
-  'VM-10002', '20202020-2020-2020-2020-202020202020', 'Cliente ajeno', '3000000001', 'terminos-v1', 'politica-datos-v1', now()
+  'ES-10002', '20202020-2020-2020-2020-202020202020', 'Cliente ajeno', '3000000001', 'terminos-v1', 'politica-datos-v1', now()
 ), (
-  'VM-10003', '30303030-3030-3030-3030-303030303030', 'Cliente confirmado', '3000000002', 'terminos-v1', 'politica-datos-v1', now()
+  'ES-10003', '30303030-3030-3030-3030-303030303030', 'Cliente confirmado', '3000000002', 'terminos-v1', 'politica-datos-v1', now()
 );
-update public.solicitudes set estado = 'confirmada' where codigo = 'VM-10003';
+update public.solicitudes set estado = 'confirmada' where codigo = 'ES-10003';
 
 insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario)
 select s.id, p.id, 2, 100000
 from public.solicitudes s cross join public.presentaciones p
-where s.codigo = 'VM-10001' and p.etiqueta = 'Unidad inmediata';
+where s.codigo = 'ES-10001' and p.etiqueta = 'Unidad inmediata';
 insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario)
 select s.id, p.id, 3, 80000
 from public.solicitudes s cross join public.presentaciones p
-where s.codigo = 'VM-10001' and p.etiqueta = 'Unidad bajo pedido';
+where s.codigo = 'ES-10001' and p.etiqueta = 'Unidad bajo pedido';
 insert into public.detalles_solicitud (solicitud_id, presentacion_id, cantidad, precio_unitario)
 select s.id, p.id, 1, 100000
 from public.solicitudes s cross join public.presentaciones p
-where s.codigo in ('VM-10002', 'VM-10003') and p.etiqueta = 'Unidad inmediata';
+where s.codigo in ('ES-10002', 'ES-10003') and p.etiqueta = 'Unidad inmediata';
 
-select set_config('test.solicitud_nueva', (select id::text from public.solicitudes where codigo = 'VM-10001'), true);
-select set_config('test.solicitud_ajena', (select id::text from public.solicitudes where codigo = 'VM-10002'), true);
-select set_config('test.solicitud_confirmada', (select id::text from public.solicitudes where codigo = 'VM-10003'), true);
-select set_config('test.detalle_inmediato', (select d.id::text from public.detalles_solicitud d join public.solicitudes s on s.id = d.solicitud_id join public.presentaciones p on p.id = d.presentacion_id where s.codigo = 'VM-10001' and p.etiqueta = 'Unidad inmediata'), true);
-select set_config('test.detalle_bajo_pedido', (select d.id::text from public.detalles_solicitud d join public.solicitudes s on s.id = d.solicitud_id join public.presentaciones p on p.id = d.presentacion_id where s.codigo = 'VM-10001' and p.etiqueta = 'Unidad bajo pedido'), true);
-select set_config('test.detalle_ajeno', (select d.id::text from public.detalles_solicitud d join public.solicitudes s on s.id = d.solicitud_id where s.codigo = 'VM-10002'), true);
+select set_config('test.solicitud_nueva', (select id::text from public.solicitudes where codigo = 'ES-10001'), true);
+select set_config('test.solicitud_ajena', (select id::text from public.solicitudes where codigo = 'ES-10002'), true);
+select set_config('test.solicitud_confirmada', (select id::text from public.solicitudes where codigo = 'ES-10003'), true);
+select set_config('test.detalle_inmediato', (select d.id::text from public.detalles_solicitud d join public.solicitudes s on s.id = d.solicitud_id join public.presentaciones p on p.id = d.presentacion_id where s.codigo = 'ES-10001' and p.etiqueta = 'Unidad inmediata'), true);
+select set_config('test.detalle_bajo_pedido', (select d.id::text from public.detalles_solicitud d join public.solicitudes s on s.id = d.solicitud_id join public.presentaciones p on p.id = d.presentacion_id where s.codigo = 'ES-10001' and p.etiqueta = 'Unidad bajo pedido'), true);
+select set_config('test.detalle_ajeno', (select d.id::text from public.detalles_solicitud d join public.solicitudes s on s.id = d.solicitud_id where s.codigo = 'ES-10002'), true);
 
 insert into auth.users (
   id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,

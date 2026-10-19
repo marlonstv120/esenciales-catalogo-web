@@ -1,28 +1,5 @@
 # Bitácora del proyecto
 
-## Registro incorporado el 2026-10-11
-
-### Enlace "Entregas" en la navegación pública
-
-- La navegación de la página de inicio agrega el enlace "Entregas" junto a "Quiénes somos", anclado a la sección `#entregas` de entregas recientes (visible incluso sin entregas publicadas).
-- Se actualiza la prueba de vistas públicas que valida los enlaces de ancla del menú de inicio.
-
-### Nuevo logo de la marca en el sitio
-
-- Se reemplaza el logo provisional (SVG) por la versión final de la marca extraída de `Vehimarcas Logo Final (1).ai` (insignia con el auto y el texto "VEHIMARCAS / del Valle / Calidad & Confianza").
-- El nuevo recurso `public/assets/brand/vehimarcas-logo-completo.png` se genera con fondo transparente y se usa en la barra superior, el menú móvil, la barra lateral del panel admin, el inicio de sesión y el pie de página (zona de redes sociales).
-- Se actualizan las referencias en `src/public-views.mjs`, `src/auth-views.mjs` y `src/admin-shell.js`, y se ajustan las pruebas de vistas públicas, autenticación y shell del admin.
-- El favicon de la pestaña del navegador se reemplaza por `public/assets/brand/vehimarcas-favicon.png` (insignia de la marca) y se eliminan los SVG provisionales `vehimarcas-logo-horizontal.svg`, `vehimarcas-logo-completo.svg` y `vehimarcas-isotipo.svg`.
-
-## Registro incorporado el 2026-10-10
-
-### Estado "Vendido" para vehículos del catálogo
-
-- Se agrega `vendido` como nuevo modo de disponibilidad de `presentaciones` (`20261010000200_add_sold_vehicle_availability.sql`). Una presentación vendida no admite solicitudes, no cuenta en el precio solicitable de referencia y el catálogo público la resume como "Vendido".
-- El panel admin permite elegir "Vendido" en el editor de presentaciones y normaliza el stock a cero; el inventario gana el filtro rápido "Vendidos".
-- La tienda pública muestra la insignia "Vendido" en tarjetas y ficha, omite el botón de WhatsApp en tarjetas vendidas y explica la venta en la ficha; el filtro de disponibilidad incluye "Vendido".
-- Se actualizan pruebas de base (`02_catalog_integrity`, `06_public_catalog`), pruebas de Node y la documentación del modelo de datos.
-
 ## Registro incorporado el 2026-10-04
 
 ### Validación final cualitativa y mejoras administrativas
@@ -45,8 +22,8 @@
 
 ### Validación funcional controlada y cierre técnico del OE3
 
-- Se documenta la prueba manual controlada de la solicitud `VM-00082`; la fecha exacta de ejecución no fue suministrada y no se infiere de este registro.
-- El recorrido utilizó el vehículo `Hilux SRX`, presentación `Automática`, cantidad `1` y valor de `$90.000` en un celular real.
+- Se documenta la prueba manual controlada de la solicitud `ES-00082`; la fecha exacta de ejecución no fue suministrada y no se infiere de este registro.
+- El recorrido utilizó el producto `9 Pm`, presentación `100 ml`, cantidad `1` y valor de `$90.000` en un celular real.
 - Se verificaron catálogo, detalle, carrito, registro, código de solicitud, instrucciones de pago, envío de comprobante privado, recepción y revisión administrativa, aprobación, descuento de inventario de `3` a `2`, cancelación y restitución de `2` a `3`.
 - También se comprobaron los comportamientos de las líneas bajo pedido. No existe captura de la restitución de `2` a `3`; el resultado se conserva únicamente en el registro textual de la prueba.
 - La evidencia manual, las pruebas automatizadas y el despliegue público proporcionan la base técnica del tercer objetivo específico. La validación posterior con usuarios externos y propietario se documenta por separado.
@@ -54,7 +31,7 @@
 
 ### Referencias
 
-- [Registro de validación VM-00082](../../informe/05-evidencias/validacion-vm-00082.md).
+- [Registro de validación ES-00082](../../informe/05-evidencias/validacion-es-00082.md).
 - [Plan de evidencias](../academic/report/EVIDENCE_PLAN.md).
 - [Borrador del informe académico](../academic/report/REPORT_DRAFT.md).
 
@@ -62,7 +39,7 @@
 
 ### Ampliacion de pago manual Bre-B y ajuste academico
 
-- Se incorpora como ampliacion posterior al briefing un pago manual opcional para solicitudes Nuevas elegibles, mediante QR o llave Bre-B proporcionados por VEHIMARCAS del Valle.
+- Se incorpora como ampliacion posterior al briefing un pago manual opcional para solicitudes Nuevas elegibles, mediante QR o llave Bre-B proporcionados por ESENCIALES.
 - La transferencia ocurre fuera del sitio; el comprobante se almacena de forma privada y requiere revision administrativa. El sistema no es una pasarela ni valida transferencias automaticamente.
 - La verificacion del comprobante confirma el pago, confirma la solicitud y descuenta el inventario aplicable dentro de una sola transaccion.
 - Se diferencia el QR bancario de Bre-B del QR de acceso a la aplicacion utilizado en la sustentacion.
@@ -91,7 +68,7 @@
 - Se incorpora ordenamiento por destacados, precio y nombre sin ampliar el contrato público con fecha de creación.
 - Se planifica e implementa un carrito local básico sin reserva de inventario, pagos, solicitudes ni WhatsApp.
 - El filtro administrativo de agotamiento debe comunicar `Con presentación agotada` para no confundir un producto mixto con un producto totalmente agotado.
-- El propietario de VEHIMARCAS del Valle valida las descripciones públicas de los vehículos, incluidas las especificaciones técnicas y la relación precio-valor comunicadas en la portada.
+- El propietario de ESENCIALES valida las descripciones públicas de Originales, Calidad 1.1 e Inspirados, incluidas la concentración, fijación y relación calidad-precio comunicadas en la portada.
 
 ## 2026-09-28
 
@@ -104,7 +81,7 @@ El equipo requiere una URL estable para revisar el avance desde dispositivos mó
 - Se aprueba GitHub Pages como despliegue continuo académico del frontend desde la rama `main`.
 - Se adapta Vite, rutas internas, recursos y retornos de Supabase Auth a la subruta del repositorio.
 - Se habilita el proyecto remoto de Supabase como entorno compartido de desarrollo y demostración.
-- Se aplican al proyecto remoto las migraciones de catálogo, Auth, Storage, RPC, búsqueda, modelo / especificación y soporte pgTAP; el `seed` inicial se ejecuta de forma controlada.
+- Se aplican al proyecto remoto las migraciones de catálogo, Auth, Storage, RPC, búsqueda, familia olfativa y soporte pgTAP; el `seed` inicial se ejecuta de forma controlada.
 - Se verifican 154 pruebas pgTAP contra Supabase remoto.
 - Se simplifica el flujo diario: Vite consume Supabase remoto y Docker local deja de ser obligatorio.
 
@@ -117,7 +94,7 @@ El equipo requiere una URL estable para revisar el avance desde dispositivos mó
 
 ### Contexto
 
-Inicialización documental del repositorio para el proyecto integrador VEHIMARCAS Catálogo Web.
+Inicialización documental del repositorio para el proyecto integrador Esenciales Catálogo Web.
 
 ### Decisiones / cambios
 
@@ -150,13 +127,13 @@ Confirmación de tecnologías requeridas para el proyecto y del sistema gestor d
 
 ### Contexto
 
-Consolidación y validación interna de la primera versión seria del alcance funcional del MVP de VEHIMARCAS del Valle.
+Consolidación y validación interna de la primera versión seria del alcance funcional del MVP de Esenciales.
 
 ### Decisiones / cambios
 
 - Se aprueba por el equipo el alcance funcional MVP V1, sujeto a pendientes académicos, de negocio y técnicos expresamente identificados.
 - Se aprueba el planteamiento del problema sobre la gestión del catálogo en Excel, el envío individual de numerosas fotografías por WhatsApp y la falta de un medio centralizado para administrar y consultar su información.
-- Se reformulan la pregunta problema y el objetivo general para identificar expresamente a VEHIMARCAS del Valle como empresa.
+- Se reformulan la pregunta problema y el objetivo general para identificar expresamente a Esenciales como emprendimiento.
 - Se reemplazan los objetivos específicos genéricos por tres resultados funcionales: administración del catálogo, catálogo público y solicitudes de compra, conforme a la retroalimentación del profesor.
 - El sistema se organiza en ocho macrofuncionalidades para controlar el alcance.
 - Se adopta `solicitud de compra` en lugar de `solicitud de cotización` para describir la intención del cliente sin implicar pago o venta concluida.
@@ -174,7 +151,7 @@ Consolidación y validación interna de la primera versión seria del alcance fu
 ### Pendientes
 
 - Confirmar con el profesor el límite de funcionalidades y la necesidad de un segundo rol autenticado.
-- Validar con VEHIMARCAS del Valle las definiciones de `Nuevo`, `Usado` y `Semi-nuevo`.
+- Validar con Esenciales las definiciones de `Original`, `1.1` e `Inspiración`.
 - Confirmar contenido público, datos reales de productos y número de WhatsApp.
 - Definir autenticación, imágenes, modelo lógico de PostgreSQL, transacciones y despliegue.
 
@@ -210,7 +187,7 @@ Aclaración del profesor sobre la estructura de la introducción y la secuencia 
 
 ### Contexto
 
-Inicio de la preparación técnica para implementar el MVP de VEHIMARCAS del Valle de manera incremental.
+Inicio de la preparación técnica para implementar el MVP de Esenciales de manera incremental.
 
 ### Decisiones / cambios
 
@@ -261,7 +238,7 @@ Consolidación de una dirección visual compartida antes de continuar la impleme
 
 ### Decisiones / cambios
 
-- Se aprueba la dirección visual `showroom de concesionario clara con anclas oscuras`, acorde con la identidad de VEHIMARCAS del Valle.
+- Se aprueba la dirección `perfumería boutique clara con anclas oscuras`.
 - El catálogo público y la administración compartirán el mismo sistema visual, con mayor expresión de marca en el catálogo y mayor neutralidad y densidad operativa en la administración.
 - Se confirman negro, dorado y dorado claro como colores centrales, junto con una variante bronce accesible, superficies cálidas y colores semánticos independientes.
 - Se adopta Source Sans 3 como única familia tipográfica de interfaz y se reserva el lettering manuscrito para el logo oficial.
@@ -452,7 +429,7 @@ Sincronización del borrador académico con la versión de informe técnico comp
 
 ### Pendientes
 
-- Ejecutar y registrar el diagnóstico, la implementación, las pruebas funcionales, la validación con VEHIMARCAS del Valle y el despliegue antes de redactar resultados y conclusiones definitivos.
+- Ejecutar y registrar el diagnóstico, la implementación, las pruebas funcionales, la validación con Esenciales y el despliegue antes de redactar resultados y conclusiones definitivos.
 - Incorporar únicamente técnicas metodológicas que se realicen y cuenten con evidencia.
 
 ### Referencias
@@ -468,10 +445,10 @@ Precisión de las denominaciones del emprendimiento, proyecto e informe, y aplic
 
 ### Decisiones / cambios
 
-- Se mantiene como título formal: `Sistema web para la gestión y publicación del catálogo de vehículos de VEHIMARCAS del Valle`.
-- Se define `Catálogo Web de VEHIMARCAS del Valle` como nombre corto del proyecto para sustentaciones, presentaciones y diagramas.
-- Se conserva `vehimarcas-catalogo-web` como nombre técnico del repositorio y `Gestión del catálogo web de VEHIMARCAS del Valle` como titulillo del informe.
-- Se aclara que `VEHIMARCAS del Valle` identifica a la empresa y no reemplaza el nombre del proyecto.
+- Se mantiene como título formal: `Sistema web para la gestión y publicación del catálogo de productos de Esenciales`.
+- Se define `Catálogo Web de Esenciales` como nombre corto del proyecto para sustentaciones, presentaciones y diagramas.
+- Se conserva `esenciales-catalogo-web` como nombre técnico del repositorio y `Gestión del catálogo web de Esenciales` como titulillo del informe.
+- Se aclara que `Esenciales` identifica al emprendimiento y no reemplaza el nombre del proyecto.
 - Se añade el encabezado `Pregunta problema` al borrador académico para diferenciar visualmente la interrogante dentro de la introducción.
 
 ### Referencias
@@ -488,12 +465,12 @@ Revisión del informe técnico con los ajustes comunicados por la coordinadora d
 
 ### Decisiones / cambios
 
-- Se reemplaza el título formal por `Sistema web para la gestión y publicación del catálogo de vehículos de la empresa VEHIMARCAS del Valle`.
-- El informe utiliza `VEHIMARCAS del Valle` y presenta la organización como empresa.
+- Se reemplaza el título formal por `Sistema web para la gestión y publicación del catálogo de productos para la empresa ESENCIALES`.
+- El informe utiliza `ESENCIALES` en mayúsculas y presenta la organización como empresa.
 - Se reescriben el resumen y el abstract en tiempo presente, dentro del límite de 150 a 250 palabras, con objetivo, metodología, resultados verificables y una conclusión general.
 - Se eliminan del resumen los detalles técnicos innecesarios y las expresiones sobre trabajo pendiente.
 - Se revisa la coherencia de la introducción y se explicitan las tres etapas del proyecto: diagnóstico, desarrollo e integración, y validación y despliegue.
-- El objetivo general se ajusta a la formulación `Desarrollar una aplicación web full stack que permita la gestión, publicación y consulta del catálogo de vehículos, precios y disponibilidad de la empresa VEHIMARCAS del Valle`.
+- El objetivo general se ajusta a la formulación `Desarrollar una aplicación web full stack que permita la gestión, publicación y consulta del catálogo de productos, precios y disponibilidad de la empresa ESENCIALES`.
 - El primer objetivo específico comienza con `Identificar` y coordina en una sola proposición el proceso actual y sus dificultades, sin repetir `identificando`.
 - `Estudio de caso` y `Pregunta problema` se establecen como encabezados de nivel 2, alineados a la izquierda según la plantilla institucional.
 - Se retiran del borrador académico la cita y la referencia `Tecnológica Autónoma del Pacífico (2026)`.
@@ -522,7 +499,7 @@ Revisión del marco conceptual, la metodología y las evidencias solicitadas par
 - Se añaden como respaldo complementario dos artículos en español con DOI sobre adopción de TIC en mipymes y gestión de inventarios. Se descarta el artículo sobre datos abiertos porque su relación con el catálogo empresarial es insuficiente; el borrador queda con nueve referencias pertinentes y no presenta como Q1/Q2 aquellas cuya clasificación aplicable no está demostrada.
 - La metodología se organiza en tipo de investigación, metodología de desarrollo, fases, participantes y unidad de análisis, técnicas e instrumentos, y herramientas tecnológicas.
 - Se elimina la expresión `Aplica:` y se conserva la caracterización del estudio como investigación aplicada con alcance descriptivo y propositivo.
-- La entrevista con el propietario de VEHIMARCAS del Valle se incorpora como técnica del diagnóstico, apoyada por un cuestionario; el briefing queda como síntesis para validar y priorizar el alcance.
+- La entrevista con el propietario de ESENCIALES se incorpora como técnica del diagnóstico, apoyada por un cuestionario; el briefing queda como síntesis para validar y priorizar el alcance.
 - Los hallazgos de la entrevista, la correspondencia entre el briefing validado y las funcionalidades, el comparativo del proceso, la evolución del diseño, las pruebas y el despliegue se reservan para resultados y análisis cuando existe evidencia.
 - Se crea un plan para distribuir las evidencias entre el informe y la sustentación.
 - El QR de la diapositiva final se plantea como acceso a la URL pública y el equipo decide limitarlo a materiales de presentación y difusión, sin incorporarlo como funcionalidad del MVP.
@@ -544,7 +521,7 @@ Revisión del marco conceptual, la metodología y las evidencias solicitadas par
 
 ### Contexto
 
-Incorporación de la entrevista de levantamiento de requerimientos realizada al propietario de VEHIMARCAS del Valle y suministrada por el equipo.
+Incorporación de la entrevista de levantamiento de requerimientos realizada al propietario de ESENCIALES y suministrada por el equipo.
 
 ### Decisiones / cambios
 
@@ -563,8 +540,8 @@ Incorporación de la entrevista de levantamiento de requerimientos realizada al 
 
 ### Referencias
 
-- [Entrevista de levantamiento de requerimientos](../sources/ENTREVISTA_LEVANTAMIENTO_REQUERIMIENTOS_VEHIMARCAS.md).
-- [Briefing de necesidades](../project/briefing-vehimarcas.md).
+- [Entrevista de levantamiento de requerimientos](../sources/ENTREVISTA_LEVANTAMIENTO_REQUERIMIENTOS_ESENCIALES.md).
+- [Briefing de necesidades](../project/briefing-esenciales.md).
 - [Borrador del informe académico](../academic/report/REPORT_DRAFT.md).
 
 ## 2026-09-17
@@ -583,7 +560,7 @@ El equipo confirma que el cliente continuará sin cuenta, solicita incorporar la
 
 ### Pendientes
 
-- Elaborar y validar con VEHIMARCAS del Valle los textos y las versiones iniciales de los documentos antes del despliegue.
+- Elaborar y validar con Esenciales los textos y las versiones iniciales de los documentos antes del despliegue.
 - Materializar y probar estas reglas en las migraciones, la función RPC y las pantallas correspondientes.
 
 ### Referencias

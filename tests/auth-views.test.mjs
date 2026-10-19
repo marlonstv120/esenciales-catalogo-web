@@ -23,10 +23,10 @@ test('keeps the identifiers required by authentication event handlers', () => {
 test('renders the official identity and a semantic administration heading', () => {
   const view = authCard(signInView());
 
-  assert.match(view, /vehimarcas-logo-completo\.png/);
-  assert.match(view, /alt="VEHIMARCAS del Valle"/);
+  assert.match(view, /esenciales-logo-completo\.png/);
+  assert.match(view, /alt="ESENCIALES"/);
   assert.match(view, /<h1[^>]*>Administración<\/h1>/);
-  assert.match(view, /class="back-navigation auth-back-navigation" href="\/"[^>]*><svg[^>]*><path d="m12 19-7-7 7-7"><\/path><path d="M19 12H5"><\/path><\/svg><span>Volver a la tienda<\/span><\/a>/);
+  assert.match(view, /class="back-navigation auth-back-navigation" href="\/"[^>]*><svg[^>]*><path d="M19 12H5m6-6-6 6 6 6"\/><\/svg><span>Volver a la tienda<\/span><\/a>/);
 });
 
 test('associates visible labels, help, and status with sign-in controls', () => {

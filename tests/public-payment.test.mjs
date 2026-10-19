@@ -12,16 +12,16 @@ test('validates permitted payment proof files before making a request', () => {
 test('sends the secure request access and file as FormData', async () => {
   let invocation;
   const client = { functions: { invoke: async (name, options) => { invocation = { name, options }; return { data: { estado_pago: 'comprobante_enviado' }, error: null }; } } };
-  const result = await submitPaymentProof(client, { code: 'VM-00051', token: '11111111-1111-1111-1111-111111111111', file: validFile });
+  const result = await submitPaymentProof(client, { code: 'ES-00051', token: '11111111-1111-1111-1111-111111111111', file: validFile });
   assert.deepEqual(result, { data: { estado_pago: 'comprobante_enviado' }, error: null });
   assert.equal(invocation.name, 'submit-payment-proof');
-  assert.equal(invocation.options.body.get('code'), 'VM-00051');
+  assert.equal(invocation.options.body.get('code'), 'ES-00051');
   assert.equal(invocation.options.body.get('token'), '11111111-1111-1111-1111-111111111111');
   assert.equal(invocation.options.body.get('file').name, 'comprobante.jpg');
 });
 
 test('uses only safe Edge Function error messages', async () => {
   const client = { functions: { invoke: async () => ({ data: null, error: { context: new Response(JSON.stringify({ error: 'Esta solicitud ya no admite comprobantes.' }), { headers: { 'Content-Type': 'application/json' } }) } }) } };
-  const result = await submitPaymentProof(client, { code: 'VM-00051', token: '11111111-1111-1111-1111-111111111111', file: validFile });
+  const result = await submitPaymentProof(client, { code: 'ES-00051', token: '11111111-1111-1111-1111-111111111111', file: validFile });
   assert.equal(result.error, 'Esta solicitud ya no admite comprobantes.');
 });

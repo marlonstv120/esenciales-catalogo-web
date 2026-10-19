@@ -1,19 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { filterInventory, inventoryMetrics, paginateInventory, presentationAvailability, productPriceRange, sortInventory } from '../src/inventory-utils.mjs';
+import { filterInventory, inventoryMetrics, paginateInventory, productPriceRange, sortInventory } from '../src/inventory-utils.mjs';
 
 const product = {
-  id: 1, nombre: 'Hilux SRX', marca: 'Toyota', categoria_id: 1, activo: true, destacado: true,
+  id: 1, nombre: 'Loción Ámbar', marca: 'Éclat', categoria_id: 1, activo: true, destacado: true,
   presentaciones: [
-    { etiqueta: 'Automática', precio_normal: 50000, precio_promocional: 42000, stock: 2, modo_disponibilidad: 'venta_inmediata', activo: true },
-    { etiqueta: '4x4', precio_normal: 80000, precio_promocional: null, stock: 4, modo_disponibilidad: 'venta_inmediata', activo: true },
+    { etiqueta: '100 ml', precio_normal: 50000, precio_promocional: 42000, stock: 2, modo_disponibilidad: 'venta_inmediata', activo: true },
+    { etiqueta: '250 ml', precio_normal: 80000, precio_promocional: null, stock: 4, modo_disponibilidad: 'venta_inmediata', activo: true },
   ],
 };
 
 test('matches inventory search partially without case or accents', () => {
-  assert.deepEqual(filterInventory([product], { query: 'hilux' }), [product]);
-  assert.deepEqual(filterInventory([product], { query: 'MÁTIC' }), [product]);
-  assert.deepEqual(filterInventory([product], { query: '4X4' }), [product]);
+  assert.deepEqual(filterInventory([product], { query: 'ambar' }), [product]);
+  assert.deepEqual(filterInventory([product], { query: 'ÉCLA' }), [product]);
+  assert.deepEqual(filterInventory([product], { query: '250' }), [product]);
 });
 
 test('calculates metrics and effective price range from active presentations', () => {
@@ -38,18 +38,4 @@ test('orders inventory by newest product first by default', () => {
   const newest = { id: 2, nombre: 'Reciente', creado_en: '2026-10-02T10:00:00Z' };
 
   assert.deepEqual(sortInventory([oldest, newest]).map(({ id }) => id), [2, 1]);
-});
-
-test('classifies a vendido presentation and filters sold vehicles', () => {
-  const sold = { id: 3, nombre: 'Hilux vendida', activo: true, presentaciones: [{ etiqueta: 'Única', precio_normal: 95000, stock: 0, modo_disponibilidad: 'vendido', activo: true }] };
-  assert.equal(presentationAvailability(sold.presentaciones[0]), 'sold');
-  assert.deepEqual(filterInventory([product, sold], { availability: 'sold' }), [sold]);
-  assert.deepEqual(filterInventory([product, sold], { availability: 'in-stock' }), [product]);
-  assert.deepEqual(filterInventory([product, sold], { availability: 'out-of-stock' }), []);
-});
-
-test('keeps sold vehicles out of the default inventory view and metrics', () => {
-  const sold = { id: 4, nombre: 'Prado vendida', activo: true, presentaciones: [{ etiqueta: 'Única', precio_normal: 120000, stock: 0, modo_disponibilidad: 'vendido', activo: true }] };
-  assert.deepEqual(filterInventory([product, sold]), [product]);
-  assert.equal(inventoryMetrics([product, sold]).products, 1);
 });

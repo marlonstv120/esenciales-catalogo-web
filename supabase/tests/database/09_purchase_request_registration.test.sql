@@ -28,21 +28,21 @@ insert into public.productos (categoria_id, nombre, descripcion)
 select id, 'Producto registro prueba', 'Producto para registrar solicitudes'
 from public.categorias where nombre = 'Registro solicitud prueba';
 insert into public.presentaciones (producto_id, etiqueta, precio_normal, precio_promocional, stock, modo_disponibilidad)
-select id, 'Automatica inmediato', 100000, 90000, 3, 'venta_inmediata'
+select id, '100 ml inmediato', 100000, 90000, 3, 'venta_inmediata'
 from public.productos where nombre = 'Producto registro prueba'
 union all
-select id, 'Mecanica bajo pedido', 80000, null, 0, 'bajo_pedido'
+select id, '50 ml bajo pedido', 80000, null, 0, 'bajo_pedido'
 from public.productos where nombre = 'Producto registro prueba'
 union all
-select id, '4x4 no disponible', 60000, null, 0, 'no_disponible'
+select id, '30 ml no disponible', 60000, null, 0, 'no_disponible'
 from public.productos where nombre = 'Producto registro prueba';
 insert into public.imagenes_producto (producto_id, url, identificador_externo, posicion)
 select id, 'https://example.test/registro.webp', 'productos/registro/imagen.webp', 0
 from public.productos where nombre = 'Producto registro prueba';
 
-select set_config('test.presentacion_inmediata', (select id::text from public.presentaciones where etiqueta = 'Automatica inmediato'), true);
-select set_config('test.presentacion_bajo_pedido', (select id::text from public.presentaciones where etiqueta = 'Mecanica bajo pedido'), true);
-select set_config('test.presentacion_no_disponible', (select id::text from public.presentaciones where etiqueta = '4x4 no disponible'), true);
+select set_config('test.presentacion_inmediata', (select id::text from public.presentaciones where etiqueta = '100 ml inmediato'), true);
+select set_config('test.presentacion_bajo_pedido', (select id::text from public.presentaciones where etiqueta = '50 ml bajo pedido'), true);
+select set_config('test.presentacion_no_disponible', (select id::text from public.presentaciones where etiqueta = '30 ml no disponible'), true);
 
 set local role anon;
 select is(
@@ -88,7 +88,7 @@ select set_config(
 );
 
 select is((current_setting('test.respuesta_principal')::jsonb)->>'estado', 'nueva', 'El registro devuelve una solicitud Nueva');
-select ok((current_setting('test.respuesta_principal')::jsonb)->>'codigo' ~ '^VM-[0-9]+$', 'El registro devuelve un codigo legible');
+select ok((current_setting('test.respuesta_principal')::jsonb)->>'codigo' ~ '^ES-[0-9]+$', 'El registro devuelve un codigo legible');
 select is((current_setting('test.respuesta_principal')::jsonb)->>'valor_total_productos', '180000', 'El registro devuelve el total con precio promocional vigente');
 select ok(not ((current_setting('test.respuesta_principal')::jsonb) ? 'telefono'), 'La respuesta publica no devuelve datos personales');
 select ok((current_setting('test.respuesta_principal')::jsonb)->>'token_cliente' ~ '^[0-9a-f-]{36}$', 'El registro devuelve el token publico no predecible');

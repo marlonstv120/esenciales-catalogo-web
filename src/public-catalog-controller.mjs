@@ -1,4 +1,4 @@
-import { loadFilteredCatalog, loadPublicCatalog, loadPublicDeliveries, loadPublicProduct, refineCatalogRows } from './public-catalog.mjs';
+import { loadFilteredCatalog, loadPublicCatalog, loadPublicProduct, refineCatalogRows } from './public-catalog.mjs';
 import { addCartItem, loadCart, removeCartItem, removeSelectedCartItems, revalidateCart, saveCart, selectedCartIsReady, toggleCartItemSelection, updateCartItemQuantity } from './public-cart.mjs';
 import { hasCatalogFilters, parseCatalogFilters, removeCatalogFilter, serializeCatalogFilters, validateCatalogFilters } from './public-catalog-filters.mjs';
 import { getPublicRoute } from './public-routes.mjs';
@@ -7,17 +7,16 @@ import { copDigits, formatCopInput, formatCopInputElement } from './cop-input.mj
 import { createDraftSaver } from './form-drafts.mjs';
 import { showNotification } from './notifications.mjs';
 import { applyPriceReview, clearPurchaseConfirmation, emptyRequestForm, loadPurchaseRequestDraft, purchaseRequestDraftMetadata, registerPurchaseRequest } from './public-purchase-request.mjs';
-import { loadPublicPurchaseRequest, loadPurchaseRequestAccess, savePurchaseRequestAccess, tokenFromLocation } from './public-payment.mjs';
+import { loadPublicPurchaseRequest, loadPurchaseRequestAccess, publicRequestUrl, savePurchaseRequestAccess, submitPaymentProof, tokenFromLocation } from './public-payment.mjs';
 import { cartDrawerView, legalModalView, loadingView, mobileMenuDrawerView, presentationSelectorView, publicShellView, renderPublicRoute } from './public-views.mjs';
-import { startRevealMotion } from './ui-motion.mjs';
 import { startPublicHeaderScroll } from './public-header-scroll.mjs';
 import { findColombianMunicipalities, loadColombianMunicipalities } from './colombia-municipalities.mjs';
 
 export function getDocumentMetadata(route, product = null) {
-  if (route.name === 'product' && product?.nombre) return { title: `${product.nombre} | VEHIMARCAS del Valle`, description: `Consulta ficha técnica, imágenes y disponibilidad de ${product.nombre}.` };
-  if (route.name === 'catalog') return { title: 'Catálogo de Vehículos | VEHIMARCAS del Valle', description: 'Consulta el catálogo de vehículos de VEHIMARCAS del Valle.' };
-  if (route.name === 'cart') return { title: 'Cotización | VEHIMARCAS del Valle', description: 'Vehículos seleccionados para cotización en VEHIMARCAS del Valle.' };
-  return { title: 'VEHIMARCAS | Compra y Venta de Vehículos', description: 'VEHIMARCAS DEL VALLE | Tu plataforma confiable para la compra y venta de vehículos. Explora camionetas SUV, pick-ups y sedanes en Colombia.' };
+  if (route.name === 'product' && product?.nombre) return { title: `${product.nombre} | ESENCIALES`, description: `Consulta presentaciones y disponibilidad de ${product.nombre}.` };
+  if (route.name === 'catalog') return { title: 'Catálogo | ESENCIALES', description: 'Consulta el catálogo de productos de ESENCIALES.' };
+  if (route.name === 'cart') return { title: 'Carrito | ESENCIALES', description: 'Presentaciones seleccionadas del catálogo de ESENCIALES.' };
+  return { title: 'ESENCIALES | Catálogo de productos', description: 'Explora el catálogo de productos de ESENCIALES.' };
 }
 
 export function attachImageFallbacks(root) {
@@ -31,7 +30,7 @@ const focusable = 'button:not([disabled]), [href], input:not([disabled]), select
 export function startPublicCatalog({ app, client, route, windowRef = window, documentRef = document }) {
   const requestDraft = createDraftSaver(windowRef.sessionStorage, purchaseRequestDraftMetadata().key, purchaseRequestDraftMetadata());
   const restoredRequestForm = loadPurchaseRequestDraft(windowRef.sessionStorage);
-  let active = true; let requestId = 0; let cartValidationId = 0; let currentRoute = route; let currentProduct = null; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null; let legalModal = null; let cartDrawerState = { open: false, step: 'cart', error: null }; let cartDrawerNeedsFocus = false; let cartState = { ready: false }; let requestForm = restoredRequestForm || emptyRequestForm(); let requestState = { form: requestForm, errors: {}, error: null, busy: false, priceReview: null }; let attemptId = null; let confirmation = null; let publicRequest = null; let publicRequestError = null; let mobileMenuOpen = false; let previousBodyOverflow = ''; let pageScrollLocked = false; let touchStartY = null; let municipalities = []; let cityOptions = []; let activeCityOption = -1; let municipalitiesLoading = null;
+  let active = true; let requestId = 0; let cartValidationId = 0; let currentRoute = route; let currentProduct = null; let baseRows = null; let lastFilteredRows = []; let filterPanelOpen = false; let cart = loadCart(windowRef.localStorage); let selectorProduct = null; let overlayTrigger = null; let legalModal = null; let cartDrawerState = { open: false, step: 'cart', error: null }; let cartDrawerNeedsFocus = false; let cartState = { ready: false }; let requestForm = restoredRequestForm || emptyRequestForm(); let requestState = { form: requestForm, errors: {}, error: null, busy: false, priceReview: null }; let attemptId = null; let confirmation = null; let paymentRequest = null; let paymentState = { step: 'summary', file: null, busy: false, error: null }; let mobileMenuOpen = false; let previousBodyOverflow = ''; let pageScrollLocked = false; let touchStartY = null; let municipalities = []; let cityOptions = []; let activeCityOption = -1; let municipalitiesLoading = null;
   clearPurchaseConfirmation(windowRef.localStorage);
   const announce = (message) => { const region = app.querySelector('.public-live-region'); if (region) region.textContent = message; };
   const syncFooterSections = () => { const desktop = windowRef.matchMedia?.('(min-width: 64rem)').matches ?? Number(windowRef.innerWidth) >= 1024; app.querySelectorAll('[data-footer-section]').forEach((section) => { section.open = desktop; const summary = section.querySelector('summary'); if (summary) summary.tabIndex = desktop ? -1 : 0; }); };
@@ -66,7 +65,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
   const setMetadata = (nextRoute, product) => { const metadata = getDocumentMetadata(nextRoute, product); documentRef.title = metadata.title; documentRef.querySelector('meta[name="description"]')?.setAttribute('content', metadata.description); };
   const renderShell = (content, routeName = currentRoute.name) => {
     closeMobileMenu();
-    app.innerHTML = publicShellView(content, routeName, cart, legalModalView(legalModal), cartDrawerView(cart, { ...cartDrawerState, cartState, requestState, confirmation })); syncFooterSections(); attachImageFallbacks(app); app.querySelectorAll('[name="precioMinimo"], [name="precioMaximo"]').forEach(formatCopInputElement); startRevealMotion(app);
+    app.innerHTML = publicShellView(content, routeName, cart, legalModalView(legalModal), cartDrawerView(cart, { ...cartDrawerState, cartState, requestState, confirmation })); syncFooterSections(); attachImageFallbacks(app); app.querySelectorAll('[name="precioMinimo"], [name="precioMaximo"]').forEach(formatCopInputElement);
     const filterToggle = app.querySelector('[data-filter-toggle]'); const filterPanel = app.querySelector('[data-filter-panel]'); const filterTitle = filterPanel?.querySelector('h2');
     filterToggle?.setAttribute('aria-controls', 'catalog-filter-panel'); filterPanel?.setAttribute('id', 'catalog-filter-panel'); filterPanel?.setAttribute('role', 'dialog'); filterPanel?.setAttribute('aria-modal', 'true'); filterPanel?.setAttribute('aria-labelledby', 'catalog-filter-title'); filterTitle?.setAttribute('id', 'catalog-filter-title'); filterTitle?.setAttribute('tabindex', '-1');
     if (legalModal) queueMicrotask(() => app.querySelector('[data-legal-close]')?.focus());
@@ -74,15 +73,9 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     syncPageScrollLock();
   };
   const renderCart = () => renderShell(renderPublicRoute({ name: 'cart' }, { cart, cartState: { ...cartState, confirmation, requestState } }), 'cart');
-  const renderRequestStatus = () => renderShell(renderPublicRoute(currentRoute, { data: publicRequest, error: publicRequestError }), 'request');
+  const renderPaymentRequest = () => renderShell(renderPublicRoute(currentRoute, { data: paymentRequest, paymentState }), 'request');
   const renderCatalog = (filters, state = {}) => {
     renderShell(renderPublicRoute({ name: 'catalog' }, { catalogState: { baseRows: baseRows || [], filteredRows: lastFilteredRows, filters, panelOpen: filterPanelOpen, ...state } }), 'catalog');
-  };
-  const scrollToHash = () => {
-    const hash = windowRef.location.hash;
-    if (!hash || hash === '#') return;
-    const target = app.querySelector(hash);
-    if (target) windowRef.setTimeout?.(() => target.scrollIntoView({ block: 'start' }), 0);
   };
   const persistCart = () => { if (!saveCart(cart, windowRef.localStorage)) announce('El carrito se mantendrá durante esta sesión, pero no pudo guardarse en este navegador.'); };
   const dismissConfirmation = () => { confirmation = null; clearPurchaseConfirmation(windowRef.localStorage); cartDrawerState = { ...cartDrawerState, step: 'cart' }; };
@@ -160,6 +153,19 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const token = tokenFromLocation(windowRef.location);
     return token ? { codigo: code, token } : loadPurchaseRequestAccess(code, windowRef.localStorage);
   };
+  const loadPaymentRequest = async (code, { drawer = false } = {}) => {
+    const access = accessFor(code);
+    if (!access) { announce('No encontramos el acceso seguro para esta solicitud.'); return; }
+    const result = await loadPublicPurchaseRequest(client, code, access.token);
+    if (!active || result.error || !result.data) {
+      paymentState = { ...paymentState, error: result.error || 'No pudimos cargar el pago.' };
+      if (drawer) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest();
+      return;
+    }
+    paymentRequest = result.data;
+    paymentState = { ...paymentState, error: null };
+    if (drawer) { cartDrawerState = { ...cartDrawerState, step: 'payment', paymentRequest, paymentState }; renderDrawer(); } else renderPaymentRequest();
+  };
   const openPresentationSelector = async (productId, trigger) => {
     trigger.disabled = true; trigger.setAttribute('aria-busy', 'true');
     const result = await loadPublicProduct(client, productId); trigger.disabled = false; trigger.removeAttribute('aria-busy');
@@ -181,9 +187,9 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
       renderShell(loadingView('Cargando solicitud...'), 'request');
       const result = await loadPublicPurchaseRequest(client, nextRoute.code, access.token);
       if (!active || currentRequest !== requestId) return;
-      publicRequest = result.data;
-      publicRequestError = result.error || null;
-      renderRequestStatus();
+      paymentRequest = result.data;
+      paymentState = { ...paymentState, step: 'summary', error: result.error };
+      renderPaymentRequest();
       return;
     }
     if (nextRoute.name === 'cart') {
@@ -199,9 +205,7 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     }
     if (nextRoute.name === 'not-found') { currentProduct = null; renderShell(renderPublicRoute(nextRoute, { cart }), nextRoute.name); return; }
     renderShell(loadingView(loadingLabel(nextRoute)), nextRoute.name); const result = nextRoute.name === 'product' ? await loadPublicProduct(client, nextRoute.productId) : await loadPublicCatalog(client);
-    if (!active || currentRequest !== requestId) return; currentProduct = nextRoute.name === 'product' ? result.data : null;
-    if (nextRoute.name === 'home' && !result.error) { const deliveries = await loadPublicDeliveries(client); if (!active || currentRequest !== requestId) return; result.deliveries = deliveries.data || []; }
-    renderShell(renderPublicRoute(nextRoute, result), nextRoute.name); if (nextRoute.name === 'product' && result.data) setMetadata(nextRoute, result.data); scrollToHash();
+    if (!active || currentRequest !== requestId) return; currentProduct = nextRoute.name === 'product' ? result.data : null; renderShell(renderPublicRoute(nextRoute, result), nextRoute.name); if (nextRoute.name === 'product' && result.data) setMetadata(nextRoute, result.data);
   };
   const syncDetailQuantity = (input, nextValue = input?.value) => {
     if (!input) return;
@@ -231,12 +235,10 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const mobileMenuToggle = event.target.closest?.('[data-mobile-menu-toggle]');
     if (mobileMenuToggle) { if (mobileMenuOpen) closeMobileMenu({ focusTrigger: true }); else openMobileMenu(); return; }
     if (mobileMenuOpen && event.target.closest?.('[data-mobile-menu-close]')) { closeMobileMenu({ focusTrigger: true }); return; }
-    const carouselNav = event.target.closest?.('[data-carousel-scroll]');
-    if (carouselNav) { const track = carouselNav.closest('[data-logo-carousel]')?.querySelector('[data-carousel-track]'); if (track) { const direction = Number(carouselNav.dataset.carouselScroll) || 1; const step = Math.max(Math.round(track.clientWidth * 0.85), 200); if (typeof track.scrollBy === 'function') track.scrollBy({ left: direction * step, behavior: 'smooth' }); else track.scrollLeft += direction * step; } return; }
     const cartDrawerOpenTrigger = event.target.closest?.('[data-cart-drawer-open]');
     if (cartDrawerOpenTrigger) { closeMobileMenu(); cartDrawerState = { open: true, step: confirmation ? 'confirmation' : 'cart', error: null }; cartDrawerNeedsFocus = true; overlayTrigger = cartDrawerOpenTrigger; renderDrawer(); revalidateDrawerCart(); return; }
     if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-close]')) { closeCartDrawer({ focusTrigger: true }); return; }
-    if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-back]')) { cartDrawerState = { ...cartDrawerState, step: 'cart', error: null }; renderDrawer(); return; }
+    if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-back]')) { cartDrawerState = { ...cartDrawerState, step: cartDrawerState.step === 'payment' ? 'confirmation' : 'cart', error: null }; renderDrawer(); return; }
     if (cartDrawerState.open && event.target.closest?.('[data-cart-drawer-continue]')) { cartDrawerState = { ...cartDrawerState, step: 'form', error: null }; renderDrawer(); loadMunicipalities(); return; }
     const cityOption = event.target.closest?.('[data-city-option]');
     if (cityOption) { const input = cityOption.closest('[data-request-form]')?.querySelector('[data-city-input]'); selectCityOption(input, Number(cityOption.dataset.cityOption)); input?.focus(); return; }
@@ -244,8 +246,9 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const legal = event.target.closest?.('[data-legal-modal]'); if (legal) { overlayTrigger = legal; legalModal = legal.dataset.legalModal; if (currentRoute.name === 'cart') renderCart(); else renderRoute(currentRoute); return; }
     if (event.target.closest?.('[data-legal-close]')) { closeOverlay(); return; }
     if (event.target.closest?.('[data-filter-toggle]')) { overlayTrigger = event.target.closest('[data-filter-toggle]'); if (filterPanelOpen) { closeOverlay(); return; } filterPanelOpen = true; renderCatalog(parseCatalogFilters(windowRef.location.search)); app.querySelector('[data-filter-panel] button')?.focus(); return; }
-    const add = event.target.closest?.('[data-product-add]'); if (add) { if (add.tagName === 'A' && add.href?.includes('wa.me')) return; openPresentationSelector(Number(add.dataset.productAdd), add); return; }
-    const galleryImage = event.target.closest?.('[data-product-gallery-image]'); if (galleryImage) { const container = galleryImage.closest('[data-public-gallery]') || app; const image = container.querySelector('[data-public-image]'); const video = container.querySelector('[data-public-video]'); if (galleryImage.dataset.galleryType === 'video' && video) { video.src = galleryImage.dataset.galleryUrl; video.hidden = false; if (image) image.hidden = true; } else if (image) { image.src = galleryImage.dataset.galleryUrl; image.alt = galleryImage.dataset.galleryAlt; image.hidden = false; if (video) video.hidden = true; } container.querySelector('[data-public-image-fallback]')?.setAttribute('hidden', ''); container.querySelectorAll('[data-product-gallery-image]').forEach((button) => button.setAttribute('aria-pressed', String(button === galleryImage))); return; }
+    if (event.target.closest?.('[data-filter-close], [data-presentation-close]')) { closeOverlay(); return; }
+    const add = event.target.closest?.('[data-product-add]'); if (add) { openPresentationSelector(Number(add.dataset.productAdd), add); return; }
+    const galleryImage = event.target.closest?.('[data-product-gallery-image]'); if (galleryImage) { const main = app.querySelector('[data-public-image]'); if (main) { main.src = galleryImage.dataset.galleryUrl; main.alt = galleryImage.dataset.galleryAlt; main.hidden = false; main.parentElement.querySelector('[data-public-image-fallback]')?.setAttribute('hidden', ''); app.querySelectorAll('[data-product-gallery-image]').forEach((button) => button.setAttribute('aria-pressed', String(button === galleryImage))); } return; }
     const selected = event.target.closest?.('[data-presentation-add]'); if (selected && selectorProduct) { addPresentation(selectorProduct, selected.dataset.presentationAdd); return; }
     const remove = event.target.closest?.('[data-filter-remove]'); if (remove) { updateFilters(removeCatalogFilter(parseCatalogFilters(windowRef.location.search), remove.dataset.filterRemove, remove.dataset.filterValue)); return; }
     if (event.target.closest?.('[data-clear-search]')) { updateFilters({ ...parseCatalogFilters(windowRef.location.search), busqueda: '' }); return; }
@@ -255,13 +258,17 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     const cartQuantity = event.target.closest?.('[data-cart-quantity-change]'); if (cartQuantity) { const item = cart.items.find((current) => current.presentationId === Number(cartQuantity.dataset.cartQuantityChange)); const next = item && updateCartItemQuantity(cart, cartQuantity.dataset.cartQuantityChange, item.quantity + Number(cartQuantity.dataset.cartQuantityStep)); if (!next || next === cart) { if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, error: 'La cantidad debe respetar la disponibilidad actual de esta presentación.' }; renderDrawer(); } return; } cart = next; attemptId = null; requestState = { ...requestState, priceReview: null, error: null }; cartDrawerState = { ...cartDrawerState, error: null }; persistCart(); if (cartDrawerState.open) renderDrawer(); else renderCart(); return; }
     const detailQuantity = event.target.closest?.('[data-detail-quantity-change]'); if (detailQuantity) { const input = app.querySelector('[data-detail-quantity]'); syncDetailQuantity(input, Number(input?.value) + Number(detailQuantity.dataset.detailQuantityStep)); return; }
     if (event.target.closest?.('[data-request-new]')) { clearPurchaseConfirmation(windowRef.localStorage); requestDraft.clear(); confirmation = null; requestForm = emptyRequestForm(); requestState = { form: requestForm, errors: {}, error: null, busy: false, priceReview: null }; attemptId = null; if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, step: 'cart' }; renderDrawer(); } else renderRoute(currentRoute); return; }
+    if (event.target.closest?.('[data-payment-start]')) { paymentState = { step: 'payment', file: null, busy: false, error: null }; const code = confirmation?.codigo || currentRoute.code; if (cartDrawerState.open) loadPaymentRequest(code, { drawer: true }); else loadPaymentRequest(code); return; }
     const copyCode = event.target.closest?.('[data-confirmation-copy]');
     if (copyCode) { const value = copyCode.dataset.confirmationCopy; const clipboard = windowRef.navigator?.clipboard; if (!value || !clipboard?.writeText) { announce('No fue posible copiar el código.'); return; } clipboard.writeText(value).then(() => showToast('Código de solicitud copiado.')).catch(() => announce('No fue posible copiar el código.')); return; }
+    const copyPaymentKey = event.target.closest?.('[data-payment-copy-key]');
+    if (copyPaymentKey) { const value = copyPaymentKey.dataset.paymentCopyKey; const clipboard = windowRef.navigator?.clipboard; if (value && clipboard?.writeText) clipboard.writeText(value).then(() => showToast('Llave copiada.')).catch(() => announce('No fue posible copiar la llave.')); return; }
+    if (event.target.closest?.('[data-payment-proof-clear]')) { paymentState = { ...paymentState, file: null, error: null }; if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest(); return; }
     if (cartDrawerState.open && event.target.closest?.('[data-confirmation-continue]')) closeCartDrawer();
     const retry = event.target.closest?.('[data-public-retry]'); if (retry) { event.preventDefault(); if (currentRoute.name === 'catalog') loadCatalog(parseCatalogFilters(windowRef.location.search), { refreshBase: true }); else renderRoute(currentRoute); return; }
     const link = event.target.closest?.('a[href]'); if (!link) return; if (mobileMenuOpen && link.closest?.('[data-mobile-menu-drawer]')) closeMobileMenu(); const target = new URL(link.href, windowRef.location.href);
     if (target.origin !== windowRef.location.origin || target.pathname === windowRef.location.pathname && target.hash) return; if (cartDrawerState.open && link.closest?.('[data-cart-drawer]')) closeCartDrawer(); const nextRoute = getPublicRoute(target.pathname); if (nextRoute.name === 'admin' || nextRoute.name === 'not-found') return;
-    event.preventDefault(); windowRef.history.pushState({}, '', `${target.pathname}${target.search}${target.hash}`); renderRoute(nextRoute, { scrollToTop: true });
+    event.preventDefault(); windowRef.history.pushState({}, '', `${target.pathname}${target.search}`); renderRoute(nextRoute, { scrollToTop: true });
   };
   const onSubmit = (event) => {
     if (event.target.matches?.('[data-catalog-form]')) { event.preventDefault(); filterPanelOpen = false; updateFilters(readFormFilters()); return; }
@@ -283,18 +290,20 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
       }).catch(() => { if (!active) return; requestState = { ...requestState, busy: false, error: 'No fue posible registrar la solicitud. Inténtalo de nuevo.' }; renderRequestSurface(); });
       return;
     }
-    if (event.target.matches?.('[data-sell-car-form]')) {
+    if (event.target.matches?.('[data-payment-proof-form]')) {
       event.preventDefault();
-      const data = new FormData(event.target);
-      const nombre = String(data.get('nombre') || '').trim();
-      const telefono = String(data.get('telefono') || '').trim();
-      const invalidField = !nombre ? event.target.querySelector('[name="nombre"]') : !telefono ? event.target.querySelector('[name="telefono"]') : null;
-      if (invalidField) { invalidField.setAttribute('aria-invalid', 'true'); invalidField.focus(); announce('Completa tu nombre y teléfono para continuar.'); return; }
-      event.target.querySelectorAll('[aria-invalid]').forEach((input) => input.removeAttribute('aria-invalid'));
-      const message = `Hola, quiero vender mi carro. Mi nombre es ${nombre} y mi teléfono es ${telefono}.`;
-      const url = `${event.target.dataset.whatsapp}?text=${encodeURIComponent(message)}`;
-      const opened = windowRef.open?.(url, '_blank', 'noopener');
-      if (!opened) windowRef.location.href = url;
+      const code = paymentRequest?.codigo || currentRoute.code;
+      const access = accessFor(code);
+      if (!access) return;
+      paymentState = { ...paymentState, busy: true, error: null };
+      if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest();
+      submitPaymentProof(client, { code, token: access.token, file: paymentState.file }).then(async (result) => {
+        if (!active) return;
+        if (result.error) { paymentState = { ...paymentState, busy: false, error: result.error }; if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest(); return; }
+        paymentState = { step: 'summary', file: null, busy: false, error: null };
+        await loadPaymentRequest(code, { drawer: cartDrawerState.open });
+        showToast('Comprobante enviado correctamente.');
+      });
       return;
     }
     if (!event.target.matches?.('[data-product-detail-form]')) return;
@@ -305,8 +314,9 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     addPresentation(currentProduct, presentation.dataset.detailPresentation, quantity.value);
   };
   const updateRequestDraft = (formElement) => { const data = new FormData(formElement); requestForm = { nombre: data.get('nombre'), telefono: data.get('telefono'), ciudad: data.get('ciudad'), observaciones: data.get('observaciones'), aceptaTerminos: data.get('aceptaTerminos') === 'on', aceptaPoliticaDatos: data.get('aceptaPoliticaDatos') === 'on' }; requestDraft.save(requestForm); attemptId = null; requestState = { ...requestState, form: requestForm, priceReview: null, error: null, errors: {} }; };
-  const onInput = (event) => { if (event.target.matches?.('[name="precioMinimo"], [name="precioMaximo"]')) event.target.value = formatCopInput(event.target.value); if (event.target.matches?.('[data-detail-quantity]')) syncDetailQuantity(event.target); if (event.target.matches?.('[data-request-form] [name="telefono"], [data-sell-car-form] [name="telefono"]')) event.target.value = event.target.value.replace(/[^0-9+() -]/g, ''); if (event.target.matches?.('[data-city-input]')) { if (municipalities.length) renderCityOptions(event.target); else loadMunicipalities().then(() => renderCityOptions(event.target)); } const form = event.target.closest?.('[data-request-form]'); if (form) updateRequestDraft(form); };
+  const onInput = (event) => { if (event.target.matches?.('[name="precioMinimo"], [name="precioMaximo"]')) event.target.value = formatCopInput(event.target.value); if (event.target.matches?.('[data-detail-quantity]')) syncDetailQuantity(event.target); if (event.target.matches?.('[data-request-form] [name="telefono"]')) event.target.value = event.target.value.replace(/[^0-9+() -]/g, ''); if (event.target.matches?.('[data-city-input]')) { if (municipalities.length) renderCityOptions(event.target); else loadMunicipalities().then(() => renderCityOptions(event.target)); } const form = event.target.closest?.('[data-request-form]'); if (form) updateRequestDraft(form); };
   const onChange = (event) => {
+    if (event.target.matches?.('[data-payment-proof-input]')) { paymentState = { ...paymentState, file: event.target.files?.[0] || null, error: null }; if (cartDrawerState.open) { cartDrawerState = { ...cartDrawerState, paymentState }; renderDrawer(); } else renderPaymentRequest(); return; }
     if (event.target.matches?.('[data-filter-panel] input[name="categoria"]')) {
       if (event.target.checked) app.querySelectorAll('[data-filter-panel] input[name="categoria"]').forEach((input) => { if (input !== event.target) input.checked = false; });
       return;

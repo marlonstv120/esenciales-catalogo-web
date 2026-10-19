@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { backButton, backLink } from '../src/back-navigation.mjs';
 
-const arrowPath = 'm12 19-7-7 7-7"></path><path d="M19 12H5';
+const arrowPath = 'M19 12H5m6-6-6 6 6 6';
 
 test('renders every back button with the shared arrow and text structure', () => {
   const view = backButton({ label: 'Volver a solicitudes', attributes: 'data-request-back' });

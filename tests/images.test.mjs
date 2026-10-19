@@ -63,8 +63,8 @@ test('replaces the database reference before removing the previous object', asyn
 
 test('updates alternative text without replacing the stored object', async () => {
   const api = client();
-  await updateImageAlt(api, { id: 4 }, 'Hilux frontal');
-  assert.deepEqual(api.calls.updates, [{ texto_alternativo: 'Hilux frontal' }]);
+  await updateImageAlt(api, { id: 4 }, 'Aroma frontal');
+  assert.deepEqual(api.calls.updates, [{ texto_alternativo: 'Aroma frontal' }]);
   assert.deepEqual(api.calls.uploads, []);
 });
 
@@ -91,18 +91,4 @@ test('reports a recoverable cleanup path after a storage deletion failure', asyn
   const api = client({ removeError: { message: 'storage failed' } });
   await assert.rejects(removeImage(api, { id: 4, identificador_externo: 'productos/8/old.jpg' }), (error) => error.cleanupPath === 'productos/8/old.jpg');
   assert.deepEqual(api.calls.deletes, [4]);
-});
-
-test('accepts videos up to the shared 5 MiB limit and keeps their extension', () => {
-  assert.doesNotThrow(() => validateImage({ type: 'video/mp4', size: 1024 }));
-  assert.equal(imagePath(42, { type: 'video/webm', size: 1024 }, () => 'uuid-1'), 'productos/42/uuid-1.webm');
-  assert.throws(() => validateImage({ type: 'video/quicktime', size: 5 * 1024 * 1024 + 1 }), /5 MiB/);
-});
-
-test('stores the media type when uploading a video', async () => {
-  const api = client();
-  const data = await uploadImage(api, 8, { type: 'video/mp4', size: 1024 }, 'Hilux en movimiento', 0, () => 'uuid-9');
-  assert.equal(api.calls.uploads[0].path, 'productos/8/uuid-9.mp4');
-  assert.equal(api.calls.inserts[0].tipo, 'video');
-  assert.equal(data.tipo, 'video');
 });

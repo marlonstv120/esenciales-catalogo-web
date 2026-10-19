@@ -1,4 +1,4 @@
-import { effectivePrice, LOW_STOCK_THRESHOLD, productIsSold } from './products.js';
+import { effectivePrice, LOW_STOCK_THRESHOLD } from './products.js';
 
 export const INVENTORY_PAGE_SIZE = 20;
 
@@ -14,7 +14,6 @@ export function presentationAvailability(presentation) {
   if (!presentation.activo) return 'inactive';
   if (presentation.modo_disponibilidad === 'bajo_pedido') return 'under-order';
   if (presentation.modo_disponibilidad === 'no_disponible') return 'unavailable';
-  if (presentation.modo_disponibilidad === 'vendido') return 'sold';
   if (Number(presentation.stock) === 0) return 'out-of-stock';
   if (Number(presentation.stock) <= LOW_STOCK_THRESHOLD) return 'low-stock';
   return 'in-stock';
@@ -31,7 +30,6 @@ export function productPriceRange(product) {
 
 export function inventoryMetrics(products) {
   return products.reduce((metrics, product) => {
-    if (productIsSold(product)) return metrics;
     const presentations = activePresentations(product);
     return {
       products: metrics.products + 1,
@@ -42,12 +40,8 @@ export function inventoryMetrics(products) {
 }
 
 function matchesAvailability(product, availability) {
-  const statuses = activePresentations(product).map(presentationAvailability);
-  if (availability === 'sold') return statuses.includes('sold');
-  // Un vehículo vendido sale del inventario activo; solo se ve con el filtro
-  // "Vendidos" y en la galería de la página de inicio.
-  if (productIsSold(product)) return false;
   if (!availability) return true;
+  const statuses = activePresentations(product).map(presentationAvailability);
   return availability === 'in-stock' ? statuses.includes('in-stock')
     : availability === 'low-stock' ? statuses.includes('low-stock')
       : availability === 'out-of-stock' ? statuses.includes('out-of-stock') : true;
@@ -63,7 +57,7 @@ export function filterInventory(products, filters = {}) {
       && (!filters.brand || normalizedText(product.marca) === normalizedText(filters.brand))
       && (!filters.gender || product.genero === filters.gender)
       && (!filters.classification || product.clasificacion === filters.classification)
-      && (!filters.family || normalizedText(product.modelo) === normalizedText(filters.family))
+      && (!filters.family || normalizedText(product.familia_olfativa) === normalizedText(filters.family))
       && (!filters.status || String(product.activo) === filters.status)
       && (!filters.featured || product.destacado)
       && matchesAvailability(product, filters.availability)

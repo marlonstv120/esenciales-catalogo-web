@@ -1,8 +1,7 @@
 import { appPath } from './app-paths.mjs';
 import { backButton, backLink } from './back-navigation.mjs';
-import { uiIcon } from './ui-icons.mjs';
 
-const logoUrl = appPath('/assets/brand/vehimarcas-logo-completo.png');
+const logoUrl = appPath('/assets/brand/esenciales-logo-completo.png');
 
 export function getPasswordToggleState(passwordVisible) {
   return passwordVisible
@@ -13,8 +12,15 @@ export function getPasswordToggleState(passwordVisible) {
 function passwordToggle(targetId) {
   return `
     <button class="password-toggle" type="button" data-password-toggle="${targetId}" aria-controls="${targetId}" aria-pressed="false" aria-label="Mostrar contraseña">
-      ${uiIcon('eye', { size: 24, className: 'password-icon password-icon--show', strokeWidth: 2 })}
-      ${uiIcon('eye-off', { size: 24, className: 'password-icon password-icon--hide', strokeWidth: 2 })}
+      <svg class="password-icon password-icon--show" aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+      <svg class="password-icon password-icon--hide" aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 3 18 18" />
+        <path d="M10.6 6.1A10.8 10.8 0 0 1 12 6c6.5 0 10 6 10 6a17.7 17.7 0 0 1-2.1 2.8" />
+        <path d="M6.6 6.6C3.6 8.4 2 12 2 12s3.5 6 10 6a10.5 10.5 0 0 0 3.4-.6" />
+      </svg>
     </button>`;
 }
 
@@ -38,8 +44,8 @@ function passwordControl({ id, name, label, autocomplete, helpId, messageId }) {
 export function authCard(content) {
   return `
     <section class="auth-shell" aria-labelledby="auth-title">
-      <aside class="auth-brand" aria-label="VEHIMARCAS del Valle">
-        <img class="auth-logo" src="${logoUrl}" alt="VEHIMARCAS del Valle">
+      <aside class="auth-brand" aria-label="ESENCIALES">
+        <img class="auth-logo" src="${logoUrl}" alt="ESENCIALES">
       </aside>
       <div class="auth-card">
         <p class="eyebrow">Área privada</p>
@@ -52,7 +58,7 @@ export function authCard(content) {
 
 export function signInView(message = '', tone = 'error') {
   return `
-    <p class="auth-intro">Ingresa con la cuenta autorizada para gestionar VEHIMARCAS del Valle.</p>
+    <p class="auth-intro">Ingresa con la cuenta autorizada para gestionar ESENCIALES.</p>
     <form class="auth-form" id="sign-in-form">
       <div class="field">
         <label for="sign-in-email">Correo electrónico</label>

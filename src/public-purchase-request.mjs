@@ -1,7 +1,7 @@
 import { getSelectedCartItems } from './public-cart.mjs';
 
-const CONFIRMATION_KEY = 'vehimarcas.purchase-request-confirmation.v1';
-const REQUEST_DRAFT_KEY = 'vehimarcas:draft:solicitud:nueva';
+const CONFIRMATION_KEY = 'esenciales.purchase-request-confirmation.v1';
+const REQUEST_DRAFT_KEY = 'esenciales:draft:solicitud:nueva';
 const REQUEST_DRAFT = { version: 1, form: 'public-purchase-request' };
 
 function trimmed(value) { return String(value || '').trim(); }
@@ -83,12 +83,12 @@ export function clearPurchaseConfirmation(storage = globalThis.localStorage) {
 
 export function whatsappUrl(confirmation) {
   const lines = (confirmation?.lineas || []).map((line) => `• ${line.producto}\n  ${line.presentacion} · Cantidad: ${line.cantidad}\n  Precio unitario: $${Number(line.precio_unitario).toLocaleString('es-CO')}\n  Subtotal: $${Number(line.subtotal).toLocaleString('es-CO')}`).join('\n\n');
-  const message = `Hola, VEHIMARCAS del Valle.\n\nRegistré la solicitud ${confirmation?.codigo}.\n\nVEHÍCULOS / COTIZACIÓN\n${lines}\n\nVALOR TOTAL\n$${Number(confirmation?.valor_total_productos).toLocaleString('es-CO')}\n\nQuisiera recibir asesoría y confirmar disponibilidad.`;
-  return `https://wa.me/573045416480?text=${encodeURIComponent(message)}`;
+  const message = `Hola, ESENCIALES.\n\nRegistré la solicitud ${confirmation?.codigo}.\n\nPRODUCTOS\n${lines}\n\nVALOR TOTAL DE PRODUCTOS\n$${Number(confirmation?.valor_total_productos).toLocaleString('es-CO')}\n\nQuisiera confirmar disponibilidad y entrega.`;
+  return `https://wa.me/573174645670?text=${encodeURIComponent(message)}`;
 }
 
 export function paymentProofWhatsappUrl(request) {
   const total = Number(request?.valor_total_productos).toLocaleString('es-CO');
-  const message = `Hola, VEHIMARCAS del Valle.\n\nRegistré la solicitud ${request?.codigo} por $${total} y ya envié el comprobante de la transferencia desde la página.\n\nQuedo atento(a) a la verificación y coordinación de la entrega.`;
-  return `https://wa.me/573045416480?text=${encodeURIComponent(message)}`;
+  const message = `Hola, ESENCIALES.\n\nRegistré la solicitud ${request?.codigo} por $${total} y ya envié el comprobante de la transferencia desde la página.\n\nQuedo atento(a) a la verificación y coordinación de la entrega.`;
+  return `https://wa.me/573174645670?text=${encodeURIComponent(message)}`;
 }

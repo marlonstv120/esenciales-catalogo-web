@@ -69,7 +69,7 @@ insert into public.presentaciones (
 )
 values (
   (select id from public.productos where nombre = 'Producto RLS'),
-  'Automatica RLS',
+  '100 ml RLS',
   100000,
   1,
   'venta_inmediata'
@@ -102,7 +102,7 @@ select results_eq(
   'Administrador activo consulta producto'
 );
 select results_eq(
-  $$update public.presentaciones set stock = 2 where etiqueta = 'Automatica RLS' returning stock$$,
+  $$update public.presentaciones set stock = 2 where etiqueta = '100 ml RLS' returning stock$$,
   $$values (2::integer)$$,
   'Administrador activo modifica presentacion'
 );

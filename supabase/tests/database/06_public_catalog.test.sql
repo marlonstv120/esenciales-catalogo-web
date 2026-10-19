@@ -1,7 +1,7 @@
 begin;
 set local search_path = public, extensions;
 
-select plan(32);
+select plan(30);
 
 select ok((select relrowsecurity from pg_class where oid = 'public.categorias'::regclass), 'RLS sigue activo en categorias');
 select ok((select relrowsecurity from pg_class where oid = 'public.productos'::regclass), 'RLS sigue activo en productos');
@@ -23,7 +23,7 @@ insert into public.categorias (nombre) values ('Publica activa'), ('Publica inac
 update public.categorias set activo = false where nombre = 'Publica inactiva';
 
 insert into public.productos (categoria_id, nombre, descripcion, destacado)
-select id, 'Hilux SRX', 'Descripcion publica', true from public.categorias where nombre = 'Publica activa';
+select id, 'Aroma publico', 'Descripcion publica', true from public.categorias where nombre = 'Publica activa';
 
 insert into public.productos (categoria_id, nombre, descripcion)
 select id, 'Solo no disponible', 'Sin presentaciones solicitables' from public.categorias where nombre = 'Publica activa';
@@ -40,64 +40,56 @@ select id, 'Producto inactivo', 'No publicable', false from public.categorias wh
 insert into public.productos (categoria_id, nombre, descripcion)
 select id, 'Producto sin presentacion', 'No publicable' from public.categorias where nombre = 'Publica activa';
 
-insert into public.productos (categoria_id, nombre, descripcion)
-select id, 'Solo vendido', 'Vehículo entregado y vendido' from public.categorias where nombre = 'Publica activa';
-
 insert into public.presentaciones (producto_id, etiqueta, precio_normal, precio_promocional, stock, modo_disponibilidad, activo)
-select id, 'Automatica', 70000, 60000, 3, 'venta_inmediata', true from public.productos where nombre = 'Hilux SRX'
+select id, '100 ml disponible', 70000, 60000, 3, 'venta_inmediata', true from public.productos where nombre = 'Aroma publico'
 union all
-select id, 'Mecanica 6 vel', 80000, 50000, 0, 'bajo_pedido', true from public.productos where nombre = 'Hilux SRX'
+select id, '50 ml pedido', 80000, 50000, 0, 'bajo_pedido', true from public.productos where nombre = 'Aroma publico'
 union all
-select id, '4x4 con reductora', 40000, null, 0, 'venta_inmediata', true from public.productos where nombre = 'Hilux SRX'
+select id, '30 ml agotado', 40000, null, 0, 'venta_inmediata', true from public.productos where nombre = 'Aroma publico'
 union all
-select id, 'Cabina sencilla', 10000, null, 1, 'venta_inmediata', false from public.productos where nombre = 'Hilux SRX'
+select id, '20 ml inactiva', 10000, null, 1, 'venta_inmediata', false from public.productos where nombre = 'Aroma publico'
 union all
 select id, 'Unica activa', 90000, null, 0, 'no_disponible', true from public.productos where nombre = 'Solo no disponible'
-union all
-select id, 'Vendida', 95000, null, 0, 'vendido', true from public.productos where nombre = 'Solo vendido'
 union all
 select id, 'Sin imagen', 25000, null, 1, 'venta_inmediata', true from public.productos where nombre = 'Producto sin imagen'
 union all
 select id, 'Inactivo', 25000, null, 1, 'venta_inmediata', true from public.productos where nombre = 'Producto inactivo';
 
 insert into public.imagenes_producto (producto_id, url, identificador_externo, texto_alternativo, posicion)
-select id, 'https://example.test/hilux.webp', 'productos/prueba/hilux.webp', null, 0 from public.productos where nombre = 'Hilux SRX'
+select id, 'https://example.test/aroma.webp', 'productos/prueba/aroma.webp', null, 0 from public.productos where nombre = 'Aroma publico'
 union all
 select id, 'https://example.test/no-disponible.webp', 'productos/prueba/no-disponible.webp', 'Producto sin disponibilidad', 0 from public.productos where nombre = 'Solo no disponible'
-union all
-select id, 'https://example.test/vendido.webp', 'productos/prueba/vendido.webp', 'Vehículo vendido', 0 from public.productos where nombre = 'Solo vendido'
 union all
 select id, 'https://example.test/oculto.webp', 'productos/prueba/oculto.webp', null, 0 from public.productos where nombre = 'Categoria oculta'
 union all
 select id, 'https://example.test/inactivo.webp', 'productos/prueba/inactivo.webp', null, 0 from public.productos where nombre = 'Producto inactivo';
 
-select set_config('test.public_product_id', (select id::text from public.productos where nombre = 'Hilux SRX'), true);
-select set_config('test.sold_product_id', (select id::text from public.productos where nombre = 'Solo vendido'), true);
+select set_config('test.public_product_id', (select id::text from public.productos where nombre = 'Aroma publico'), true);
 set local role anon;
 
 select throws_ok($$select * from public.productos$$, '42501', null, 'anon recibe rechazo al leer tablas directamente');
 select results_eq(
-  $$select nombre from public.obtener_catalogo_publico() where nombre in ('Hilux SRX', 'Solo no disponible') order by nombre$$,
-  $$values ('Hilux SRX'::text), ('Solo no disponible'::text)$$,
+  $$select nombre from public.obtener_catalogo_publico() where nombre in ('Aroma publico', 'Solo no disponible') order by nombre$$,
+  $$values ('Aroma publico'::text), ('Solo no disponible'::text)$$,
   'solo aparecen productos publicables de categorias activas'
 );
 select results_eq(
-  $$select disponibilidad from public.obtener_catalogo_publico() where nombre = 'Hilux SRX'$$,
+  $$select disponibilidad from public.obtener_catalogo_publico() where nombre = 'Aroma publico'$$,
   $$values ('Disponible'::text)$$,
   'la disponibilidad disponible tiene precedencia'
 );
 select results_eq(
-  $$select precio_referencia from public.obtener_catalogo_publico() where nombre = 'Hilux SRX'$$,
+  $$select precio_referencia from public.obtener_catalogo_publico() where nombre = 'Aroma publico'$$,
   $$values (50000::integer)$$,
   'el precio minimo solicitable usa precio promocional efectivo'
 );
 select results_eq(
-  $$select precio_normal_referencia from public.obtener_catalogo_publico() where nombre = 'Hilux SRX'$$,
+  $$select precio_normal_referencia from public.obtener_catalogo_publico() where nombre = 'Aroma publico'$$,
   $$values (80000::integer)$$,
   'el catalogo conserva el precio normal de la presentacion que fija el precio promocional de referencia'
 );
 select results_eq(
-  $$select precio_desde from public.obtener_catalogo_publico() where nombre = 'Hilux SRX'$$,
+  $$select precio_desde from public.obtener_catalogo_publico() where nombre = 'Aroma publico'$$,
   $$values (true)$$,
   'marca desde cuando hay precios solicitables distintos'
 );
@@ -111,17 +103,8 @@ select results_eq(
   $$values (90000::integer)$$,
   'usa el menor precio activo como alternativa cuando ninguna presentacion admite solicitud'
 );
-select is(
-  (select count(*) from public.obtener_catalogo_publico() where nombre = 'Solo vendido')::integer,
-  0,
-  'el vehículo vendido se excluye por completo del catálogo público'
-);
-select is(
-  public.obtener_producto_publico(current_setting('test.sold_product_id')::integer), null::jsonb,
-  'el detalle público ya no muestra vehículos vendidos'
-);
 select results_eq(
-  $$select destacado from public.obtener_catalogo_publico() where nombre = 'Hilux SRX'$$,
+  $$select destacado from public.obtener_catalogo_publico() where nombre = 'Aroma publico'$$,
   $$values (true)$$,
   'devuelve seleccion manual de destacado solo para producto publicable'
 );
@@ -147,7 +130,7 @@ select is(
   (
     select (presentacion->>'maximo_solicitable')::integer
     from jsonb_array_elements(public.obtener_producto_publico(current_setting('test.public_product_id')::integer)->'presentaciones') presentacion
-    where presentacion->>'etiqueta' = 'Automatica'
+    where presentacion->>'etiqueta' = '100 ml disponible'
   ),
   3,
   'el detalle expone el limite solicitable de venta inmediata'
@@ -156,7 +139,7 @@ select is(
   (
     select (presentacion->>'maximo_solicitable')::integer
     from jsonb_array_elements(public.obtener_producto_publico(current_setting('test.public_product_id')::integer)->'presentaciones') presentacion
-    where presentacion->>'etiqueta' = 'Mecanica 6 vel'
+    where presentacion->>'etiqueta' = '50 ml pedido'
   ),
   99,
   'el detalle limita bajo pedido a la cantidad maxima del MVP'
@@ -165,7 +148,7 @@ select is(
   (
     select (presentacion->>'maximo_solicitable')::integer
     from jsonb_array_elements(public.obtener_producto_publico(current_setting('test.public_product_id')::integer)->'presentaciones') presentacion
-    where presentacion->>'etiqueta' = '4x4 con reductora'
+    where presentacion->>'etiqueta' = '30 ml agotado'
   ),
   0,
   'el detalle no permite solicitar una presentacion agotada'

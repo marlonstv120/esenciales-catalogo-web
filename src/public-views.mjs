@@ -1,6 +1,7 @@
 import { appPath } from './app-paths.mjs';
 import { getCartCount, getCartTotal, getSelectedCartItems, getSelectedCartTotal } from './public-cart.mjs';
-import { getCatalogFilterCount, hasCatalogFilters, parseCatalogFilters } from './public-catalog-filters.mjs';
+import { getCatalogFilterCount, hasCatalogFilters, parseCatalogFilters, serializeCatalogFilters } from './public-catalog-filters.mjs';
+import { paginateCatalogProducts } from './public-catalog.mjs';
 import { paymentProofWhatsappUrl, whatsappUrl } from './public-purchase-request.mjs';
 import { PAYMENT_CONFIG, paymentInstructionsAreConfigured } from './payment-config.mjs';
 import { paymentStatusLabel } from './public-payment.mjs';
@@ -22,6 +23,37 @@ const escapeHtml = (value = '') => String(value).replaceAll('&', '&amp;').replac
 const money = (value) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value).replace(/\s|COP/g, '');
 const productsFromRows = (rows = []) => rows.filter((row) => row.producto_id != null);
 const categoriesFromRows = (rows = []) => [...new Map(rows.map((row) => [row.categoria_id, { id: row.categoria_id, nombre: row.categoria_nombre }])).values()];
+
+function catalogPageUrl(filters, page) {
+  const query = serializeCatalogFilters({ ...filters, pagina: page });
+  return appPath(`/catalogo${query ? `?${query}` : ''}`);
+}
+
+function catalogPaginationItems(page, totalPages) {
+  if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
+  const pages = [...new Set([1, page - 1, page, page + 1, totalPages].filter((value) => value >= 1 && value <= totalPages))].sort((left, right) => left - right);
+  return pages.flatMap((value, index) => index && value - pages[index - 1] > 1 ? ['ellipsis', value] : [value]);
+}
+
+function catalogPaginationView(filters, pagination, position = 'bottom') {
+  if (pagination.totalPages <= 1) return '';
+  const previousChevron = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  const nextChevron = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+  const link = (page, label, className = '') => `<a class="catalog-page-link ${className}" href="${escapeHtml(catalogPageUrl(filters, page))}" data-catalog-page="${page}" aria-label="${escapeHtml(label)}">${page}</a>`;
+  const previous = pagination.page > 1
+    ? `<a class="catalog-page-link catalog-page-link--direction" href="${escapeHtml(catalogPageUrl(filters, pagination.page - 1))}" data-catalog-page="${pagination.page - 1}" aria-label="Ir a la página anterior">${previousChevron}<span class="catalog-page-link__label">Anterior</span></a>`
+    : `<span class="catalog-page-link catalog-page-link--direction is-disabled" aria-disabled="true">${previousChevron}<span class="catalog-page-link__label">Anterior</span></span>`;
+  const next = pagination.page < pagination.totalPages
+    ? `<a class="catalog-page-link catalog-page-link--direction" href="${escapeHtml(catalogPageUrl(filters, pagination.page + 1))}" data-catalog-page="${pagination.page + 1}" aria-label="Ir a la página siguiente"><span class="catalog-page-link__label">Siguiente</span>${nextChevron}</a>`
+    : `<span class="catalog-page-link catalog-page-link--direction is-disabled" aria-disabled="true"><span class="catalog-page-link__label">Siguiente</span>${nextChevron}</span>`;
+  const pages = catalogPaginationItems(pagination.page, pagination.totalPages).map((item) => item === 'ellipsis'
+    ? '<span class="catalog-pagination__ellipsis" aria-hidden="true">…</span>'
+    : item === pagination.page
+      ? `<span class="catalog-page-link is-current" aria-current="page" aria-label="Página ${item}, actual">${item}</span>`
+      : link(item, `Ir a la página ${item}`)).join('');
+  const positionLabel = position === 'top' ? 'superior' : 'inferior';
+  return `<nav class="catalog-pagination catalog-pagination--${position}" aria-label="Paginación ${positionLabel} del catálogo"><span class="visually-hidden">Página ${pagination.page} de ${pagination.totalPages}</span><div class="catalog-pagination__controls">${previous}<div class="catalog-pagination__pages">${pages}</div>${next}</div></nav>`;
+}
 const statusClass = (status = '') => ({ Disponible: 'available', 'Bajo pedido': 'under-order', Agotado: 'sold-out', 'No disponible': 'unavailable' }[status] || 'neutral');
 const statusLabel = (status = '') => status === 'Disponible' ? 'En stock' : status;
 const arrowIcon = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
@@ -144,12 +176,12 @@ export function homeView(rows = []) {
 }
 
 export function catalogView(rows = [], filteredRows = rows, filters = parseCatalogFilters(''), state = {}) {
-  filters = { disponibilidades: [], orden: 'destacados', ...filters }; const products = productsFromRows(filteredRows); const categories = categoriesFromRows(rows); const controls = catalogControls(categories, filters, state); const heading = '<div class="public-page-heading"><h1>Catálogo</h1><p>Explora productos, precios y disponibilidad.</p></div>';
+  filters = { disponibilidades: [], orden: 'destacados', pagina: 1, ...filters }; const products = productsFromRows(filteredRows); const pagination = paginateCatalogProducts(products, filters.pagina); const categories = categoriesFromRows(rows); const controls = catalogControls(categories, filters, state); const heading = '<div class="public-page-heading"><h1>Catálogo</h1><p>Explora productos, precios y disponibilidad.</p></div>';
   if (state.loading) return `${heading}${controls}<p class="public-loading" role="status">Cargando resultados...</p>${loadingView('Cargando resultados...')}`;
   if (state.error) return `${heading}${controls}${errorView(state.error, '/catalogo')}`;
   if (!productsFromRows(rows).length) return `${heading}${controls}<section class="public-empty-state"><h2>El catálogo está vacío</h2><p>Aún no hay productos publicables.</p></section>`;
   if (!products.length) return `${heading}${controls}<section class="public-empty-state public-empty-state--no-results"><div class="public-empty-state__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4 4M8.5 10.5h4m-2-2v4"/></svg></div><h2>No encontramos resultados con estos criterios</h2><p>Intenta ajustando los términos de búsqueda o eliminando los filtros seleccionados para explorar el catálogo completo de ESENCIALES.</p><button type="button" class="primary-button" data-clear-filters>Restablecer y ver todo <span aria-hidden="true">→</span></button></section>`;
-  return `${heading}${controls}<p class="catalog-result-count" role="status">${products.length} ${products.length === 1 ? 'producto' : 'productos'}</p><div class="public-product-grid">${products.map(productCardView).join('')}</div>`;
+  return `${heading}${controls}<div class="catalog-results-toolbar" data-catalog-results-start><p class="catalog-result-count" role="status">${products.length} ${products.length === 1 ? 'producto' : 'productos'}</p>${catalogPaginationView(filters, pagination, 'top')}</div><div class="public-product-grid">${pagination.items.map((product) => productCardView(product)).join('')}</div>${catalogPaginationView(filters, pagination)}`;
 }
 
 function presentationPrice(presentation) { return presentation.precio_promocional ? `<span class="presentation-price__current">${money(presentation.precio_promocional)}</span> <s class="presentation-price__normal">${money(presentation.precio_normal)}</s>` : `<span class="presentation-price__current">${money(presentation.precio_normal)}</span>`; }

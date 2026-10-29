@@ -1,10 +1,39 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { cartDrawerView, cartView, catalogView, homeView, legalModalView, mobileMenuDrawerView, productDetailView, publicRequestView, publicShellView } from '../src/public-views.mjs';
+import { parseCatalogFilters } from '../src/public-catalog-filters.mjs';
 
 const row = { categoria_id: 1, categoria_nombre: 'Splash', producto_id: 4, nombre: 'Brisa', descripcion: 'Aroma fresco', imagen_url: 'https://example.test/brisa.webp', texto_alternativo: 'Brisa', precio_referencia: 50000, precio_normal_referencia: 60000, precio_desde: true, disponibilidad: 'Disponible', destacado: true };
 test('catalog has one grid, an independent add action, price and textual availability', () => { const view = catalogView([row]); assert.match(view, /<h1>Catálogo<\/h1>/); assert.doesNotMatch(view, /<p class="eyebrow">ESENCIALES/); assert.doesNotMatch(view, /id="categoria-1"/); assert.match(view, /Desde/); assert.match(view, /En stock/); assert.match(view, /data-product-add="4"/); assert.match(view, /aria-label="Agregar Brisa al carrito"/); });
 test('catalog exposes persistent filters, search controls and tags without an order control', () => { const filters = { busqueda: 'brisa', categoria: 1, disponibilidades: ['en-stock'], generos: ['hombre'], clasificaciones: [], precioMinimo: '30000', precioMaximo: '', orden: 'precio-asc' }; const view = catalogView([row], [row], filters); assert.match(view, /Filtros \(5\)/); assert.match(view, /data-clear-search/); assert.match(view, /aria-label="Borrar búsqueda"/); assert.match(view, /Disponibilidad/); assert.match(view, /Limpiar filtros/); assert.match(view, /Filtros aplicados/); assert.match(view, /Quitar filtro/); assert.doesNotMatch(view, /catalog-order|Ordenar|Menor precio|Mayor precio/); });
+test('catalog shows twelve products per page with ordered navigation at the end', () => {
+  const rows = Array.from({ length: 13 }, (_, index) => ({ ...row, producto_id: index + 1, nombre: `Producto ${index + 1}` }));
+  const firstPage = catalogView(rows, rows, parseCatalogFilters(''));
+  assert.equal((firstPage.match(/class="public-product-card"/g) || []).length, 12);
+  assert.match(firstPage, /13 productos/);
+  assert.doesNotMatch(firstPage, /Mostrando/);
+  assert.match(firstPage, /aria-label="Paginación superior del catálogo"/);
+  assert.match(firstPage, /aria-label="Paginación inferior del catálogo"/);
+  assert.equal((firstPage.match(/Página 1 de 2/g) || []).length, 2);
+  assert.equal((firstPage.match(/class="catalog-pagination /g) || []).length, 2);
+  assert.match(firstPage, /aria-label="Ir a la página siguiente"[^>]*>[\s\S]*m9 18 6-6-6-6/);
+  assert.match(firstPage, /data-catalog-page="2"/);
+  assert.doesNotMatch(firstPage, />Producto 13</);
+
+  const secondPage = catalogView(rows, rows, parseCatalogFilters('?pagina=2'));
+  assert.equal((secondPage.match(/class="public-product-card"/g) || []).length, 1);
+  assert.match(secondPage, />Producto 13</);
+  assert.match(secondPage, /13 productos/);
+  assert.doesNotMatch(secondPage, /Mostrando/);
+  assert.match(secondPage, /aria-current="page" aria-label="Página 2, actual"/);
+
+  const fourPageRows = Array.from({ length: 41 }, (_, index) => ({ ...row, producto_id: index + 1, nombre: `Fragancia ${index + 1}` }));
+  const fourPageView = catalogView(fourPageRows, fourPageRows, parseCatalogFilters(''));
+  assert.match(fourPageView, /data-catalog-page="2"/);
+  assert.match(fourPageView, /data-catalog-page="3"/);
+  assert.match(fourPageView, /data-catalog-page="4"/);
+  assert.doesNotMatch(fourPageView, /catalog-pagination__ellipsis/);
+});
 test('no-results state occupies the catalog width with clear recovery copy', () => { const filters = { busqueda: 'sin coincidencias', categoria: null, disponibilidades: [], generos: [], clasificaciones: [], precioMinimo: '', precioMaximo: '', orden: 'destacados' }; const view = catalogView([row], [], filters); assert.match(view, /public-empty-state--no-results/); assert.match(view, /No encontramos resultados con estos criterios/); assert.match(view, /explorar el catálogo completo de ESENCIALES/); assert.match(view, /Restablecer y ver todo/); });
 test('home categories lead to the shared catalog filters and featured data is not hidden by name', () => { assert.match(homeView([row]), /href="\/catalogo\?genero=mujer"/); assert.match(homeView([{ ...row, nombre: 'prubea' }]), /prubea/); });
 test('home only includes the featured products in its featured carousel', () => {

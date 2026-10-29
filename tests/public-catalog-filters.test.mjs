@@ -1,14 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getCatalogFilterCount, parseCatalogFilters, removeCatalogFilter, serializeCatalogFilters, validateCatalogFilters } from '../src/public-catalog-filters.mjs';
-import { loadFilteredCatalog, refineCatalogRows } from '../src/public-catalog.mjs';
+import { loadFilteredCatalog, paginateCatalogProducts, refineCatalogRows } from '../src/public-catalog.mjs';
 
 test('URL filters retain valid repeated criteria and persistent order', () => {
-  const filters = parseCatalogFilters('?q=%20%C3%81mbar%20&categoria=5&disponibilidad=en-stock&disponibilidad=bajo-pedido&genero=hombre&genero=hombre&clasificacion=uno_a_uno&min=70000&max=90000&orden=precio-desc');
-  assert.deepEqual(filters, { busqueda: 'Ámbar', categoria: 5, disponibilidades: ['en-stock', 'bajo-pedido'], generos: ['hombre'], clasificaciones: ['uno_a_uno'], precioMinimo: '70000', precioMaximo: '90000', orden: 'precio-desc' });
+  const filters = parseCatalogFilters('?q=%20%C3%81mbar%20&categoria=5&disponibilidad=en-stock&disponibilidad=bajo-pedido&genero=hombre&genero=hombre&clasificacion=uno_a_uno&min=70000&max=90000&orden=precio-desc&pagina=3');
+  assert.deepEqual(filters, { busqueda: 'Ámbar', categoria: 5, disponibilidades: ['en-stock', 'bajo-pedido'], generos: ['hombre'], clasificaciones: ['uno_a_uno'], precioMinimo: '70000', precioMaximo: '90000', orden: 'precio-desc', pagina: 3 });
   assert.deepEqual(parseCatalogFilters(`?${serializeCatalogFilters(filters)}`), filters);
   assert.equal(getCatalogFilterCount(filters), 6);
   assert.deepEqual(removeCatalogFilter(filters, 'disponibilidades', 'en-stock').disponibilidades, ['bajo-pedido']);
+});
+
+test('catalog paginates twelve products and clamps invalid pages', () => {
+  const products = Array.from({ length: 25 }, (_, index) => ({ id: index + 1 }));
+  assert.deepEqual(paginateCatalogProducts(products, 2), { items: products.slice(12, 24), page: 2, totalItems: 25, totalPages: 3, start: 13, end: 24 });
+  assert.equal(paginateCatalogProducts(products, 99).page, 3);
+  assert.equal(paginateCatalogProducts(products, 0).page, 1);
+  assert.equal(parseCatalogFilters('?pagina=0').pagina, 1);
 });
 
 test('invalid prices are rejected before data loading', () => {

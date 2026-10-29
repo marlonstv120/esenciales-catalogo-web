@@ -136,8 +136,9 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     renderCatalog(filters, remote.error ? { error: remote.error } : {});
   };
   const updateFilters = (filters) => {
-    const validation = validateCatalogFilters(filters); if (validation) { renderCatalog(filters, { validation }); return; }
-    const query = serializeCatalogFilters(filters); windowRef.history.pushState({}, '', appPath(`/catalogo${query ? `?${query}` : ''}`)); loadCatalog(filters);
+    const nextFilters = { ...filters, pagina: 1 };
+    const validation = validateCatalogFilters(nextFilters); if (validation) { renderCatalog(nextFilters, { validation }); return; }
+    const query = serializeCatalogFilters(nextFilters); windowRef.history.pushState({}, '', appPath(`/catalogo${query ? `?${query}` : ''}`)); loadCatalog(nextFilters);
   };
   const readFormFilters = () => {
     const data = new FormData(app.querySelector('[data-catalog-form]'));
@@ -247,6 +248,16 @@ export function startPublicCatalog({ app, client, route, windowRef = window, doc
     if (event.target.closest?.('[data-legal-close]')) { closeOverlay(); return; }
     if (event.target.closest?.('[data-filter-toggle]')) { overlayTrigger = event.target.closest('[data-filter-toggle]'); if (filterPanelOpen) { closeOverlay(); return; } filterPanelOpen = true; renderCatalog(parseCatalogFilters(windowRef.location.search)); app.querySelector('[data-filter-panel] button')?.focus(); return; }
     if (event.target.closest?.('[data-filter-close], [data-presentation-close]')) { closeOverlay(); return; }
+    const catalogPage = event.target.closest?.('[data-catalog-page]');
+    if (catalogPage) {
+      event.preventDefault();
+      const filters = { ...parseCatalogFilters(windowRef.location.search), pagina: Number(catalogPage.dataset.catalogPage) };
+      const query = serializeCatalogFilters(filters);
+      windowRef.history.pushState({}, '', appPath(`/catalogo${query ? `?${query}` : ''}`));
+      renderCatalog(filters);
+      queueMicrotask(() => app.querySelector('[data-catalog-results-start]')?.scrollIntoView?.({ behavior: 'auto', block: 'start' }));
+      return;
+    }
     const add = event.target.closest?.('[data-product-add]'); if (add) { openPresentationSelector(Number(add.dataset.productAdd), add); return; }
     const galleryImage = event.target.closest?.('[data-product-gallery-image]'); if (galleryImage) { const main = app.querySelector('[data-public-image]'); if (main) { main.src = galleryImage.dataset.galleryUrl; main.alt = galleryImage.dataset.galleryAlt; main.hidden = false; main.parentElement.querySelector('[data-public-image-fallback]')?.setAttribute('hidden', ''); app.querySelectorAll('[data-product-gallery-image]').forEach((button) => button.setAttribute('aria-pressed', String(button === galleryImage))); } return; }
     const selected = event.target.closest?.('[data-presentation-add]'); if (selected && selectorProduct) { addPresentation(selectorProduct, selected.dataset.presentationAdd); return; }

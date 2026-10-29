@@ -6,6 +6,24 @@ export async function loadPublicCatalog(client) {
   };
 }
 
+export const PUBLIC_CATALOG_PAGE_SIZE = 12;
+
+export function paginateCatalogProducts(products = [], page = 1) {
+  const totalItems = products.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PUBLIC_CATALOG_PAGE_SIZE));
+  const requestedPage = Number.isSafeInteger(Number(page)) ? Number(page) : 1;
+  const currentPage = Math.min(totalPages, Math.max(1, requestedPage));
+  const start = (currentPage - 1) * PUBLIC_CATALOG_PAGE_SIZE;
+  return {
+    items: products.slice(start, start + PUBLIC_CATALOG_PAGE_SIZE),
+    page: currentPage,
+    totalItems,
+    totalPages,
+    start: totalItems ? start + 1 : 0,
+    end: Math.min(start + PUBLIC_CATALOG_PAGE_SIZE, totalItems),
+  };
+}
+
 export async function loadFilteredCatalog(client, filters) {
   const { data, error } = await client.rpc('buscar_catalogo_publico', {
     busqueda: filters.busqueda || null,

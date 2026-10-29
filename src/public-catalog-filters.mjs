@@ -8,6 +8,7 @@ const valid = {
 export function parseCatalogFilters(search = '') {
   const params = new URLSearchParams(search);
   const category = params.get('categoria');
+  const page = params.get('pagina');
   const values = (name, allowed) => [...new Set(params.getAll(name).filter((value) => allowed.includes(value)))];
   const order = params.get('orden');
   return {
@@ -19,6 +20,7 @@ export function parseCatalogFilters(search = '') {
     precioMinimo: params.get('min') || '',
     precioMaximo: params.get('max') || '',
     orden: valid.ordenes.includes(order) ? order : 'destacados',
+    pagina: page && /^[1-9]\d*$/.test(page) && Number.isSafeInteger(Number(page)) ? Number(page) : 1,
   };
 }
 
@@ -32,6 +34,7 @@ export function serializeCatalogFilters(filters) {
   if (filters.precioMinimo) params.set('min', filters.precioMinimo);
   if (filters.precioMaximo) params.set('max', filters.precioMaximo);
   if (filters.orden && filters.orden !== 'destacados') params.set('orden', filters.orden);
+  if (Number(filters.pagina) > 1) params.set('pagina', String(filters.pagina));
   return params.toString();
 }
 

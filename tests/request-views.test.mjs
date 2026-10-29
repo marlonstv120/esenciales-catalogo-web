@@ -37,6 +37,11 @@ test('keeps a clean new request editable without a separate changes section', ()
   assert.match(view, /Confirmar solicitud/);
   assert.match(view, /Otras acciones/);
   assert.match(view, /Cancelar solicitud/);
+  assert.match(view, /href="https:\/\/wa\.me\/573000000000\?text=/);
+  assert.match(view, /Contactar por WhatsApp/);
+  assert.doesNotMatch(view, /Se abrirá un borrador/);
+  assert.match(view, /Ciudad <span class="field-optional">\(opcional\)<\/span>/);
+  assert.match(view, /Observaciones <span class="field-optional">\(opcional\)<\/span>/);
   assert.doesNotMatch(view, /<p class="eyebrow">Solicitud<\/p>/);
   assert.doesNotMatch(view, /Marcar como entregada/);
 
@@ -47,6 +52,13 @@ test('keeps a clean new request editable without a separate changes section', ()
   assert.match(changedView, /Descartar cambios/);
   assert.match(changedView, /data-request-transition="confirm" disabled/);
   assert.match(changedView, /data-request-transition="cancel" disabled/);
+});
+
+test('requires saving a corrected phone before contacting the customer', () => {
+  const view = purchaseRequestDetailView(request, { dirty: true, values: { telefono: '3111111111' } });
+  assert.match(view, /request-whatsapp-button" type="button" disabled/);
+  assert.match(view, /Guarda el nuevo teléfono antes de contactar al cliente/);
+  assert.doesNotMatch(view, /href="https:\/\/wa\.me\//);
 });
 
 test('keeps customer data editable but locks request lines during pending proof review', () => {
@@ -117,6 +129,9 @@ test('renders manual confirmation without claiming that a proof was verified', (
 test('keeps cancelled and delivered requests read-only without transition actions', () => {
   const cancelledView = purchaseRequestDetailView({ ...request, estado: 'cancelada', pagos_solicitud: { estado: 'rechazado' } });
   assert.doesNotMatch(cancelledView, /data-request-transition|data-payment-verify|data-payment-reject|data-request-save/);
+  assert.match(cancelledView, /Contactar por WhatsApp/);
+  assert.match(cancelledView, /href="https:\/\/wa\.me\/573000000000\?text=/);
   const terminalView = purchaseRequestDetailView({ ...request, estado: 'entregada' });
   assert.doesNotMatch(terminalView, /data-request-transition|data-payment-verify|data-payment-reject|data-request-save/);
+  assert.match(terminalView, /Contactar por WhatsApp/);
 });
